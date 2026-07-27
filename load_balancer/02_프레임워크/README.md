@@ -19,6 +19,14 @@ python3 -m venv .venv                    # 1) 가상환경 (최초 1회)
 .venv/bin/python run_experiments.py      # baseline + 고정 α 5개 + α=auto
 ```
 
+실시간 LSTM 예측을 받아 슬롯 하나를 라우팅하고 JSON으로 내보내기 (서빙 데모):
+
+```bash
+.venv/bin/pip install -r ../../carbon-forecast-LSTM/requirements.txt   # torch 등 (최초 1회)
+.venv/bin/python realtime_route.py --t-hour 200                        # jobs.csv 슬롯 재생 → stdout JSON
+.venv/bin/python realtime_route.py --t-hour 200 --jobs-json my.json --out result.json
+```
+
 ## 파일 구조
 
 | 파일 | 역할 |
@@ -26,6 +34,7 @@ python3 -m venv .venv                    # 1) 가상환경 (최초 1회)
 | `config.py` | 경로·리전 순서·UTC 오프셋·레이턴시 행렬 로더 |
 | `simulator.py` | 핵심 엔진 — 1시간 슬롯마다 ILP(PuLP/CBC) 배정, α=auto 무릎점 선택 |
 | `run_experiments.py` | baseline + α 스윕 + auto 일괄 실행 → `results/` + `../03_라우팅결과/` |
+| `realtime_route.py` | 실시간 서빙 데모 — LSTM 예측(`interface/`)을 호출해 슬롯 1개 라우팅 → JSON |
 | `app.py` | Streamlit 대시보드 (입력 데이터 / 전후 비교 / 파레토 사후 평가) |
 | `results/` | 대시보드 분석용 내부 산출물 (summary.json, run별 배정·슬롯 기록) |
 
