@@ -7,6 +7,7 @@
 import json
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pandas as pd
@@ -112,7 +113,8 @@ if not ALPHA_RUNS:
                "누르거나 터미널에서 `python run_experiments.py`를 실행해 주세요.")
     st.stop()
 
-tab1, tab2, tab3 = st.tabs(["① 입력 데이터", "② 전 / 후 비교", "③ α 스윕 · 모드 비교"])
+tab1, tab2, tab3, tab4 = st.tabs(["① 입력 데이터", "② 전 / 후 비교",
+                                  "③ α 스윕 · 모드 비교", "④ 실시간 라우팅 (LSTM)"])
 
 # ═════════════════════ ① 입력 데이터 ═════════════════════
 with tab1:
@@ -509,3 +511,128 @@ with tab3:
                f"{(1 - m['total_carbon_kg']/BASE_M['total_carbon_kg'])*100:.1f}%"}))
     st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
     st.caption("고정 α run들은 auto의 비교 기준입니다. auto = 매 슬롯 파레토 무릎점 α 자동 선택.")
+
+# ═════════════════════ ④ 실시간 라우팅 (LSTM 서빙 데모) ═════════════════════
+RT_BASE = pd.Timestamp("2026-01-01")  # LSTM 데모 데이터의 t=0 (①~③의 2025 축과 다름)
+RT_T_MIN, RT_T_MAX = 168, 4799        # 이력 168h 확보 후 ~ 데모 데이터 끝 - 24h
+
+
+@st.cache_data(show_spinner=False)
+def realtime_route_slot(t_hour: int, alpha: str):
+    """realtime_route.py의 슬롯 라우팅을 호출 — 이 순간 LSTM 모델이 직접 예측한다."""
+    import realtime_route as rt
+    jobs_slot = rt.load_slot_jobs(t_hour, None)
+    return rt.route_slot(t_hour, jobs_slot, alpha, None, 0.8, None)
+
+
+_SPEED_SLEEP = {"0.5×": 4.0, "1×": 2.0, "2×": 1.0, "4×": 0.4}  # 배속 → 슬롯당 대기(초)
+
+with tab4:
+    st.subheader("실시간 라우팅 — LSTM을 지금 호출해서 슬롯 하나를 배정")
+    st.caption("①~③탭은 사전 계산된 1년치(2025) 결과지만, 이 탭은 매 프레임 "
+               "실제 LSTM 모델(torch)이 2026 데모 데이터로 24시간 예측을 새로 계산하고 "
+               "ILP가 그 자리에서 배정합니다. ▶ 재생을 누르면 1시간 슬롯씩 자동 진행됩니다.")
+
+    if "rt_t" not in st.session_state:
+        st.session_state.rt_t = 200
+    if "rt_playing" not in st.session_state:
+        st.session_state.rt_playing = False
+
+    c1, c2, c3, c4 = st.columns([3, 1.4, 1.2, 1.2])
+    with c1:
+        t_sel = st.slider("슬롯 시각 t (시간)", RT_T_MIN, RT_T_MAX,
+                          value=st.session_state.rt_t,
+                          help=f"t=0 ↔ 2026-01-01 00:00 UTC. LSTM은 이력 168h가 필요해 "
+                               f"{RT_T_MIN} 이상부터, 데모 데이터 끝-24h까지.")
+        if t_sel != st.session_state.rt_t:  # 사용자가 직접 스크럽
+            st.session_state.rt_t = t_sel
+    with c2:
+        rt_alpha = st.selectbox("α (탄소↔지연)",
+                                ["auto", "0", "0.25", "0.5", "0.75", "1"],
+                                help="auto = 이 슬롯의 파레토 무릎점 자동 선택")
+    with c3:
+        rt_speed = st.selectbox("재생 배속", list(_SPEED_SLEEP), index=1,
+                                help="재생 시 슬롯(1시간)당 넘어가는 속도")
+    with c4:
+        st.write("")
+        if st.session_state.rt_playing:
+            if st.button("⏸ 일시정지", type="primary", width="stretch"):
+                st.session_state.rt_playing = False
+                st.rerun()
+        else:
+            if st.button("▶ 재생", type="primary", width="stretch"):
+                st.session_state.rt_playing = True
+                st.rerun()
+
+    rt_t = st.session_state.rt_t
+    rt_now = RT_BASE + pd.Timedelta(hours=rt_t)
+    WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"]
+    st.markdown(
+        f"### 🕐 {rt_now.year}년 {rt_now.month}월 {rt_now.day}일"
+        f"({WEEKDAYS[rt_now.dayofweek]}) {rt_now.strftime('%H:%M')} UTC · t={rt_t}"
+        + ("  ·  ▶ 재생 중" if st.session_state.rt_playing else ""))
+
+    with st.spinner("LSTM 예측 + ILP 배정 중… (최초 1회는 모델 로드로 수 초)"):
+        res = realtime_route_slot(rt_t, rt_alpha)
+
+    s = res["summary"]
+    backend_ok = res["forecast_backend"] == "lstm"
+    m1, m2, m3, m4, m5 = st.columns(5)
+    m1.metric("예측 백엔드", "LSTM ✅" if backend_ok else "더미 폴백")
+    m2.metric("α (적용값)", f"{res['alpha']:g}" if res["alpha"] is not None else "—",
+              res["alpha_mode"])
+    m3.metric("job 수", s["n_jobs"], f"드롭 {s['dropped']}", delta_color="inverse")
+    m4.metric("평균 지연", f"{s['avg_latency_ms']:.1f} ms" if s["avg_latency_ms"] else "—")
+    m5.metric("예상 배출(예측 기반)", f"{s['est_total_carbon_g']/1000:.2f} kg")
+    if not backend_ok:
+        st.warning("LSTM 범위 밖이라 더미 예측으로 폴백했습니다. "
+                   f"t를 {RT_T_MIN}~{RT_T_MAX} 사이로 옮겨 보세요.")
+
+    rc1, rc2 = st.columns([3, 2])
+    with rc1:
+        st.markdown(f"**리전별 향후 24시간 예측** (t={res['t_hour']} 시점 발행, "
+                    "index 0 = 이 슬롯)")
+        fx = [RT_BASE + pd.Timedelta(hours=res["t_hour"] + h) for h in range(24)]
+        fig = go.Figure()
+        for r in REGIONS:
+            fig.add_trace(go.Scatter(
+                x=fx, y=res["forecast_gco2_per_kwh"][r], name=r, mode="lines",
+                line=dict(color=REGION_COLORS[r], width=2),
+                hovertemplate=f"{r}: %{{y:.0f}} g/kWh<br>%{{x|%m-%d %H시}}<extra></extra>"))
+        fig.update_layout(**LAYOUT, height=380, legend=dict(orientation="h", y=1.15),
+                          yaxis_title="gCO₂/kWh (LSTM 예측)")
+        st.plotly_chart(fig, width="stretch")
+    with rc2:
+        st.markdown("**이 슬롯의 리전별 배정 수**")
+        load = s["region_load"]
+        fig = go.Figure(go.Bar(
+            x=REGIONS, y=[load[r] for r in REGIONS],
+            marker_color=[REGION_COLORS[r] for r in REGIONS],
+            hovertemplate="%{x}: %{y}개<extra></extra>"))
+        fig.update_layout(**LAYOUT, height=380, yaxis_title="배정 job 수")
+        st.plotly_chart(fig, width="stretch")
+
+    st.markdown("**job별 배정** (origin → assigned)")
+    adf = pd.DataFrame(res["assignments"])
+    if not adf.empty:
+        moved = adf[adf.origin != adf.assigned]
+        st.caption(f"{len(adf)}개 중 {len(moved)}개가 홈 리전 밖으로 이동")
+        st.dataframe(adf, width="stretch", hide_index=True)
+    else:
+        st.caption("이 슬롯에 제출된 job이 없습니다 — 예측만 발행됨.")
+
+    st.download_button(
+        "⬇️ 이 결과 JSON 다운로드",
+        json.dumps(res, ensure_ascii=False, indent=2),
+        file_name=f"route_t{res['t_hour']}.json", mime="application/json")
+    with st.expander("원본 JSON 보기 (스케줄러 인계 형식)"):
+        st.json(res)
+
+    # ── 재생 루프: 다음 슬롯으로 넘어가며 자동 rerun ──
+    if st.session_state.rt_playing:
+        time.sleep(_SPEED_SLEEP[rt_speed])
+        if st.session_state.rt_t < RT_T_MAX:
+            st.session_state.rt_t += 1
+        else:
+            st.session_state.rt_playing = False  # 데이터 끝에 도달 → 정지
+        st.rerun()
