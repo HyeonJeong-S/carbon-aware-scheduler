@@ -45,14 +45,20 @@ HOLIDAY_CODES = {
     'JP':          'JP',
 }
 
-INPUT_SIZE  = 10   # carbon_intensity + cfe_pct_norm + re_pct_norm + sin/cos×3쌍 + is_holiday
+# 날씨 피처가 있는 리전 (시간별 관측치: 풍속, 일사량, 기온)
+# → 나머지 5개 리전은 날씨 데이터가 없어 기존 10개 피처만 사용
+WEATHER_REGIONS = ['US-TEX-ERCO', 'US-CAL-CISO', 'DE']
+WEATHER_RAW_COLS     = ['wind_speed_10m', 'shortwave_radiation', 'temperature_2m']
+WEATHER_FEATURE_COLS = ['wind_speed_10m_norm', 'shortwave_radiation_norm', 'temperature_2m_norm']
+
+BASE_INPUT_SIZE = 10  # carbon_intensity + cfe_pct_norm + re_pct_norm + sin/cos×3쌍 + is_holiday
 HIDDEN_SIZE = 64
 NUM_LAYERS  = 2
 OUTPUT_SIZE = 24   # 향후 24시간 예측
 SEQ_LEN     = 168  # 입력 168시간 (1주일)
 
 # STEP 5와 동일한 순서로 유지 (모델 가중치 shape과 순서가 대응돼야 함)
-FEATURE_COLS = [
+BASE_FEATURE_COLS = [
     'carbon_intensity',
     'cfe_pct_norm', 're_pct_norm',
     'sin_hour',  'cos_hour',
@@ -60,6 +66,18 @@ FEATURE_COLS = [
     'sin_month', 'cos_month',
     'is_holiday'
 ]
+
+
+def get_feature_cols(region: str) -> list:
+    """리전별 LSTM 입력 피처 목록. WEATHER_REGIONS는 날씨 피처 2개가 추가됨."""
+    if region in WEATHER_REGIONS:
+        return BASE_FEATURE_COLS + WEATHER_FEATURE_COLS
+    return BASE_FEATURE_COLS
+
+
+def get_input_size(region: str) -> int:
+    return len(get_feature_cols(region))
+
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -70,13 +88,13 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 class CarbonLSTM(nn.Module):
     """
     탄소강도 24시간 예측 LSTM 모델
-    입력: (batch, 168, 10)
+    입력: (batch, 168, N)  ← N은 리전별로 다름 (기본 10, 날씨 리전은 12)
     출력: (batch, 24)  ← 정규화된 값, 역변환 후 gCO₂/kWh
     """
 
     def __init__(
         self,
-        input_size:  int = INPUT_SIZE,
+        input_size:  int = BASE_INPUT_SIZE,
         hidden_size: int = HIDDEN_SIZE,
         num_layers:  int = NUM_LAYERS,
         output_size: int = OUTPUT_SIZE,
@@ -103,6 +121,52 @@ class CarbonLSTM(nn.Module):
         lstm_out, _ = self.lstm(x, (h0, c0))
         last_hidden  = lstm_out[:, -1, :]
         return self.fc(last_hidden)
+
+
+# ── 미래 날씨 결합 CarbonLSTM (WEATHER_REGIONS 전용) ──
+# 인코더(LSTM)는 CarbonLSTM과 동일, 출력층 직전에 예측 구간(향후 24h) 날씨를
+# last_hidden과 concat해서 반영. 코랩 최종 모델(5[hard_stop]) STEP 6-2와 동일 구조여야 함.
+
+class CarbonLSTMWithFutureWeather(CarbonLSTM):
+    """
+    구조:
+        과거 168h → LSTM → last_hidden (hidden_size)
+        미래 24h 날씨 (OUTPUT_SIZE × 날씨피처수) → flatten
+        concat(last_hidden, 미래 날씨) → Linear(hidden_size + future_weather_dim → output_size)
+    """
+
+    def __init__(
+        self,
+        input_size:  int,
+        hidden_size: int = HIDDEN_SIZE,
+        num_layers:  int = NUM_LAYERS,
+        output_size: int = OUTPUT_SIZE,
+        future_weather_dim: int = OUTPUT_SIZE * len(WEATHER_FEATURE_COLS),
+        dropout:     float = 0.2
+    ):
+        super().__init__(input_size, hidden_size, num_layers, output_size, dropout)
+        self.fc = nn.Linear(hidden_size + future_weather_dim, output_size)
+
+    def forward(self, x, future_weather):
+        """
+        Args:
+            x: (batch, SEQ_LEN, input_size) — 과거 168h
+            future_weather: (batch, OUTPUT_SIZE, len(WEATHER_FEATURE_COLS)) — 예측 구간
+                             (향후 24h) 날씨, 정규화된 값
+        """
+        batch_size = x.size(0)
+        h0 = torch.zeros(self.num_layers, batch_size, self.hidden_size).to(x.device)
+        c0 = torch.zeros(self.num_layers, batch_size, self.hidden_size).to(x.device)
+
+        lstm_out, _ = self.lstm(x, (h0, c0))
+        last_hidden = lstm_out[:, -1, :]
+
+        future_flat = future_weather.reshape(batch_size, -1)
+        return self.fc(torch.cat([last_hidden, future_flat], dim=1))
+
+
+def _model_needs_future_weather(model) -> bool:
+    return isinstance(model, CarbonLSTMWithFutureWeather)
 
 
 # ── 피처 생성 헬퍼 ────────────────────────────────
@@ -148,17 +212,22 @@ def load_all_models(model_dir: str) -> tuple:
         model_dir: 모델/Scaler 저장 경로
 
     Returns:
-        models:  {region: CarbonLSTM}
-        scalers: {region: MinMaxScaler}
+        models:          {region: CarbonLSTM | CarbonLSTMWithFutureWeather}
+                         WEATHER_REGIONS는 예측 시 미래 24h 날씨를 추가로 요구함
+                         (get_forecast_at/predict_region의 future_weather 참고)
+        scalers:         {region: MinMaxScaler}   (carbon_intensity 전용)
+        weather_scalers: {region: MinMaxScaler}   (날씨 피처 전용, WEATHER_REGIONS만 존재)
     """
     models  = {}
     scalers = {}
+    weather_scalers = {}
 
     for region in REGIONS.keys():
         model_path  = os.path.join(model_dir, f'{region}_lstm.pt')
         scaler_path = os.path.join(model_dir, f'{region}_scaler.pkl')
 
-        model = CarbonLSTM().to(device)
+        model_cls = CarbonLSTMWithFutureWeather if region in WEATHER_REGIONS else CarbonLSTM
+        model = model_cls(input_size=get_input_size(region)).to(device)
         model.load_state_dict(
             torch.load(model_path, map_location=device)
         )
@@ -167,8 +236,12 @@ def load_all_models(model_dir: str) -> tuple:
         scalers[region] = joblib.load(scaler_path)
         models[region]  = model
 
+        if region in WEATHER_REGIONS:
+            weather_scaler_path = os.path.join(model_dir, f'{region}_weather_scaler.pkl')
+            weather_scalers[region] = joblib.load(weather_scaler_path)
+
     print(f"✅ 8개 리전 모델 + Scaler 로드 완료 (device={device})")
-    return models, scalers
+    return models, scalers, weather_scalers
 
 
 # ── 단일 리전 예측 ────────────────────────────────
@@ -177,19 +250,27 @@ def predict_region(
     region:   str,
     model,
     scaler,
-    input_df: pd.DataFrame
+    input_df: pd.DataFrame,
+    weather_scaler=None,
+    future_weather: pd.DataFrame = None
 ) -> list:
     """
     단일 리전 향후 24시간 탄소강도 예측
 
     Args:
         region:   리전 키
-        model:    해당 리전 CarbonLSTM
+        model:    해당 리전 CarbonLSTM (또는 WEATHER_REGIONS는 CarbonLSTMWithFutureWeather)
         scaler:   해당 리전 MinMaxScaler (carbon_intensity 전용)
         input_df: 최근 168시간 DataFrame
                   필수 컬럼: carbon_intensity
                   cfe_pct/re_pct (또는 _norm 버전) — 반드시 필요, 자동 생성 불가
+                  region이 WEATHER_REGIONS(US-TEX-ERCO, US-CAL-CISO, DE)이면
+                  wind_speed_10m, shortwave_radiation, temperature_2m 원본값도 반드시 포함되어야 함
                   timestamp가 있으면 시간 피처는 자동 생성
+        weather_scaler: 해당 리전 MinMaxScaler (날씨 피처 전용). WEATHER_REGIONS만 필요
+        future_weather: 예측 구간(향후 OUTPUT_SIZE=24시간)의 WEATHER_RAW_COLS 원본값,
+                         정확히 24행. model이 CarbonLSTMWithFutureWeather면 필수
+                         (실시간 서빙에서는 날씨 예보값, 과거 구간 백테스트에서는 실측값)
 
     Returns:
         24개 예측값 리스트 (gCO₂/kWh, 역변환된 실제값)
@@ -211,16 +292,50 @@ def predict_region(
         df[['carbon_intensity']]
     )
 
-    feature_array = df[FEATURE_COLS].values.astype(np.float32)
+    if region in WEATHER_REGIONS:
+        missing_weather = [c for c in WEATHER_RAW_COLS if c not in df.columns]
+        if missing_weather:
+            raise ValueError(
+                f"[{region}] {missing_weather} 컬럼이 없습니다. "
+                f"이 리전은 날씨 피처로 학습되어 wind_speed_10m, shortwave_radiation, "
+                f"temperature_2m 원본값이 input_df에 반드시 포함되어야 합니다."
+            )
+        if weather_scaler is None:
+            raise ValueError(
+                f"[{region}] weather_scaler가 필요합니다 (load_all_models 반환값 확인)."
+            )
+        df[WEATHER_FEATURE_COLS] = weather_scaler.transform(df[WEATHER_RAW_COLS])
+
+    feature_array = df[get_feature_cols(region)].values.astype(np.float32)
 
     if len(feature_array) != SEQ_LEN:
         raise ValueError(
             f"[{region}] 입력 길이 불일치: {len(feature_array)} != {SEQ_LEN}"
         )
 
-    x = torch.tensor(feature_array).unsqueeze(0).to(device)  # (1, 168, 10)
+    x = torch.tensor(feature_array).unsqueeze(0).to(device)  # (1, 168, N)
+
     with torch.no_grad():
-        pred_scaled = model(x).cpu().numpy()                  # (1, 24)
+        if _model_needs_future_weather(model):
+            if future_weather is None:
+                raise ValueError(
+                    f"[{region}] 이 리전은 CarbonLSTMWithFutureWeather라서 "
+                    f"future_weather(향후 {OUTPUT_SIZE}시간 {WEATHER_RAW_COLS})가 반드시 필요합니다."
+                )
+            fw = future_weather.reset_index(drop=True)
+            if len(fw) != OUTPUT_SIZE:
+                raise ValueError(
+                    f"[{region}] future_weather 길이 불일치: {len(fw)} != {OUTPUT_SIZE}"
+                )
+            missing_fw = [c for c in WEATHER_RAW_COLS if c not in fw.columns]
+            if missing_fw:
+                raise ValueError(f"[{region}] future_weather에 {missing_fw} 컬럼이 없습니다.")
+
+            fw_scaled = weather_scaler.transform(fw[WEATHER_RAW_COLS])
+            fw_tensor = torch.tensor(fw_scaled, dtype=torch.float32).unsqueeze(0).to(device)
+            pred_scaled = model(x, fw_tensor).cpu().numpy()   # (1, 24)
+        else:
+            pred_scaled = model(x).cpu().numpy()              # (1, 24)
 
     pred_inv = scaler.inverse_transform(
         pred_scaled.reshape(-1, 1)
@@ -232,19 +347,25 @@ def predict_region(
 # ── 핵심 인터페이스 함수 ──────────────────────────
 
 def get_carbon_forecast(
-    models:       dict,
-    scalers:      dict,
-    region_data:  dict,
-    generated_at: str = None
+    models:             dict,
+    scalers:            dict,
+    region_data:        dict,
+    weather_scalers:    dict = None,
+    generated_at:       str = None,
+    future_weather_data: dict = None
 ) -> dict:
     """
     8개 리전 × 향후 24시간 탄소강도 예측값 반환
 
     Args:
-        models:       {region: CarbonLSTM}
-        scalers:      {region: MinMaxScaler}
-        region_data:  {region: DataFrame}  ← C로부터 받은 168h 데이터
-        generated_at: 예측 생성 시각 문자열 (없으면 현재 시각)
+        models:          {region: CarbonLSTM}
+        scalers:         {region: MinMaxScaler}
+        region_data:     {region: DataFrame}  ← C로부터 받은 168h 데이터
+        weather_scalers: {region: MinMaxScaler}  날씨 피처 전용, WEATHER_REGIONS만 필요
+        generated_at:    예측 생성 시각 문자열 (없으면 현재 시각)
+        future_weather_data: {region: DataFrame}  WEATHER_REGIONS 전용, 예측 구간(향후 24h)
+                              WEATHER_RAW_COLS 원본값 24행. 해당 리전 모델이
+                              CarbonLSTMWithFutureWeather면 필수
 
     Returns:
         {
@@ -261,6 +382,8 @@ def get_carbon_forecast(
     """
     if generated_at is None:
         generated_at = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+    weather_scalers = weather_scalers or {}
+    future_weather_data = future_weather_data or {}
 
     forecast = {}
     for region in REGIONS.keys():
@@ -268,7 +391,9 @@ def get_carbon_forecast(
             region=region,
             model=models[region],
             scaler=scalers[region],
-            input_df=region_data[region]
+            input_df=region_data[region],
+            weather_scaler=weather_scalers.get(region),
+            future_weather=future_weather_data.get(region)
         )
         forecast[region] = [round(v, 2) for v in pred]
 
@@ -281,15 +406,22 @@ def get_carbon_forecast(
 # ── 시뮬레이터용 래퍼 함수 ────────────────────────
 
 def get_forecast_at(
-    t:       pd.Timestamp,
-    models:  dict,
-    scalers: dict,
-    all_df:  pd.DataFrame
+    t:               pd.Timestamp,
+    models:          dict,
+    scalers:         dict,
+    all_df:          pd.DataFrame,
+    weather_scalers: dict = None
 ) -> dict:
     """
     시뮬레이터용: 특정 시점 t 기준 24시간 예측
     t 이전 168시간(t 미포함)을 자동으로 슬라이싱해서 예측
     → 반환된 forecast의 index 0가 정확히 t 시각의 예측값이 됨
+
+    WEATHER_REGIONS(US-TEX-ERCO, US-CAL-CISO, DE)는 CarbonLSTMWithFutureWeather라서
+    예측 구간(t ~ t+23) 날씨도 all_df에서 그대로 슬라이싱해 모델에 넘긴다.
+    ⚠️ all_df에 그 구간의 실측이 없으면(= 아직 안 지난 미래) 예측 자체가 불가능하다.
+    즉 이 함수로 낼 수 있는 예측은 "all_df가 커버하는 마지막 시각 - 24h" 까지가 한계다
+    (실시간 날씨 예보 API를 붙이기 전까지는 진짜 미래를 못 다룬다).
 
     Args:
         t:       예측 기준 시각 (pd.Timestamp)
@@ -298,11 +430,16 @@ def get_forecast_at(
         all_df:  전체 탄소강도 데이터
                  컬럼: timestamp, region, carbon_intensity, cfe_pct, re_pct
                  (cfe_pct/re_pct 원본 필수 — 예측에 반드시 필요)
+                 WEATHER_REGIONS(US-TEX-ERCO, US-CAL-CISO, DE)는
+                 wind_speed_10m, shortwave_radiation, temperature_2m 원본값도 필요
+                 (과거 168h + 예측 구간 t~t+23 모두)
+        weather_scalers: {region: MinMaxScaler}  날씨 피처 전용, WEATHER_REGIONS만 필요
 
     Returns:
         get_carbon_forecast()와 동일한 형태
     """
     region_data = {}
+    future_weather_data = {}
 
     for region in REGIONS.keys():
         region_df = all_df[all_df['region'] == region].copy()
@@ -318,9 +455,24 @@ def get_forecast_at(
 
         region_data[region] = window
 
+        if region in WEATHER_REGIONS:
+            future_end = t + pd.Timedelta(hours=OUTPUT_SIZE)
+            future_window = region_df[
+                (region_df['timestamp'] >= t) & (region_df['timestamp'] < future_end)
+            ]
+            if len(future_window) < OUTPUT_SIZE:
+                raise ValueError(
+                    f"[{region}] future_weather 데이터 부족: {len(future_window)} < {OUTPUT_SIZE} "
+                    f"(all_df가 {t} ~ {future_end} 구간의 실측 날씨를 아직 못 커버함 — "
+                    f"진짜 미래는 날씨 예보 API 연동 전까지 예측 불가)"
+                )
+            future_weather_data[region] = future_window
+
     return get_carbon_forecast(
         models=models,
+        future_weather_data=future_weather_data,
         scalers=scalers,
         region_data=region_data,
+        weather_scalers=weather_scalers,
         generated_at=t.strftime('%Y-%m-%dT%H:%M:%S')
     )
