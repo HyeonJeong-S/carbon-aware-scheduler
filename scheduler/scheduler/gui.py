@@ -24,6 +24,22 @@ from scheduler.config import MODES, ZONE_LABELS, ZONE_TO_ISO3
 
 st.set_page_config(page_title="탄소 인식 스케줄러", layout="wide", initial_sidebar_state="expanded")
 
+# ── 시각 스타일 (로드밸런서 대시보드와 통일된 팔레트) ──
+INK, MUTED, GRID = "#0b0b0b", "#898781", "#e1e0d9"
+BASELINE_GRAY, CARBON_BLUE, OURS_GREEN = "#898781", "#2a78d6", "#1baf7a"
+PLOT_LAYOUT = dict(
+    font=dict(family="system-ui, -apple-system, sans-serif", color=INK, size=13),
+    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+    margin=dict(l=10, r=10, t=30, b=10),
+    hovermode="closest", showlegend=False,
+)
+
+
+def _style_axes(fig):
+    fig.update_xaxes(gridcolor=GRID, zeroline=False)
+    fig.update_yaxes(gridcolor=GRID, zeroline=False)
+    return fig
+
 _SCHED_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _REPO_ROOT = os.path.dirname(_SCHED_ROOT)
 
@@ -254,55 +270,12 @@ with st.sidebar:
             run_simulation()
         st.session_state["playing"] = False
 
-    st.divider()
-
-    has_results = st.session_state.get("results_by_mode") is not None
-    max_day = max(1, int(st.session_state.get("horizon_hours", 168)) // 24) if has_results else 9
-    max_t = max_day * 24 - 1
-
-    st.session_state.setdefault("ui_day", 1)
-    st.session_state.setdefault("ui_hour", 12)
-    st.session_state.setdefault("playing", False)
-
-    # 자동 재생 중이면 위젯 생성 전에 시각을 1시간 전진
-    if st.session_state["playing"] and has_results:
-        cur = (st.session_state["ui_day"] - 1) * 24 + st.session_state["ui_hour"]
-        nxt = cur + 1
-        if nxt >= max_t:
-            nxt = max_t
-            st.session_state["playing"] = False  # 끝에 도달하면 정지
-        st.session_state["ui_day"] = nxt // 24 + 1
-        st.session_state["ui_hour"] = nxt % 24
-
-    st.subheader("시점 선택 (UTC)")
-    base_date = sim_base().date()
-    min_date = base_date
-    max_date = (sim_base() + pd.Timedelta(hours=max_t)).date()
-
-    picked = st.date_input("날짜 (UTC)", value=base_date + pd.Timedelta(
-        days=int(st.session_state["ui_day"]) - 1).to_pytimedelta(),
-        min_value=min_date, max_value=max_date, disabled=not has_results)
-    # 날짜 위젯 값 -> ui_day 로 되돌려 자동재생과 상태를 공유
-    st.session_state["ui_day"] = (pd.Timestamp(picked).date() - base_date).days + 1
-
-    hour = st.number_input("시각 (시, UTC)", min_value=0, max_value=23, step=1,
-                           key="ui_hour", disabled=not has_results)
-    day = st.session_state["ui_day"]
-    t_now = (int(day) - 1) * 24 + int(hour)
-    st.metric("선택 시각 (UTC)", to_utc(t_now).strftime("%Y-%m-%d %H:%M"))
-
-    play_col, stop_col = st.columns(2)
-    if play_col.button("▶ 자동 재생", width="stretch", disabled=not has_results):
-        st.session_state["playing"] = True
-        st.rerun()
-    if stop_col.button("■ 정지", width="stretch", disabled=not has_results):
-        st.session_state["playing"] = False
-    if st.session_state["playing"]:
-        st.caption(f"재생 중… {PLAY_INTERVAL_SEC}초마다 1시간씩 전진")
+    st.caption("이 페이지는 2025년 1년치 시뮬레이션 **검증 결과**만 보여줍니다. "
+               "시점별 지도·타임라인은 '최종' 페이지에 있습니다.")
 
 
 # ─────────────────────── 메인 ───────────────────────
-st.title("탄소 인식 time-shift 스케줄러")
+st.title("스케줄러 검증 — 2025년 1년치 결과")
 
 results_by_mode = st.session_state.get("results_by_mode")
 if results_by_mode is None:
@@ -317,94 +290,93 @@ total_imm = comparison["carbon_lb_immediate"]["total_carbon"]
 total_shift = comparison["carbon_lb_timeshift"]["total_carbon"]
 overall_pct = (1 - total_shift / total_imm) * 100 if total_imm else 0.0
 avg_delay = comparison["carbon_lb_timeshift"]["avg_delay"]
+n_jobs = comparison["carbon_lb_timeshift"]["n_jobs"]
+slo_viol = comparison["carbon_lb_timeshift"]["slo_violation_rate"]
+saved_total = total_imm - total_shift
 
-imm_running = running_jobs(immediate, t_now)
-shift_running = running_jobs(shifted, t_now)
-imm_counts = country_job_counts(imm_running)
-shift_counts = country_job_counts(shift_running)
-
-cum_imm = carbon_up_to(immediate, t_now)
-cum_shift = carbon_up_to(shifted, t_now)
-saved_now = cum_imm - cum_shift
-saved_now_pct = (saved_now / cum_imm * 100) if cum_imm else 0.0
-
+# ── 핵심 검증 지표 (KPI) ──
 m1, m2, m3, m4 = st.columns(4)
-m1.metric("이 시점까지 누적 절감", f"{saved_now:,.0f} gCO₂", f"{saved_now_pct:.1f}%")
-m2.metric("실행 중 job (즉시)", f"{len(imm_running)}개", f"{len(imm_counts)}개국")
-m3.metric("실행 중 job (ours)", f"{len(shift_running)}개", f"{len(shift_counts)}개국")
-_period = "1년" if st.session_state.get("data_scope") == "year" else "7일"
-m4.metric(f"전체 절감 ({_period})", f"{overall_pct:.1f}%", f"평균 지연 {avg_delay:.1f}h")
+m1.metric("time-shift 절감률", f"{overall_pct:.1f}%", "즉시실행 대비")
+m2.metric("절감한 탄소", f"{saved_total/1e6:,.2f} tCO₂", f"{saved_total:,.0f} g")
+m3.metric("평균 지연", f"{avg_delay:.2f} h")
+m4.metric("SLO(마감) 위반율", f"{slo_viol*100:.2f}%",
+          "정상" if slo_viol == 0 else "위반 발생", delta_color="off")
 
-# 지도 2개 (나라 위 숫자 = 그 나라에서 실행 중인 job 수)
-c_left, c_right = st.columns(2)
-with c_left:
-    st.markdown(f"**즉시 실행** — job {len(imm_running)}개 / {len(imm_counts)}개국")
-    st.plotly_chart(draw_map(imm_counts, "#9aa0a6"),
-                    width="stretch", config={"displayModeBar": False}, key="map_immediate")
-with c_right:
-    st.markdown(f"**time-shift (ours)** — job {len(shift_running)}개 / {len(shift_counts)}개국")
-    st.plotly_chart(draw_map(shift_counts, COLOR_SHIFT),
-                    width="stretch", config={"displayModeBar": False}, key="map_shift")
+st.divider()
 
-# 현재 실행 중 job (ours 기준) — 표(전체 폭) + 요청→실행 타임라인 (항상 고정 렌더)
-imm_by_id = {r["job_id"]: r["carbon_emitted"] for r in immediate}
-tbl = jobs_table(shift_running, t_now, imm_by_id)
-bar_max = float(tbl["절감(gCO₂)"].max()) if not tbl.empty and tbl["절감(gCO₂)"].max() > 0 else 1.0
-day_start = (int(day) - 1) * 24
+col_l, col_r = st.columns([1, 1])
 
-st.markdown(f"#### {to_utc(t_now).strftime('%Y-%m-%d %H:%M')} UTC 실행 중 job — "
-            f"{len(tbl)}개 · 실제 배출 {tbl['time-shift(gCO₂)'].sum():,.0f} · "
-            f"time-shift 절감 {tbl['절감(gCO₂)'].sum():,.0f} gCO₂")
-st.dataframe(
-    tbl, width="stretch", height=250, hide_index=True,
-    column_config={
-        "즉시실행(gCO₂)": st.column_config.NumberColumn("즉시실행(gCO₂)", format="%.0f",
-                                                     help="안 미루고 즉시 실행했을 때의 배출량"),
-        "time-shift(gCO₂)": st.column_config.NumberColumn("time-shift(gCO₂)", format="%.0f",
-                                                          help="실제로 미뤄서 실행한 배출량"),
-        "절감(gCO₂)": st.column_config.ProgressColumn(
-            "절감(gCO₂)", help="즉시실행 대비 줄인 탄소량 (막대)",
-            format="%.0f", min_value=0, max_value=bar_max),
-    },
-)
+# ── (좌) 비교군별 총 탄소 배출 — 스타일 막대 ──
+with col_l:
+    st.subheader("비교군별 총 탄소 배출량")
+    modes_order = ["simple_lb_immediate", "carbon_lb_immediate", "carbon_lb_timeshift"]
+    modes_order = [m for m in modes_order if m in comparison]
+    labels = {"simple_lb_immediate": "단순 LB", "carbon_lb_immediate": "탄소 LB",
+              "carbon_lb_timeshift": "탄소 LB + time-shift (ours)"}
+    colors = {"simple_lb_immediate": BASELINE_GRAY, "carbon_lb_immediate": CARBON_BLUE,
+              "carbon_lb_timeshift": OURS_GREEN}
+    vals = [comparison[m]["total_carbon"] / 1e6 for m in modes_order]
+    names = [labels[m] for m in modes_order]
+    fig = go.Figure(go.Bar(
+        x=vals, y=names, orientation="h", marker_color=[colors[m] for m in modes_order],
+        text=[f"{v:,.1f} tCO₂" for v in vals], textposition="auto",
+        hovertemplate="%{y}: %{x:.2f} tCO₂<extra></extra>"))
+    fig.update_layout(**PLOT_LAYOUT, height=300, xaxis_title="총 탄소 배출 (tCO₂)")
+    _style_axes(fig)
+    fig.update_yaxes(autorange="reversed")
+    st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
+    st.caption(f"job {n_jobs:,}개 · 탄소 회계는 2025년 실측값 기준")
 
-st.caption(f"아래 타임라인 — ◆ 요청 · · · 대기 ── 실행(초록) · 빨강선 = 현재 시각 "
-           f"({fmt_date(t_now)} 00~24시 UTC)")
-st.plotly_chart(draw_timeline(shift_running, t_now, day_start),
-                width="stretch", config={"displayModeBar": False}, key="timeline")
+# ── (우) 중요도(k)별 지연·절감 — 이중축 스타일 막대 ──
+with col_r:
+    st.subheader("중요도(k)별 지연·절감")
+    imm_by_id = {r["job_id"]: r["carbon_emitted"] for r in immediate}
+    agg = {}
+    for r in shifted:
+        d = agg.setdefault(r["k"], {"n": 0, "delay": 0.0, "saved": 0.0, "viol": 0})
+        d["n"] += 1
+        d["delay"] += r["delay"]
+        d["saved"] += imm_by_id.get(r["job_id"], r["carbon_emitted"]) - r["carbon_emitted"]
+        d["viol"] += 0 if r["slo_satisfied"] else 1
+    ks = sorted(agg, reverse=True)
+    kx = [f"k={k}" for k in ks]
+    delays = [agg[k]["delay"] / agg[k]["n"] if agg[k]["n"] else 0 for k in ks]
+    saves = [agg[k]["saved"] / 1e6 for k in ks]
+    fig2 = go.Figure()
+    fig2.add_bar(x=kx, y=delays, name="평균 지연(h)", marker_color=CARBON_BLUE,
+                 yaxis="y", hovertemplate="%{x} 평균지연 %{y:.2f}h<extra></extra>")
+    fig2.add_bar(x=kx, y=saves, name="절감(tCO₂)", marker_color=OURS_GREEN,
+                 yaxis="y2", hovertemplate="%{x} 절감 %{y:.2f} tCO₂<extra></extra>")
+    fig2.update_layout(
+        font=PLOT_LAYOUT["font"], paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)", margin=dict(l=10, r=10, t=30, b=10), height=300,
+        barmode="group", legend=dict(orientation="h", y=1.15),
+        xaxis=dict(gridcolor=GRID, zeroline=False),
+        yaxis=dict(title="평균 지연(h)", gridcolor=GRID, zeroline=False),
+        yaxis2=dict(title="절감(tCO₂)", overlaying="y", side="right", showgrid=False))
+    st.plotly_chart(fig2, width="stretch", config={"displayModeBar": False})
+    st.caption("k=5(급함)은 지연 ≈0, k=1(여유)일수록 많이 미뤄 탄소를 아낌 (설계 의도)")
 
-# ── 세부 정보 (접힘) ──
-with st.expander("로드밸런서 배정 결과 · LSTM 예측 · 상세 수치"):
-    st.markdown("**로드밸런서 리전 배정 (7일 누적)**")
-    counts = pd.Series([r["region"] for r in shifted]).value_counts()
-    counts.index = [f"{r} ({ZONE_LABELS.get(r, r)})" for r in counts.index]
-    st.bar_chart(counts)
+st.divider()
 
-    st.markdown("**LSTM 예측 데이터 (get_carbon_forecast)**")
-    if "lstm_forecast" not in st.session_state:
-        st.session_state["lstm_forecast"] = carbon_forecast.get_carbon_forecast(horizon=24)
-    fc = st.session_state["lstm_forecast"]
-    fdf = pd.DataFrame(fc["forecast"]).T
-    fdf.index = [f"{r} ({ZONE_LABELS.get(r, r)})" for r in fdf.index]
-    fdf.columns = [f"+{h}h" for h in fdf.columns]
-    st.dataframe(fdf.style.format("{:.0f}"), width="stretch")
-
-    st.markdown("**비교군별 집계 수치**")
+# ── 상세: 비교군 집계표 · 리전 배정 분포 · 다운로드 ──
+with st.expander("상세 수치 · 리전 배정 분포 · 결과 CSV"):
     cdf = pd.DataFrame(comparison).T
     cdf.index = [MODES[m] for m in cdf.index]
-    cdf = cdf[["n_jobs", "total_carbon", "avg_delay", "slo_violation_rate"]]
-    st.dataframe(cdf.style.format({
-        "n_jobs": "{:.0f}", "total_carbon": "{:,.1f}",
-        "avg_delay": "{:.3f}", "slo_violation_rate": "{:.4f}",
-    }), width="stretch")
+    st.dataframe(
+        cdf[["n_jobs", "total_carbon", "avg_delay", "slo_violation_rate"]].style.format({
+            "n_jobs": "{:,.0f}", "total_carbon": "{:,.0f}",
+            "avg_delay": "{:.3f}", "slo_violation_rate": "{:.4f}"}), width="stretch")
+
+    counts = pd.Series([r["region"] for r in shifted]).value_counts()
+    reg_fig = go.Figure(go.Bar(
+        x=[f"{r}" for r in counts.index], y=counts.values, marker_color=CARBON_BLUE,
+        hovertemplate="%{x}: %{y:,} job<extra></extra>"))
+    reg_fig.update_layout(**PLOT_LAYOUT, height=260, yaxis_title="배정 job 수")
+    _style_axes(reg_fig)
+    st.plotly_chart(reg_fig, width="stretch", config={"displayModeBar": False})
 
     detail_df = pd.DataFrame(shifted)
     st.download_button(
         "결과 CSV 다운로드", detail_df.to_csv(index=False).encode("utf-8"),
-        file_name="carbon_scheduler_results.csv", mime="text/csv",
-    )
-
-# ── 자동 재생 루프 ──
-if st.session_state.get("playing"):
-    time.sleep(PLAY_INTERVAL_SEC)
-    st.rerun()
+        file_name="scheduler_validation_2025.csv", mime="text/csv")
