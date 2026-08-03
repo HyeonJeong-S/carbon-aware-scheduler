@@ -34,7 +34,10 @@ def get_forecast_window(carbon_series, t_now, horizon=FORECAST_HORIZON):
 
 
 def _mean_carbon(series, start_hour, duration, series_len):
-    start_idx = max(0, int(round(start_hour)))
+    # 시각 -> 인덱스 변환은 반드시 floor. compute_time_shift가 후보 슬롯을
+    # floor 기준(t_now + i)으로 탐색하므로, 여기서 round를 쓰면 소수 시각에
+    # 제출된 job에서 탐색이 본 시각과 회계가 채점하는 시각이 1시간 어긋난다.
+    start_idx = max(0, int(math.floor(start_hour)))
     duration_int = int(math.ceil(duration))
     end_idx = min(start_idx + duration_int, series_len)
     window = series[start_idx:end_idx]
