@@ -100,7 +100,14 @@ def _load_lb_region_before_after():
     after = pd.read_csv(lb_config.RESULTS_DIR / f"assign_{pick}.csv")
     before["hod"] = (before.submit_time // 3600).astype(int) % 24
     after["hod"] = (after.submit_time // 3600).astype(int) % 24
-    return before, after, lb_config.REGIONS
+
+    # 시간대가 바뀔 때 막대가 (축 재조정 없이) 실제로 오르내리는 걸 보여주기 위한
+    # 고정 y축 상한 — 24시간 중 전/후 어느 쪽이든 가장 큰 시간대 합계 기준.
+    _before_by_hod = before[~before.dropped].groupby("hod").carbon_g.sum()
+    _after_by_hod = after[~after.dropped].groupby("hod").carbon_g.sum()
+    axis_max = float(max(_before_by_hod.max(), _after_by_hod.max())) * 1.1
+
+    return before, after, lb_config.REGIONS, axis_max
 
 
 def _map_fmt(h):
@@ -394,29 +401,25 @@ with main_col:
     st.markdown("<div style='height:3rem;'></div>", unsafe_allow_html=True)
 
     st.markdown("**CAST 적용 전 / 후 탄소 차이 (시간당 업데이트)**")
-    _lb_before, _lb_after, _lb_regions = _load_lb_region_before_after()
+    _lb_before, _lb_after, _lb_regions, _lb_axis_max = _load_lb_region_before_after()
     _hod_before = _lb_before[_lb_before.hod == picked_hour]
     _hod_after = _lb_after[_lb_after.hod == picked_hour]
-    _before_cnt = _hod_before.origin.value_counts().reindex(_lb_regions, fill_value=0)
-    _after_cnt = (_hod_after[~_hod_after.dropped].assigned
-                  .value_counts().reindex(_lb_regions, fill_value=0))
+    _before_total = _hod_before[~_hod_before.dropped].carbon_g.sum()
+    _after_total = _hod_after[~_hod_after.dropped].carbon_g.sum()
 
     lb_fig = go.Figure()
-    lb_fig.add_trace(go.Bar(x=_lb_regions, y=_before_cnt.values, name="baseline (전)",
-                            marker_color=LB_BASELINE_COLOR,
-                            hovertemplate="%{x}<br>baseline: %{y}개<extra></extra>"))
-    lb_fig.add_trace(go.Bar(x=_lb_regions, y=_after_cnt.values, name="탄소 인지 LB (후)",
-                            marker_color=LB_ACCENT_COLOR,
-                            hovertemplate="%{x}<br>탄소 인지 LB: %{y}개<extra></extra>"))
+    lb_fig.add_trace(go.Bar(
+        x=["CAST 적용 전", "CAST 적용 후"], y=[_before_total, _after_total],
+        marker_color=[LB_BASELINE_COLOR, LB_ACCENT_COLOR], width=0.35,
+        hovertemplate="%{x}<br>%{y:.0f} gCO₂<extra></extra>"))
     lb_fig.update_layout(
         height=340, margin=dict(l=0, r=0, t=8, b=40), plot_bgcolor="white",
-        barmode="group", bargap=0.25,
-        legend=dict(orientation="h", x=0, y=-0.15, yanchor="top"),
+        showlegend=False,
     )
     lb_fig.update_xaxes(gridcolor="#eee")
-    lb_fig.update_yaxes(title="처리 job 수", gridcolor="#eee")
+    lb_fig.update_yaxes(title="총 탄소 배출량 (gCO₂)", gridcolor="#eee", range=[0, _lb_axis_max])
     st.plotly_chart(lb_fig, width="stretch", config={"displayModeBar": False})
-    st.caption(f"UTC {picked_hour}시에 제출된 job 기준 (리전별 출발 vs 배정)")
+    st.caption(f"UTC {picked_hour}시에 제출된 job 기준 — 전체 리전 합산 탄소 배출량 비교")
 
 with _spacer_col:
     st.markdown(
