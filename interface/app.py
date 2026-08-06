@@ -52,16 +52,18 @@ for _p in (SCHED_DIR, LB_DIR, LSTM_DIR, REPO_ROOT):
 # 한 앱에서는 진입점만 호출할 수 있으므로 무력화한다.
 st.set_page_config = lambda *a, **k: None
 
-PAGES = {
-    "메인 화면": os.path.join(_HERE, "views", "main.py"),
-    "전체 개요": os.path.join(_HERE, "views", "overview.py"),
-    "로드밸런서": os.path.join(LB_DIR, "app.py"),
-    "LSTM": os.path.join(_HERE, "views", "lstm_view.py"),
-    "스케줄러": os.path.join(SCHED_DIR, "scheduler", "gui.py"),
-    "최종": os.path.join(_HERE, "views", "final.py"),
-}
+from interface.nav_pages import NAV_PAGE_NAMES  # noqa: E402
 
-_showing_main = st.session_state.get("nav_choice", list(PAGES)[0]) == "메인 화면"
+PAGES = dict(zip(NAV_PAGE_NAMES, [
+    os.path.join(_HERE, "views", "main.py"),
+    os.path.join(_HERE, "views", "overview.py"),
+    os.path.join(LB_DIR, "app.py"),
+    os.path.join(_HERE, "views", "lstm_view.py"),
+    os.path.join(SCHED_DIR, "scheduler", "gui.py"),
+    os.path.join(_HERE, "views", "final.py"),
+]))
+
+_showing_main = st.session_state.get("nav_choice", NAV_PAGE_NAMES[0]) == NAV_PAGE_NAMES[0]
 
 _date_col = _time_col = _play_col = None
 if _showing_main:
@@ -74,12 +76,12 @@ else:
 with _nav_col:
     choice = st.selectbox(
         "화면 선택",
-        list(PAGES),
+        NAV_PAGE_NAMES,
         key="nav_choice",
         label_visibility="collapsed",
     )
 
-if choice == "메인 화면":
+if choice == NAV_PAGE_NAMES[0]:
     # 메인 화면은 사이드바 없이 완전한 흰 화면으로 보여준다.
     st.markdown(
         '<style>section[data-testid="stSidebar"] { display: none; }</style>',
