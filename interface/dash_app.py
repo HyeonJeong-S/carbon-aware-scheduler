@@ -77,8 +77,12 @@ app.layout = html.Div([
                 max_date_allowed=core.WINDOW_END.date(),
                 display_format="YYYY-MM-DD",
             ),
+            html.Button("−", id="hour-minus-btn", n_clicks=0,
+                        style={"marginLeft": "0.5rem", "width": "28px"}),
             dcc.Input(id="hour-input", type="number", min=0, max=23, step=1, value=12,
-                      style={"width": "56px", "marginLeft": "0.5rem"}),
+                      style={"width": "48px", "marginLeft": "0.3rem", "textAlign": "center"}),
+            html.Button("+", id="hour-plus-btn", n_clicks=0,
+                        style={"marginLeft": "0.3rem", "width": "28px"}),
             html.Button("▶", id="play-btn", n_clicks=0,
                         style={"marginLeft": "0.6rem", "width": "36px"}),
             html.Button("■", id="stop-btn", n_clicks=0,
@@ -100,7 +104,7 @@ app.layout = html.Div([
                      style={"fontWeight": 700, "marginTop": "0.8rem", "marginBottom": "0.3rem"}),
             dcc.Graph(id="forecast-chart", config={"displayModeBar": False}),
             html.Div(style={"height": "2rem"}),
-            html.Div("CAST 적용 전후 누적 탄소 배출량 (그날 0시부터)",
+            html.Div("CAST 적용 전후 누적 탄소 배출량 (금일 0시부터)",
                      style={"fontWeight": 700, "marginBottom": "0.3rem"}),
             dcc.Graph(id="lb-diff-chart", config={"displayModeBar": False}),
             html.Div(id="lb-caption",
@@ -154,8 +158,8 @@ def set_speed(speed):
 
 
 @app.callback(
-    Output("date-picker", "date"),
-    Output("hour-input", "value"),
+    Output("date-picker", "date", allow_duplicate=True),
+    Output("hour-input", "value", allow_duplicate=True),
     Input("tick", "n_intervals"),
     State("date-picker", "date"),
     State("hour-input", "value"),
@@ -164,6 +168,25 @@ def set_speed(speed):
 def advance_time(_n_intervals, picked_day, picked_hour):
     t_now = core.t_now_of(picked_day, picked_hour or 0)
     nxt = min(t_now + 1, core.MAX_T)
+    new_day = (core.BASE_TIME + pd.Timedelta(hours=nxt)).date()
+    return new_day, int(nxt % 24)
+
+
+# main.py의 number_input "-"/"+"와 동일하게, 23시에서 +를 누르면 다음날 0시로,
+# 0시에서 -를 누르면 전날 23시로 날짜까지 같이 넘어간다.
+@app.callback(
+    Output("date-picker", "date", allow_duplicate=True),
+    Output("hour-input", "value", allow_duplicate=True),
+    Input("hour-minus-btn", "n_clicks"),
+    Input("hour-plus-btn", "n_clicks"),
+    State("date-picker", "date"),
+    State("hour-input", "value"),
+    prevent_initial_call=True,
+)
+def step_hour(_minus_clicks, _plus_clicks, picked_day, picked_hour):
+    t_now = core.t_now_of(picked_day, picked_hour or 0)
+    delta = 1 if dash.ctx.triggered_id == "hour-plus-btn" else -1
+    nxt = max(core.MIN_T, min(t_now + delta, core.MAX_T))
     new_day = (core.BASE_TIME + pd.Timedelta(hours=nxt)).date()
     return new_day, int(nxt % 24)
 

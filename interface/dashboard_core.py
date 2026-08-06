@@ -62,6 +62,7 @@ MAP_SAVED_BAR_MAX = 600
 BASE_TIME = pd.Timestamp("2026-01-01 00:00:00")
 WINDOW_START = pd.Timestamp("2026-01-08 00:00:00")
 WINDOW_END = pd.Timestamp("2026-07-19 23:00:00")
+MIN_T = int((WINDOW_START - BASE_TIME).total_seconds() // 3600)
 MAX_T = int((WINDOW_END - BASE_TIME).total_seconds() // 3600)
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
