@@ -16,7 +16,9 @@ import plotly.graph_objects as go
 PLAY_INTERVAL_SEC = 1.0
 LB_BASELINE_COLOR = "#898781"
 LB_ACCENT_COLOR = "#2a78d6"
-LB_DIFF_AXIS_MAX = 50000  # "CAST 적용 전후 탄소 차이" y축 고정 상한 (실측 최댓값 근처)
+# "CAST 적용 전후 누적 탄소" y축 고정 상한. 하루치 누적(적용 전)이 대략 7~9만이라
+# 10만으로 잡아, 하루가 흐르는 동안 막대가 차오르는 게 보이게 한다.
+LB_DIFF_AXIS_MAX = 100000
 MAP_ROUTE_COLOR = "#2e7d32"
 
 # 화살표(리전 간 job 이동)를 그릴 때 쓰는 대표 좌표 — 지도 색칠(구역)과는 별개.
@@ -180,6 +182,47 @@ def before_after_totals(running, actual):
     return before_total, after_total
 
 
+@functools.lru_cache(maxsize=None)
+def _hour_bucket_totals(hour):
+    """제출시각이 [hour, hour+1)인 job들의 CAST 적용 전/후 배출량 합.
+
+    누적 그래프는 시각이 1시간 흐를 때마다 이 버킷 하나만 더하면 되므로,
+    시간대별로 캐시해두면 재생 중에도 매번 하루치를 다시 훑지 않는다.
+    """
+    jobs, submit_h = load_map_jobs()
+    actual = load_map_actual()
+    baseline_region = load_baseline_region_lookup()
+
+    lo = np.searchsorted(submit_h, hour)
+    hi = np.searchsorted(submit_h, hour + 1)
+    before = after = 0.0
+    for job in jobs[lo:hi]:
+        bregion = baseline_region.get(job["id"])
+        if bregion is None:
+            continue
+        d = map_decide(job, actual)
+        arr = actual[bregion]
+        dur = d["duration"]
+        before += _mean_carbon(arr, d["submit_time"], dur, len(arr)) * dur
+        after += d["shift_c"]
+    return before, after
+
+
+def cumulative_totals(t_now, day_start):
+    """day_start~t_now에 제출된 job들의 **누적** 배출량 (CAST 적용 전 / 후).
+
+    '지금 실행 중인 job'만 보는 before_after_totals()와 달리 시각이 흐를수록
+    단조 증가한다. 두 막대가 정확히 같은 job 집합을 대상으로 하므로(제출 기준),
+    차이가 곧 CAST가 그날 그 시점까지 아낀 양이다.
+    """
+    before = after = 0.0
+    for h in range(int(day_start), int(t_now) + 1):
+        b, a = _hour_bucket_totals(h)
+        before += b
+        after += a
+    return before, after
+
+
 def draw_timeline(running, t_now, day_start, height=280):
     """job별 요청·대기·실행(time-shift) 타임라인."""
     js = sorted(running, key=lambda d: d["scheduled_start"])[:15]
@@ -340,17 +383,23 @@ def draw_forecast_chart(t_now):
 
 
 def draw_lb_diff_chart(before_total, after_total):
-    """CAST 적용 전후 탄소 차이 막대그래프."""
+    """CAST 적용 전후 누적 탄소 막대그래프 (그날 0시부터 현재까지 쌓인 값)."""
     fig = go.Figure()
     fig.add_trace(go.Bar(
         x=["CAST 적용 전", "CAST 적용 후"], y=[before_total, after_total],
         marker_color=[LB_BASELINE_COLOR, LB_ACCENT_COLOR], width=0.35,
+        text=[f"{before_total:,.0f}", f"{after_total:,.0f}"], textposition="outside",
         hovertemplate="%{x}<br>%{y:.0f} gCO₂<extra></extra>"))
+    if before_total > 0:
+        fig.add_annotation(
+            x=1, y=after_total, yshift=26, showarrow=False,
+            text=f"−{(before_total - after_total) / before_total * 100:.0f}%",
+            font=dict(color=LB_ACCENT_COLOR, size=13))
     fig.update_layout(
         height=230, margin=dict(l=0, r=0, t=8, b=30), plot_bgcolor="white",
         showlegend=False,
     )
     fig.update_xaxes(gridcolor="#eee")
-    fig.update_yaxes(title="총 탄소 배출량 (gCO₂)", gridcolor="#eee",
+    fig.update_yaxes(title="누적 탄소 배출량 (gCO₂)", gridcolor="#eee",
                      range=[0, LB_DIFF_AXIS_MAX])
     return fig

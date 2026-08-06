@@ -100,7 +100,7 @@ app.layout = html.Div([
                      style={"fontWeight": 700, "marginTop": "0.8rem", "marginBottom": "0.3rem"}),
             dcc.Graph(id="forecast-chart", config={"displayModeBar": False}),
             html.Div(style={"height": "2rem"}),
-            html.Div("CAST 적용 전후 탄소 차이 그래프",
+            html.Div("CAST 적용 전후 누적 탄소 배출량 (그날 0시부터)",
                      style={"fontWeight": 700, "marginBottom": "0.3rem"}),
             dcc.Graph(id="lb-diff-chart", config={"displayModeBar": False}),
             html.Div(id="lb-caption",
@@ -191,10 +191,10 @@ def update_dashboard(picked_day, picked_hour):
 
     forecast_fig = core.draw_forecast_chart(t_now)
 
-    before_total, after_total = core.before_after_totals(running, actual)
+    before_total, after_total = core.cumulative_totals(t_now, t_now - picked_hour)
     lb_fig = core.draw_lb_diff_chart(before_total, after_total)
-    lb_caption = (f"{core.map_fmt(t_now)} UTC에 실행 중인 job 기준 — baseline 리전·즉시실행 vs "
-                  "실제(carbon-aware 리전·time-shift) 탄소 비교")
+    lb_caption = (f"그날 00:00 ~ {core.map_fmt(t_now)[11:]} UTC에 제출된 job 누적 — "
+                  "baseline 리전·즉시실행 vs 실제(carbon-aware 리전·time-shift) 탄소 비교")
 
     region_counts = {}
     for d in running:
