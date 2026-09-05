@@ -24,3 +24,4 @@ job.zip
 # 도구 캐시
 .pytest_cache/
 .ruff_cache/
+.coverage
