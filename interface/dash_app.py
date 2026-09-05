@@ -1,22 +1,15 @@
 """CAST 통합 대시보드 진입점 (Dash).
 
-실행:
-    python interface/dash_app.py            → http://localhost:8050
-    python interface/dash_app.py --port 8060 --debug
+실행 (저장소 루트에서, `pip install -e .` 이후):
+    cast-dashboard                          → http://localhost:8050
+    python -m interface.dash_app --port 8060 --debug
 
 화면 구성과 각 페이지는 interface/dashboard/ 패키지에 있다.
 """
 
 import argparse
-import os
-import sys
 
-_HERE = os.path.dirname(os.path.abspath(__file__))
-_REPO_ROOT = os.path.dirname(_HERE)
-if _REPO_ROOT not in sys.path:
-    sys.path.insert(0, _REPO_ROOT)
-
-from interface.dashboard.app import create_app  # noqa: E402
+from interface.dashboard.app import create_app
 
 app = create_app()
 server = app.server  # gunicorn/waitress 용

@@ -5,19 +5,22 @@
 
 지원하는 CSV 형식 2가지 (컬럼 이름만 다르고 의미는 같음):
 
-  A) load_balancer/02_프레임워크/results/assign_*.csv   ← 로드밸런서 공식 산출물
+  A) load_balancer/framework/results/assign_*.csv      ← 로드밸런서 공식 산출물
      job_name, submit_time, origin, assigned, k, duration, latency_ms, carbon_g, dropped
 
   B) jobs_routed_alpha_auto.csv                        ← 초기에 공유받은 형식
      job_name, submit_time, duration, region, k, L_max, ..., α, 배정
 
-  C) load_balancer/03_라우팅결과/jobs_routed_*.csv    ← 스케줄러 인계용 납품물
+  C) load_balancer/routed/jobs_routed_*.csv            ← 스케줄러 인계용 납품물
      job_name, submit_time, duration, region, k, L_max, ..., alpha, assigned_region
 
 공통 의미:
     origin / region : 원래(단순 LB) 배정 리전
     assigned / 배정 : 탄소 인식 LB가 최종 배정한 리전
 """
+
+from os import PathLike
+from typing import Any
 
 import pandas as pd
 
@@ -35,7 +38,7 @@ def _pick(df, candidates):
     return None
 
 
-def load_assignments(csv_path):
+def load_assignments(csv_path: str | PathLike) -> dict[str, dict[str, str]]:
     """로드밸런서 결과 CSV -> {job_name: {"origin": 표준코드, "assigned": 표준코드}}.
 
     세 형식(A/B/C) 모두 자동 인식한다. 리전 표기는 표준 코드로 변환된다.
@@ -50,14 +53,14 @@ def load_assignments(csv_path):
 
     out = {}
     for row in df.itertuples(index=False):
-        name = str(getattr(row, "job_name"))
+        name = str(row.job_name)
         origin = to_region(str(getattr(row, origin_col))) if origin_col else None
         assigned = to_region(str(getattr(row, assigned_col))) if assigned_col else origin
         out[name] = {"origin": origin or assigned, "assigned": assigned}
     return out
 
 
-def attach_to_jobs(jobs, assignments):
+def attach_to_jobs(jobs: list[dict[str, Any]], assignments: dict[str, dict[str, str]]) -> list[dict[str, Any]]:
     """job 리스트에 로드밸런서 배정 결과를 붙인다.
 
     job["region"]        <- origin   (단순 LB baseline용)

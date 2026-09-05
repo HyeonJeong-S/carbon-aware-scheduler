@@ -3,7 +3,7 @@
 이 프로젝트는 담당이 3개로 나뉘어 있고, 각자 자기 폴더에서 독립적으로 작업합니다.
 
 ```
-carbon-forecast-LSTM/   탄소강도 24시간 예측        (LSTM 담당)
+carbon_forecast_lstm/   탄소강도 24시간 예측        (LSTM 담당)
 load_balancer/          어느 리전에서 실행할지       (로드밸런서 담당)
 scheduler/              그 리전에서 언제 실행할지     (스케줄러 담당)
 interface/              ← 위 셋을 이어주는 계약 계층 + Dash 대시보드
@@ -28,12 +28,12 @@ interface/              ← 위 셋을 이어주는 계약 계층 + Dash 대시�
 ## 0. 통합 대시보드 (Dash)
 
 ```bash
-python interface/dash_app.py        # → http://localhost:8050   (--port, --debug 옵션)
+python -m interface.dash_app        # → http://localhost:8050   (--port, --debug 옵션)
 ```
 
 | 화면 | 경로 | 파일 | 시간축 |
 |---|---|---|---|
-| 메인 화면 | `/` | `dashboard/pages/main.py` (+ `dashboard_core.py`) | 2026 라이브 |
+| 메인 화면 | `/` | `dashboard/pages/main.py` (+ `live.py`) | 2026 라이브 |
 | 전체 개요 | `/overview` | `dashboard/pages/overview.py` | — |
 | 로드밸런서 | `/load-balancer` | `dashboard/pages/load_balancer.py` | ①~③ 2025 · ④ 2026 라이브 |
 | LSTM | `/lstm` | `dashboard/pages/lstm.py` | 2026 라이브 |
@@ -41,14 +41,15 @@ python interface/dash_app.py        # → http://localhost:8050   (--port, --deb
 
 ```
 interface/
-├── dash_app.py            진입점 (create_app → app.run)
-├── dashboard/
-│   ├── app.py             Dash(use_pages=True) + 상단 내비게이션
-│   ├── data.py            무거운 데이터 로더 (LB 결과 · 스케줄러 검증 백그라운드 실행 · 실시간 라우팅 · 실험 재실행)
-│   ├── theme.py           색 · plotly 레이아웃 · KPI/섹션/표 조각
-│   ├── assets/style.css   공통 CSS (Dash가 자동 서빙)
-│   └── pages/             화면 5개 (Dash Pages 자동 등록)
-└── dashboard_core.py      메인 화면 계산 로직 (지도 · 타임라인 · 누적 탄소)
+├── dash_app.py            진입점 (create_app → app.run) — `cast-dashboard` 콘솔 스크립트
+└── dashboard/
+    ├── app.py             Dash(use_pages=True) + 상단 내비게이션
+    ├── data.py            무거운 데이터 로더 (LB 결과 · 스케줄러 검증 백그라운드 실행 · 실시간 라우팅 · 실험 재실행)
+    ├── live.py            메인 화면 계산 로직 (지도 · 타임라인 · 누적 탄소, 2026 라이브 축)
+    ├── theme.py           색 · plotly 레이아웃 · KPI/섹션/표 조각 (리전 색의 단일 출처)
+    ├── assets/style.css   공통 CSS (Dash가 자동 서빙)
+    ├── pages/             화면 5개 (Dash Pages 자동 등록)
+    └── lb_tabs/           로드밸런서 화면의 탭 4개 + 실험 재실행 블록
 ```
 
 - 서버가 뜨면 백그라운드에서 LSTM 모델 로드 · 146k job 로드 · 스케줄러 검증(약 1분)을 미리 돌려둔다.
@@ -59,8 +60,8 @@ interface/
 
 | 축 | t = 0 | 쓰는 곳 | 데이터 |
 |---|---|---|---|
-| **2025** | 2025-01-01 00:00 UTC | 로드밸런서 1년 실험 · 스케줄러 검증 | `load_balancer/01_데이터/lstm_eval/*_eval_records.csv` (실측 y_true + LSTM 사전계산 y_pred) |
-| **2026** | 2026-01-01 00:00 UTC | 메인 화면 · LSTM 화면 · 실시간 라우팅 | `carbon-forecast-LSTM/data/carbon_intensity_demo.csv` 위에서 LSTM 모델을 그 자리에서 호출 |
+| **2025** | 2025-01-01 00:00 UTC | 로드밸런서 1년 실험 · 스케줄러 검증 | `load_balancer/data/lstm_eval/*_eval_records.csv` (실측 y_true + LSTM 사전계산 y_pred) |
+| **2026** | 2026-01-01 00:00 UTC | 메인 화면 · LSTM 화면 · 실시간 라우팅 | `carbon_forecast_lstm/data/carbon_intensity_demo.csv` 위에서 LSTM 모델을 그 자리에서 호출 |
 
 두 축 모두 job 워크로드는 같은 `jobs.csv`(146,000개, 초 단위 UTC 절대축)를 쓴다.
 
@@ -82,7 +83,7 @@ interface/
 | 일본 | `Japan` | `JP` | `JP` |
 
 **표준은 LSTM의 zone 코드를 따릅니다.** LSTM이 실제 학습된 모델 파일을 그 코드로
-저장해두었기 때문입니다 (`carbon-forecast-LSTM/models/KR_lstm.pt` 등).
+저장해두었기 때문입니다 (`carbon_forecast_lstm/models/KR_lstm.pt` 등).
 
 ```python
 from interface.regions import REGIONS, to_region, to_iso3, label
@@ -132,7 +133,7 @@ LSTM은 t 이전 168시간의 `carbon_intensity` + `cfe_pct` + `re_pct` (+ 날�
 
 | 컬럼 | 현재 출처 |
 |---|---|
-| 전부 | `carbon-forecast-LSTM/data/carbon_intensity_demo.csv` — 2026-01-01 ~ 07-20 실측 (`is_placeholder=False`) |
+| 전부 | `carbon_forecast_lstm/data/carbon_intensity_demo.csv` — 2026-01-01 ~ 07-20 실측 (`is_placeholder=False`) |
 
 cfe/re 가 없는 CSV 나 더미 시계열로 이력을 만들 때는 탄소강도로부터 역산한 **임시 추정값**을 넣고
 `is_placeholder=True` 로 표시합니다. `load_actual_series()` 는 같은 파일에서 **탄소 회계용 실측 시계열**을 만듭니다.
@@ -154,9 +155,9 @@ cfe/re 가 없는 CSV 나 더미 시계열로 이력을 만들 때는 탄소강�
 
 | | 파일 | 원본 리전 | 배정 리전 |
 |---|---|---|---|
-| A | `load_balancer/02_프레임워크/results/assign_*.csv` | `origin` | `assigned` |
+| A | `load_balancer/framework/results/assign_*.csv` | `origin` | `assigned` |
 | B | `scheduler/data/job/jobs_routed_alpha_auto.csv` | `region` | `배정` |
-| C | `load_balancer/03_라우팅결과/jobs_routed_*.csv` | `region` | `assigned_region` |
+| C | `load_balancer/routed/jobs_routed_*.csv` | `region` | `assigned_region` |
 
 ```python
 from interface.lb_assignment import load_assignments, attach_to_jobs

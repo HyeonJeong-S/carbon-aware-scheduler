@@ -2,14 +2,14 @@
 
   · 24시간 리전별 탄소 예측(LSTM)   · CAST 적용 전후 누적 탄소(그날 0시부터)
   · 세계지도(실행 중 job · 이동 화살표)   · 실행 중 job 표   · 요청→대기→실행 타임라인
-계산 로직은 interface/dashboard_core.py.
+계산 로직은 interface/dashboard/live.py.
 """
 
 import dash
 import pandas as pd
 from dash import Input, Output, State, callback, ctx, dash_table, dcc, html
 
-from interface import dashboard_core as core
+from interface.dashboard import live as core
 from interface.dashboard import theme
 from interface.regions import REGION_LABELS
 

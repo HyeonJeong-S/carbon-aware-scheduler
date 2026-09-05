@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 from dash import Input, Output, callback, dcc, html
 
 from interface import carbon_forecast_api as api
-from interface import dashboard_core as core
+from interface.dashboard import live as core
 from interface.dashboard import theme
 from interface.regions import REGIONS, label
 
@@ -18,7 +18,7 @@ def layout(**_):
     st = api.status()
     return html.Div([
         html.H1("LSTM 탄소강도 예측"),
-        theme.caption("carbon-forecast-LSTM/models 의 학습된 모델이 향후 24시간 탄소강도를 예측한다. "
+        theme.caption("carbon_forecast_lstm/models 의 학습된 모델이 향후 24시간 탄소강도를 예측한다. "
                       "입력 = 그 시점 이전 168시간 실측 이력 (carbon_intensity · cfe · re · 시간 피처, "
                       "날씨 리전 3곳은 풍속·일사량·기온 추가)."),
         theme.notice(api.backend_info(), "ok" if st["ready"] else "warn"),

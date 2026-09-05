@@ -6,7 +6,7 @@ LSTM은 예측 시점 t 이전 **168시간(1주일)** 의 이력을 요구하며
 원래는 데이터 파이프라인 담당이 공급해야 한다.
 
 현재 저장소에 있는 것:
-    carbon-forecast-LSTM/data/carbon_intensity_demo.csv
+    carbon_forecast_lstm/data/carbon_intensity_demo.csv
         → 2026-01-01 ~ 2026-07-20, 8리전 × 시간별. carbon_intensity·cfe_pct·re_pct·날씨 실측 포함.
 
 이 파일이 있으면 그대로 LSTM 입력 이력이 된다(is_placeholder=False).
@@ -20,10 +20,11 @@ import os
 import numpy as np
 import pandas as pd
 
+import carbon_forecast_lstm
+
 from .regions import REGIONS, to_region
 
-_HERE = os.path.dirname(os.path.abspath(__file__))
-_REPO_ROOT = os.path.dirname(_HERE)
+_LSTM_DIR = os.path.dirname(os.path.abspath(carbon_forecast_lstm.__file__))
 
 # 시뮬레이션 t=0 에 대응하는 실제 시각 (jobs 데이터 규약: 2026-01-01 00:00 UTC)
 BASE_TIME = pd.Timestamp("2026-01-01 00:00:00")
@@ -42,7 +43,8 @@ def _estimate_clean_pct(ci):
     return cfe, re
 
 
-def load_history(carbon_csv=None, master_series=None, base_time=BASE_TIME):
+def load_history(carbon_csv: str | None = None, master_series: dict[str, list[float]] | None = None,
+                 base_time: pd.Timestamp = BASE_TIME) -> tuple[pd.DataFrame, bool]:
     """LSTM 입력용 long-format 이력 DataFrame을 만든다.
 
     우선순위:
@@ -79,7 +81,7 @@ def load_history(carbon_csv=None, master_series=None, base_time=BASE_TIME):
     return frames, True
 
 
-def coverage(df):
+def coverage(df: pd.DataFrame) -> tuple[pd.Timestamp, pd.Timestamp, pd.Timestamp]:
     """이력이 커버하는 (시작, 끝, 예측 가능 시작) 시각을 돌려준다.
 
     LSTM은 168시간 이력이 필요하므로 예측은 시작 + 168h 이후부터 가능하다.
@@ -89,11 +91,11 @@ def coverage(df):
 
 
 # 실제 탄소강도(실측) CSV — 배출량 회계의 정답값
-REAL_CARBON_CSV = os.path.join(
-    _REPO_ROOT, "carbon-forecast-LSTM", "data", "carbon_intensity_demo.csv")
+REAL_CARBON_CSV = os.path.join(_LSTM_DIR, "data", "carbon_intensity_demo.csv")
 
 
-def load_actual_series(total_hours, carbon_csv=REAL_CARBON_CSV, base_time=BASE_TIME):
+def load_actual_series(total_hours: int, carbon_csv: str = REAL_CARBON_CSV,
+                       base_time: pd.Timestamp = BASE_TIME) -> dict[str, list[float]] | None:
     """시뮬레이션 **탄소 회계용** 실측 시계열 -> {표준리전코드: [시간별 값]}.
 
     예측(get_forecast)이 아니라 "실제로 그 시각에 얼마나 배출됐는가"의 정답값이다.

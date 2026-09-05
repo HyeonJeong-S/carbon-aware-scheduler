@@ -15,17 +15,16 @@
 """
 
 import os
-import sys
 import threading
 import warnings
 
 import numpy as np
 
+import carbon_forecast_lstm
+
 from .regions import REGIONS, to_region
 
-_HERE = os.path.dirname(os.path.abspath(__file__))
-_REPO_ROOT = os.path.dirname(_HERE)
-LSTM_DIR = os.path.join(_REPO_ROOT, "carbon-forecast-LSTM")
+LSTM_DIR = os.path.dirname(os.path.abspath(carbon_forecast_lstm.__file__))
 LSTM_MODEL_DIR = os.path.join(LSTM_DIR, "models")
 LSTM_DATA_CSV = os.path.join(LSTM_DIR, "data", "carbon_intensity_demo.csv")
 
@@ -58,7 +57,7 @@ _state = {
 
 
 # ── 더미 백엔드 ──────────────────────────────────────────────
-def generate_master_series(total_hours):
+def generate_master_series(total_hours: int) -> dict[str, list[float]]:
     """시뮬레이션 전체 구간(0~total_hours)의 결정적 더미 탄소강도 시계열."""
     rng = np.random.default_rng(_DUMMY_SEED)
     hours = np.arange(total_hours)
@@ -88,7 +87,8 @@ _init_lock = threading.Lock()
 _init_attempted = False
 
 
-def init_lstm(carbon_csv=None, master_series=None, force=False):
+def init_lstm(carbon_csv: str | None = None, master_series: dict[str, list[float]] | None = None,
+              force: bool = False) -> bool:
     """실제 LSTM을 초기화한다. 성공하면 True.
 
     carbon_csv    : 실측 이력 CSV (timestamp, region, carbon_intensity, cfe_pct, re_pct)
@@ -118,10 +118,9 @@ def _init_lstm_locked(carbon_csv, master_series):
         _state["error"] = f"torch 미설치 ({e})"
         return False
 
-    if LSTM_DIR not in sys.path:
-        sys.path.insert(0, LSTM_DIR)
     try:
-        import carbon_forecast as lstm_mod
+        from carbon_forecast_lstm import carbon_forecast as lstm_mod
+
         from .carbon_history import BASE_TIME, coverage, load_history
 
         history, placeholder = load_history(
@@ -170,8 +169,9 @@ def _ensure_init():
         init_lstm(carbon_csv=LSTM_DATA_CSV)
 
 
-def get_forecast(t_hour, horizon=FORECAST_HORIZON, master_series=None,
-                 prefer_lstm=True):
+def get_forecast(t_hour: float, horizon: int = FORECAST_HORIZON,
+                 master_series: dict[str, list[float]] | None = None,
+                 prefer_lstm: bool = True) -> dict[str, list[float]]:
     """t_hour 시점 기준 향후 horizon시간 예측 -> {표준리전코드: [값 …]}.
 
     실제 LSTM을 쓸 수 있으면 그걸 쓰고, 아니면 더미로 자동 폴백한다.
@@ -190,12 +190,12 @@ def get_forecast(t_hour, horizon=FORECAST_HORIZON, master_series=None,
     return _slice_master(master_series, t_hour, horizon)
 
 
-def last_backend():
+def last_backend() -> str | None:
     """마지막 get_forecast 호출이 실제로 사용한 백엔드 ('lstm' | 'dummy' | None)."""
     return _state["last_backend"]
 
 
-def status():
+def status() -> dict:
     """현재 LSTM 연결 상태 상세 (UI 표시용)."""
     _ensure_init()
     return {
@@ -209,11 +209,11 @@ def status():
     }
 
 
-def backend_info():
+def backend_info() -> str:
     """현재 예측 백엔드 한 줄 설명."""
     _ensure_init()
     if not _state["ready"]:
         return f"더미 예측 (사인파+노이즈) — LSTM 미연결: {_state['error'] or '미초기화'}"
     note = " · cfe/re는 임시 추정값" if _state["placeholder"] else ""
-    return f"실제 LSTM 모델 연결됨 (carbon-forecast-LSTM/models){note}"
+    return f"실제 LSTM 모델 연결됨 (carbon_forecast_lstm/models){note}"
 

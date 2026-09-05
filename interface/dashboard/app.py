@@ -12,7 +12,8 @@ PAGES_DIR = os.path.join(_HERE, "pages")
 ASSETS_DIR = os.path.join(_HERE, "assets")
 
 
-def create_app():
+def create_app(warm_up: bool = True):
+    """Dash 앱을 조립한다. warm_up=False 면 백그라운드 사전 로딩(LSTM·job·검증)을 건너뛴다 (테스트용)."""
     app = Dash(
         __name__,
         use_pages=True,
@@ -52,5 +53,6 @@ def create_app():
         pathname = pathname or "/"
         return ["nav-link active" if p["path"] == pathname else "nav-link" for p in pages]
 
-    data.warm_up_async()
+    if warm_up:
+        data.warm_up_async()
     return app

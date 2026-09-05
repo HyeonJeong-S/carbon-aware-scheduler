@@ -6,8 +6,8 @@ import dash
 from dash import html
 
 from interface import carbon_forecast_api as api
-from interface import dashboard_core as core
 from interface.dashboard import data, theme
+from interface.dashboard import live as core
 from interface.regions import REGIONS, label
 
 dash.register_page(__name__, path="/overview", name="전체 개요", order=1)
@@ -38,12 +38,7 @@ def layout(**_):
         lstm_detail += (f" · 예측 가능 {core.WINDOW_START:%Y-%m-%d} ~ {core.WINDOW_END:%Y-%m-%d} "
                         "(2026 라이브 이력, 날씨 리전은 예측 구간 24h 날씨가 필요해 이력 끝-24h까지)")
 
-    sched_detail = {
-        "done": f"2025년 1년치 검증 완료 — job {val['n_jobs']:,}개, {val['elapsed']:.0f}초",
-        "running": "2025년 1년치 검증 시뮬레이션 실행 중… (스케줄러 화면에서 확인)",
-        "error": f"검증 실패: {val['error']}",
-        "idle": "검증 미실행",
-    }[val["status"]]
+    sched_detail = data.validation_detail(val)
 
     result_rows = None
     if base and auto:

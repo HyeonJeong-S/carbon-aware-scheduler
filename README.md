@@ -64,7 +64,7 @@ CAST는 이 두 레버를 **미래 탄소강도 예측 위에서 동시에** 당
 
 | Pareto frontier (지연 ↔ 탄소) | 연간 누적 배출량 |
 |---|---|
-| <img src="load_balancer/02_%ED%94%84%EB%A0%88%EC%9E%84%EC%9B%8C%ED%81%AC/results/figures/pareto_curve.png" width="380"> | <img src="load_balancer/02_%ED%94%84%EB%A0%88%EC%9E%84%EC%9B%8C%ED%81%AC/results/figures/cumulative.png" width="380"> |
+| <img src="load_balancer/framework/results/figures/pareto_curve.png" width="380"> | <img src="load_balancer/framework/results/figures/cumulative.png" width="380"> |
 
 </div>
 
@@ -80,7 +80,7 @@ flowchart LR
         A3["Azure 리전 간<br/>8×8 지연 행렬"]
     end
 
-    subgraph F["① carbon-forecast-LSTM"]
+    subgraph F["① carbon_forecast_lstm"]
         B["리전별 24h 탄소강도 예측<br/>PyTorch LSTM · 168h lookback"]
     end
 
@@ -108,7 +108,7 @@ flowchart LR
 
 | 모듈 | 책임 | 핵심 산출물 |
 |---|---|---|
-| [`carbon-forecast-LSTM/`](carbon-forecast-LSTM/) | 리전별 향후 24시간 탄소강도 예측 | `{region: [24 × gCO₂/kWh]}` |
+| [`carbon_forecast_lstm/`](carbon_forecast_lstm/) | 리전별 향후 24시간 탄소강도 예측 | `{region: [24 × gCO₂/kWh]}` |
 | [`load_balancer/`](load_balancer/) | **어느 리전**에서 실행할지 (공간 이동) | `jobs_routed_*.csv` |
 | [`scheduler/`](scheduler/) | 그 리전에서 **언제** 실행할지 (시간 이동) | `scheduled_start`, `carbon_emitted`, `slo_satisfied` |
 | [`interface/`](interface/) | 모듈 간 데이터 계약 + 통합 대시보드 | `regions.py`, `carbon_forecast_api.py`, `lb_assignment.py` |
@@ -208,7 +208,7 @@ t*       = argmin score(t)
 
 ## 🖥 통합 대시보드 (Dash)
 
-세 모듈의 UI를 **하나의 Dash 앱** (`python interface/dash_app.py`) 에서 확인합니다.
+세 모듈의 UI를 **하나의 Dash 앱** (`python -m interface.dash_app`) 에서 확인합니다.
 
 | 화면 | 경로 | 내용 |
 |---|---|---|
@@ -236,20 +236,21 @@ python -m venv venv && venv\Scripts\activate
 ```
 
 ```bash
-pip install -r requirements.txt
+pip install -e ".[lstm,dev]"
 ```
 
-루트 `requirements.txt` 하나에 대시보드(Dash)와 세 모듈(PyTorch · PuLP · SimPy)의 의존성이 모두 들어 있습니다.
-PyTorch가 없으면 LSTM 예측은 더미(사인파+노이즈)로 자동 폴백되고 나머지는 그대로 동작합니다.
+`pyproject.toml` 하나에 대시보드(Dash)와 세 모듈(PuLP · SimPy)의 의존성이 들어 있고, `lstm`(PyTorch)과
+`dev`(pytest · ruff)는 선택입니다. PyTorch가 없으면 LSTM 예측은 더미(사인파+노이즈)로 자동 폴백되고 나머지는 그대로 동작합니다.
 
 ### 실행
 
 | 목적 | 명령 |
 |---|---|
-| **통합 대시보드** | `python interface/dash_app.py` → http://localhost:8050 |
-| 스케줄러 CLI (숫자만) | `python scheduler/run_cli.py` |
-| 로드밸런서 실험 전체 재현 (~40분) | `python load_balancer/02_프레임워크/run_experiments.py` |
-| 실시간 라우팅 1슬롯 → JSON | `python load_balancer/02_프레임워크/realtime_route.py --t-hour 200` |
+| **통합 대시보드** | `cast-dashboard` (= `python -m interface.dash_app`) → http://localhost:8050 |
+| 스케줄러 CLI (숫자만) | `python -m scheduler.run_cli` |
+| 로드밸런서 실험 전체 재현 (~40분) | `python -m load_balancer.framework.run_experiments` |
+| 실시간 라우팅 1슬롯 → JSON | `python -m load_balancer.framework.realtime_route --t-hour 200` |
+| 테스트 · 린트 | `pytest` (실데이터 통합 테스트는 `pytest -m slow`) · `ruff check .` |
 
 ---
 
@@ -308,30 +309,31 @@ torch가 설치되어 있고 `models/*.pt`가 존재하며 요청 시점 이전 
 
 ```
 carbon-aware-scheduler/
-├── carbon-forecast-LSTM/          # ① 탄소강도 예측
+├── carbon_forecast_lstm/          # ① 탄소강도 예측
 │   ├── carbon_forecast.py         #   CarbonLSTM / CarbonLSTMWithFutureWeather
 │   ├── models/                    #   리전별 학습 가중치 + scaler
 │   └── data/                      #   2025·2026 rolling forecast 평가 기록
 ├── load_balancer/                 # ② 공간 이동 (ILP 라우팅)
-│   ├── 01_데이터/                 #   워크로드 · 지연 행렬 · LSTM 예측
-│   ├── 02_프레임워크/             #   simulator · run_experiments · realtime_route
+│   ├── data/                 #   워크로드 · 지연 행렬 · LSTM 예측
+│   ├── framework/             #   simulator · run_experiments · realtime_route
 │   │   └── results/               #   summary.json · run별 기록 · figures
-│   └── 03_라우팅결과/             #   jobs_routed_*.csv (스케줄러 인계용)
+│   └── routed/             #   jobs_routed_*.csv (스케줄러 인계용)
 ├── scheduler/                     # ③ 시간 이동 (Time-Shift)
-│   ├── run_cli.py
-│   └── scheduler/
-│       ├── scheduler.py           #   α 계산 · time-shift 핵심 로직
-│       ├── simulator.py           #   SimPy 이벤트 루프
-│       └── metrics.py             #   총 탄소 · 평균 지연 · SLO 위반율
+│   ├── timeshift.py               #   α 계산 · time-shift 핵심 로직
+│   ├── simulator.py               #   SimPy 이벤트 루프
+│   ├── metrics.py                 #   총 탄소 · 평균 지연 · SLO 위반율
+│   └── run_cli.py                 #   python -m scheduler.run_cli
 └── interface/                     # 데이터 계약 + 통합 대시보드
     ├── regions.py                 #   리전 표기 단일 출처
     ├── carbon_forecast_api.py     #   LSTM 경계 (실모델 ↔ 더미 자동 폴백)
     ├── carbon_2025.py             #   2025 사전계산 예측/실측 (eval_records)
     ├── carbon_history.py          #   LSTM 입력 이력 · 2026 실측 시계열
     ├── lb_assignment.py           #   로드밸런서 배정 결과 로딩
-    ├── dashboard_core.py          #   메인 화면 계산 로직 (지도·타임라인·누적 탄소)
-    ├── dash_app.py                #   통합 대시보드 진입점 (Dash)
-    └── dashboard/                 #   Dash 앱 — pages/(메인·개요·로드밸런서·LSTM·스케줄러) · theme · data
+    ├── dash_app.py                #   통합 대시보드 진입점 (cast-dashboard)
+    └── dashboard/                 #   Dash 앱 — pages/ · lb_tabs/ · live(메인 화면 계산) · data · theme
+├── tests/                         # pytest — 단위 52개 + slow(실데이터·LSTM) 3개
+├── pyproject.toml                 # 패키지 · 의존성 · ruff · pytest 설정
+└── .github/workflows/ci.yml       # ruff + pytest (Python 3.11 / 3.12)
 ```
 
 ---
@@ -369,14 +371,14 @@ carbon-aware-scheduler/
 
 | 영역 | 담당 | 디렉토리 |
 |---|---|---|
-| ① 탄소강도 예측 (LSTM) | **강희진** ([@heejin116](https://github.com/heejin116)) | [`carbon-forecast-LSTM/`](carbon-forecast-LSTM/) |
+| ① 탄소강도 예측 (LSTM) | **강희진** ([@heejin116](https://github.com/heejin116)) | [`carbon_forecast_lstm/`](carbon_forecast_lstm/) |
 | ② 공간 이동 (ILP 로드밸런서) | **이종하** ([@LeeBellHa](https://github.com/LeeBellHa)) | [`load_balancer/`](load_balancer/) |
 | ③ 시간 이동 (Time-Shift 스케줄러) | **강동규** ([@donggyu-kang](https://github.com/donggyu-kang)) | [`scheduler/`](scheduler/) |
 | 통합 인터페이스 · 데이터 계약 | **김현정** ([@HyeonJeong-S](https://github.com/HyeonJeong-S)) | [`interface/`](interface/) |
 
 <div align="center">
 <sub>더 자세한 설계는 각 모듈의 README를 참고하세요 —
-<a href="carbon-forecast-LSTM/README.md">LSTM</a> ·
+<a href="carbon_forecast_lstm/README.md">LSTM</a> ·
 <a href="load_balancer/README.md">로드밸런서</a> ·
 <a href="scheduler/README.md">스케줄러</a> ·
 <a href="interface/README.md">인터페이스 계약</a></sub>

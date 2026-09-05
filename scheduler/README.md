@@ -43,7 +43,7 @@ job마다 중요도 `k`(1~5)가 있고, 그에 따라 **미룰 수 있는 최대
 
 ## 3. 스케줄러 알고리즘 (Time-Shift)
 
-`scheduler.py`의 `compute_time_shift()`가 핵심입니다. job 하나에 대해 다음을 계산합니다.
+`timeshift.py`의 `compute_time_shift()`가 핵심입니다. job 하나에 대해 다음을 계산합니다.
 
 ### 3-1. 실행 가능 윈도우
 
@@ -132,8 +132,8 @@ carbon_emitted = (실행 구간의 평균 탄소강도) × duration
 
 ### job 데이터
 기본은 **2025년 1년치** — 로드밸런서와 완전히 같은 입력을 씁니다.
-- `load_balancer/01_데이터/jobs.csv` — 146,000개 job (8리전 × 365일 × 50개/일, 시간 단위는 초)
-- `load_balancer/02_프레임워크/results/assign_alpha_auto.csv` — 로드밸런서의 **리전 배정 결과** (α=auto)
+- `load_balancer/data/jobs.csv` — 146,000개 job (8리전 × 365일 × 50개/일, 시간 단위는 초)
+- `load_balancer/framework/results/assign_alpha_auto.csv` — 로드밸런서의 **리전 배정 결과** (α=auto)
 
 위 파일이 없을 때만 `data/job/` 의 7일치(2,800개)로 폴백합니다.
 - `gen_jobs.py` — job 생성기 (SEED=42, 재현 가능, N_DAYS=7 개발용)
@@ -163,7 +163,7 @@ carbon_emitted = (실행 구간의 평균 탄소강도) × duration
 
 ```
 carbon-aware-scheduler/
-├── carbon-forecast-LSTM/        # LSTM 담당 (탄소강도 24h 예측)
+├── carbon_forecast_lstm/        # LSTM 담당 (탄소강도 24h 예측)
 ├── load_balancer/               # 로드밸런서 담당 (어느 리전에서?)
 ├── interface/                   # 모듈 간 데이터 계약 ← interface/README.md 참고
 │   ├── regions.py               #   리전 표기 통합 (LB 표기 ↔ LSTM 코드 ↔ ISO-3)
@@ -171,14 +171,14 @@ carbon-aware-scheduler/
 │   └── lb_assignment.py         #   로드밸런서 배정 결과 로딩
 └── scheduler/                   # ← 스케줄러(time-shift) 담당, 이 문서
     ├── README.md
-    ├── run_cli.py               # 터미널에서 3개 비교군 빠르게 실행
-    ├── requirements.txt
-    ├── data/job/                # job 데이터 (위 6절 참고)
-    └── scheduler/               # 파이썬 패키지
-        ├── config.py            # L_max, 비교군 정의 (리전 정의는 interface에서 가져옴)
+    ├── run_cli.py               # 터미널에서 3개 비교군 빠르게 실행 (python -m scheduler.run_cli)
+    ├── data/job/                # 7일치 폴백 job 데이터 (위 6절 참고)
+    │
+    ├── __init__.py              # ← scheduler 자체가 파이썬 패키지
+        ├── config.py            # 비교군 정의 (리전 정의는 interface에서 가져옴)
         ├── carbon_forecast.py   # interface/carbon_forecast_api 로 위임하는 얇은 계층
         ├── data_loader.py       # job 로딩 + 로드밸런서 배정 붙이기
-        ├── scheduler.py         # 핵심: α 계산, time-shift 알고리즘, 비교군 분기
+        ├── timeshift.py         # 핵심: α 계산, time-shift 알고리즘, 비교군 분기
         ├── simulator.py         # SimPy 이벤트 시뮬레이션 루프
         └── metrics.py           # 지표 집계·출력
 ```
@@ -195,12 +195,12 @@ carbon-aware-scheduler/
 ```bash
 python -m venv venv
 venv\Scripts\activate          # Windows (Git Bash: source venv/Scripts/activate)
-pip install -r requirements.txt   # 루트 requirements — dash · simpy · torch 등 전부 포함
+pip install -e ".[lstm,dev]"      # pyproject — dash · simpy · torch · pytest 전부 포함
 ```
 
 ### 통합 대시보드 (권장)
 ```bash
-python interface/dash_app.py
+python -m interface.dash_app
 ```
 브라우저에서 `http://localhost:8050/scheduler` — 2025년 1년치 세 비교군 시뮬레이션이 서버 기동 시
 백그라운드로 실행되고(약 1분), 끝나면 절감률·지연·SLO 위반율·k별 분석·결과 CSV가 표시됩니다.
@@ -208,7 +208,7 @@ python interface/dash_app.py
 
 ### 터미널 (숫자만 빠르게)
 ```bash
-python scheduler/run_cli.py
+python -m scheduler.run_cli
 ```
 
 ---
