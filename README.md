@@ -11,7 +11,7 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-LSTM-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![PuLP](https://img.shields.io/badge/Optimization-ILP%20(PuLP)-1f6feb)](https://coin-or.github.io/pulp/)
 [![SimPy](https://img.shields.io/badge/Simulation-SimPy-0a7e8c)](https://simpy.readthedocs.io/)
-[![Dash](https://img.shields.io/badge/Dashboard-Dash%20%7C%20Streamlit-FF4B4B?logo=plotly&logoColor=white)](https://dash.plotly.com/)
+[![Dash](https://img.shields.io/badge/Dashboard-Dash-3F4F75?logo=plotly&logoColor=white)](https://dash.plotly.com/)
 [![Regions](https://img.shields.io/badge/Regions-8-2ea043)](#-대상-리전)
 [![Carbon](https://img.shields.io/badge/Carbon%20reduction-−56.9%25-2ea043)](#-핵심-결과)
 
@@ -122,7 +122,7 @@ flowchart LR
 - **입력** — 과거 **168시간(1주)** 시퀀스, 리전당 독립 모델 8개
 - **피처 10종** — `carbon_intensity`, `cfe_pct`(무탄소 전원 비중), `re_pct`(재생에너지 비중),
   시간 주기성 sin/cos ×3, 공휴일 플래그
-  → 기상 데이터가 있는 3개 리전(US-TEX-ERCO, US-CAL-CISO, DE)은 풍속·일사량이 추가되어 **12종**
+  → 기상 데이터가 있는 3개 리전(US-TEX-ERCO, US-CAL-CISO, DE)은 풍속·일사량·기온이 추가되어 **13종**
 - **분할** — Train 2021–2023 / Val 2024 / **Test 2025 (rolling forecast)**
 - 기상 리전은 미래 기상 예보를 LSTM hidden state와 concat하는 별도 헤드(`CarbonLSTMWithFutureWeather`)를 사용
 
@@ -206,17 +206,20 @@ t*       = argmin score(t)
 
 ---
 
-## 🖥 통합 대시보드
+## 🖥 통합 대시보드 (Dash)
 
-세 모듈의 UI를 한 앱에서 확인합니다. 세계지도 위에서 즉시 실행(회색)과 time-shift(초록)를
-같은 시각으로 비교하고, `+/−` 버튼이나 자동 재생으로 시간대를 이동하며 누적 절감량이 벌어지는 과정을 관찰할 수 있습니다.
+세 모듈의 UI를 **하나의 Dash 앱** (`python interface/dash_app.py`) 에서 확인합니다.
 
-| 화면 | 내용 |
-|---|---|
-| 전체 개요 | 세 모듈의 연결 상태와 백엔드(실모델/더미) 표시 |
-| ① 로드밸런서 | 리전 배정 결과, Pareto 곡선, 슬롯별 α 타임라인 |
-| ② LSTM | 리전별 24h 예측 vs 실측 |
-| ③ 스케줄러 | 세계지도 비교, 실행 중 job 표, 요청→대기→실행 타임라인 |
+| 화면 | 경로 | 내용 |
+|---|---|---|
+| 메인 화면 | `/` | 세계지도(실행 중 job · 리전 간 이동 화살표) · 24h LSTM 예측 · 적용 전후 누적 탄소 · 실행 중 job 표 · 요청→대기→실행 타임라인. `+/−` 또는 자동 재생으로 시간을 이동 |
+| 전체 개요 | `/overview` | 파이프라인, 세 모듈의 연결 상태(실모델/더미), 핵심 결과, 시간축 규약 |
+| 로드밸런서 | `/load-balancer` | ① 입력 데이터 ② 전/후 비교(α 선택 · 누적 배출 · 시간별 절감 · 슬롯 α · 필터 · job별 배정 CSV) ③ α 스윕 Pareto ④ **실시간 라우팅** (LSTM을 그 자리에서 호출 + ILP) |
+| LSTM | `/lstm` | 임의 시각의 리전별 24h 예측 vs 실측, MAE/MAPE |
+| 스케줄러 | `/scheduler` | 2025년 1년치 세 비교군 시뮬레이션 — 절감률 · 지연 · SLO 위반 · k별 분석 · 결과 CSV |
+
+두 개의 시간축이 공존합니다. **2025 축**(로드밸런서 실험 · 스케줄러 검증)은 사전 계산된 LSTM 평가기록(`eval_records`)을,
+**2026 축**(메인 · LSTM · 실시간 라우팅)은 실측 이력(`carbon_intensity_demo.csv`) 위에서 **LSTM 모델을 실제로 호출**합니다.
 
 ---
 
@@ -233,25 +236,20 @@ python -m venv venv && venv\Scripts\activate
 ```
 
 ```bash
-pip install -r scheduler/requirements.txt -r load_balancer/02_프레임워크/requirements.txt
+pip install -r requirements.txt
 ```
 
-실제 LSTM 예측까지 사용하려면 (PyTorch 필요):
-
-```bash
-pip install -r carbon-forecast-LSTM/requirements.txt
-```
+루트 `requirements.txt` 하나에 대시보드(Dash)와 세 모듈(PyTorch · PuLP · SimPy)의 의존성이 모두 들어 있습니다.
+PyTorch가 없으면 LSTM 예측은 더미(사인파+노이즈)로 자동 폴백되고 나머지는 그대로 동작합니다.
 
 ### 실행
 
 | 목적 | 명령 |
 |---|---|
-| **메인 대시보드 (Dash, 권장)** | `python interface/dash_app.py` → http://localhost:8050 |
-| 통합 대시보드 (Streamlit) | `streamlit run interface/app.py` → http://localhost:8501 |
-| 로드밸런서 단독 | `streamlit run load_balancer/02_프레임워크/app.py` |
-| 스케줄러 단독 | `streamlit run scheduler/scheduler/gui.py` |
+| **통합 대시보드** | `python interface/dash_app.py` → http://localhost:8050 |
 | 스케줄러 CLI (숫자만) | `python scheduler/run_cli.py` |
 | 로드밸런서 실험 전체 재현 (~40분) | `python load_balancer/02_프레임워크/run_experiments.py` |
+| 실시간 라우팅 1슬롯 → JSON | `python load_balancer/02_프레임워크/realtime_route.py --t-hour 200` |
 
 ---
 
@@ -316,7 +314,7 @@ carbon-aware-scheduler/
 │   └── data/                      #   2025·2026 rolling forecast 평가 기록
 ├── load_balancer/                 # ② 공간 이동 (ILP 라우팅)
 │   ├── 01_데이터/                 #   워크로드 · 지연 행렬 · LSTM 예측
-│   ├── 02_프레임워크/             #   simulator · run_experiments · 대시보드
+│   ├── 02_프레임워크/             #   simulator · run_experiments · realtime_route
 │   │   └── results/               #   summary.json · run별 기록 · figures
 │   └── 03_라우팅결과/             #   jobs_routed_*.csv (스케줄러 인계용)
 ├── scheduler/                     # ③ 시간 이동 (Time-Shift)
@@ -324,14 +322,16 @@ carbon-aware-scheduler/
 │   └── scheduler/
 │       ├── scheduler.py           #   α 계산 · time-shift 핵심 로직
 │       ├── simulator.py           #   SimPy 이벤트 루프
-│       ├── metrics.py             #   총 탄소 · 평균 지연 · SLO 위반율
-│       └── gui.py
+│       └── metrics.py             #   총 탄소 · 평균 지연 · SLO 위반율
 └── interface/                     # 데이터 계약 + 통합 대시보드
     ├── regions.py                 #   리전 표기 단일 출처
     ├── carbon_forecast_api.py     #   LSTM 경계 (실모델 ↔ 더미 자동 폴백)
+    ├── carbon_2025.py             #   2025 사전계산 예측/실측 (eval_records)
+    ├── carbon_history.py          #   LSTM 입력 이력 · 2026 실측 시계열
     ├── lb_assignment.py           #   로드밸런서 배정 결과 로딩
-    ├── dash_app.py                #   메인 대시보드 (Dash)
-    └── app.py                     #   통합 대시보드 (Streamlit)
+    ├── dashboard_core.py          #   메인 화면 계산 로직 (지도·타임라인·누적 탄소)
+    ├── dash_app.py                #   통합 대시보드 진입점 (Dash)
+    └── dashboard/                 #   Dash 앱 — pages/(메인·개요·로드밸런서·LSTM·스케줄러) · theme · data
 ```
 
 ---
@@ -340,10 +340,10 @@ carbon-aware-scheduler/
 
 정직하게 밝혀 둡니다.
 
-- **`cfe_pct` / `re_pct` 임시 추정** — 통합 대시보드 경로에서는 실측 CFE·재생에너지 비중 CSV가 아직 없어
-  탄소강도로부터 역산한 값을 씁니다. 이 때문에 실제 LSTM은 일부 구간에서만 동작하고 나머지는 더미로 폴백합니다.
-  실측 CSV를 `init_lstm(carbon_csv=…)`에 넘기는 것만으로 전 구간이 실제 예측으로 전환됩니다.
-  (로드밸런서의 1년 실험은 이와 별개로 사전 계산된 LSTM 예측·실측 기록을 사용합니다.)
+- **라이브 LSTM 구간은 2026-01-08 ~ 2026-07-19** — 대시보드의 2026 축은 `carbon_intensity_demo.csv`(실측 이력, cfe/re/날씨 포함)
+  위에서 모델을 실제로 호출합니다. 168시간 워밍업 이전, 그리고 날씨 리전의 미래 24h 날씨가 없는 이력 끝 24시간은
+  더미로 폴백합니다. 진짜 미래를 다루려면 날씨 예보 API 연동이 필요합니다.
+  (로드밸런서의 1년 실험은 이와 별개로 2025년 사전 계산된 LSTM 예측·실측 기록을 사용합니다.)
 - **에너지 모델 단순화** — job의 소비 전력을 duration에 비례하는 상수로 가정합니다.
   실측 전력 프로파일이 붙으면 절감량 추정치가 달라집니다.
 - **지연만을 SLO 대리 지표로 사용** — 처리량·꼬리 지연·리전별 비용은 아직 목적 함수에 없습니다.

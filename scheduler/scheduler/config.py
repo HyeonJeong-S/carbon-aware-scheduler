@@ -20,14 +20,9 @@ from interface.regions import (  # noqa: E402
     to_region,
 )
 
-# k(중요도) -> 최대 대기 가능 시간 (시간 단위)
-L_MAX = {
-    5: 1 / 3600,     # 1초
-    4: 30 / 3600,    # 30초
-    3: 300 / 3600,   # 5분
-    2: 6,            # 6시간
-    1: 24,           # 24시간
-}
+# k(중요도)별 대표 지연 예산(L_max)은 코드 상수가 아니라 job 데이터에 들어 있다
+# (jobs.csv의 L_max 열 — k별 범위 내 job마다 랜덤). 범위 정의는
+# scheduler/data/job/README_jobs.md 참고.
 
 SLOT_HOURS = 1
 FORECAST_HORIZON = 24  # LSTM 예측 범위 (시간)
@@ -40,5 +35,5 @@ MODES = {
 
 __all__ = [
     "REGIONS", "ZONE_LABELS", "ZONE_TO_ISO3", "LB_TO_ZONE", "to_region",
-    "L_MAX", "SLOT_HOURS", "FORECAST_HORIZON", "MODES",
+    "SLOT_HOURS", "FORECAST_HORIZON", "MODES",
 ]

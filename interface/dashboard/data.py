@@ -1,0 +1,233 @@
+"""대시보드 데이터 로더 — 무거운 것은 한 번만 읽고 프로세스 안에 캐시한다.
+
+    로드밸런서 결과   : lb_load_all()                 results/summary.json + run별 CSV
+    스케줄러 검증     : start_validation_async() ·    2025년 1년치 3개 비교군 시뮬레이션
+                        validation_state()           (약 1분 — 서버 기동 시 백그라운드로 미리 돌린다)
+    실시간 라우팅     : realtime_route_slot()         LSTM 라이브 + ILP (슬롯 1개)
+    실험 재실행       : start_experiments() ·         run_experiments.py 를 백그라운드 프로세스로
+                        experiments_state()
+
+시간축 두 개가 공존한다 (문서 참고):
+    2025 축 — 로드밸런서 1년 실험 · 스케줄러 검증 (eval_records, t=0 ↔ 2025-01-01)
+    2026 축 — 메인 화면 · LSTM 라이브 · 실시간 라우팅 (carbon_intensity_demo.csv, t=0 ↔ 2026-01-01)
+"""
+
+import functools
+import json
+import os
+import subprocess
+import sys
+import threading
+import time
+
+import numpy as np
+import pandas as pd
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(os.path.dirname(_HERE))
+LB_DIR = os.path.join(REPO_ROOT, "load_balancer", "02_프레임워크")
+SCHED_DIR = os.path.join(REPO_ROOT, "scheduler")
+LSTM_DIR = os.path.join(REPO_ROOT, "carbon-forecast-LSTM")
+
+# 로드밸런서·스케줄러 모듈은 자기 폴더 기준 top-level import(config, simulator, scheduler.*)를
+# 쓰므로 경로를 등록한다. SCHED_DIR을 앞에 둬야 `scheduler` 가 정규 패키지로 잡힌다.
+for _p in (SCHED_DIR, LB_DIR, LSTM_DIR, REPO_ROOT):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
+import config as lb_config  # noqa: E402  (load_balancer/02_프레임워크/config.py)
+from interface import carbon_forecast_api as api  # noqa: E402
+from interface.regions import LB_TO_REGION, REGIONS  # noqa: E402
+
+LB_REGIONS = lb_config.REGIONS                      # LB 표기 순서 (US_West …)
+LB_T0 = pd.Timestamp("2025-01-01 00:00:00")         # 로드밸런서 실험 t=0 (UTC)
+RT_BASE = pd.Timestamp("2026-01-01 00:00:00")       # LSTM 라이브 데모 t=0 (UTC)
+
+YEAR_JOBS_CSV = str(lb_config.JOBS_CSV)
+YEAR_ASSIGN_CSV = str(lb_config.RESULTS_DIR / "assign_alpha_auto.csv")
+
+
+def lb_ts(series_s):
+    """초 단위(2025 축) → 실제 UTC 시각."""
+    return LB_T0 + pd.to_timedelta(series_s, unit="s")
+
+
+def lb_results_available():
+    return (lb_config.RESULTS_DIR / "summary.json").exists()
+
+
+def lb_summary_mtime():
+    p = lb_config.RESULTS_DIR / "summary.json"
+    return p.stat().st_mtime if p.exists() else 0.0
+
+
+@functools.lru_cache(maxsize=2)
+def _lb_load_all(mtime):
+    """mtime 은 캐시 키 — summary.json 이 바뀌면 자동 재로딩."""
+    from simulator import CarbonSeries  # load_balancer/02_프레임워크/simulator.py
+
+    summary = json.loads((lb_config.RESULTS_DIR / "summary.json").read_text())
+    carbon = CarbonSeries().frame()            # time_s + LB 리전 8열 (실측)
+    jobs = pd.read_csv(lb_config.JOBS_CSV)
+    latency = lb_config.load_latency_matrix()
+    slots = {name: pd.read_csv(lb_config.RESULTS_DIR / f"slots_{name}.csv") for name in summary}
+    assigns = {}
+    for name in summary:
+        a = pd.read_csv(lb_config.RESULTS_DIR / f"assign_{name}.csv")
+        if "submit_time" not in a.columns:
+            a = a.merge(jobs[["job_name", "submit_time"]], on="job_name")
+        assigns[name] = a
+    return dict(summary=summary, carbon=carbon, jobs=jobs, latency=latency,
+                slots=slots, assigns=assigns)
+
+
+def lb_load_all():
+    return _lb_load_all(lb_summary_mtime())
+
+
+def lb_alpha_runs(summary):
+    """summary 의 run 이름 중 α run 을 숫자 오름차순, auto 는 맨 뒤로."""
+    def key(run):
+        part = run.split("_")[1]
+        return 1.5 if part == "auto" else float(part)
+    runs = sorted([k for k in summary if k.startswith("alpha_") and "_l" not in k], key=key)
+    auto = next((k for k in runs if k.split("_")[1] == "auto"), None)
+    return runs, auto
+
+
+# ── 스케줄러 검증 (2025년 1년치, 백그라운드) ──────────────────────
+_val = {"status": "idle", "started": None, "elapsed": None, "error": None,
+        "results": None, "comparison": None, "n_jobs": 0, "horizon_hours": 0,
+        "carbon_is_real": None, "backend": None}
+_val_lock = threading.Lock()
+
+
+def _run_validation():
+    from scheduler import carbon_forecast, data_loader, metrics, simulator
+
+    t0 = time.time()
+    try:
+        jobs = data_loader.load_jobs_with_assignment(YEAR_JOBS_CSV, YEAR_ASSIGN_CSV)
+        horizon = max(j["deadline"] for j in jobs) + 24
+        carbon_series, is_real = carbon_forecast.load_actual_series(int(horizon) + 48)
+        results = simulator.run_all_modes(jobs, carbon_series)
+        comparison = metrics.compare_modes(results)
+        with _val_lock:
+            _val.update(status="done", results=results, comparison=comparison,
+                        n_jobs=len(jobs), horizon_hours=horizon, carbon_is_real=is_real,
+                        backend=carbon_forecast.backend_info(),
+                        elapsed=time.time() - t0, error=None)
+    except Exception as e:  # noqa: BLE001 — 화면에 그대로 보여준다
+        with _val_lock:
+            _val.update(status="error", error=f"{type(e).__name__}: {e}",
+                        elapsed=time.time() - t0)
+
+
+def start_validation_async(force=False):
+    """스케줄러 검증 시뮬레이션을 백그라운드 스레드로 시작한다 (이미 돌고 있으면 무시)."""
+    with _val_lock:
+        if _val["status"] == "running":
+            return False
+        if _val["status"] == "done" and not force:
+            return False
+        _val.update(status="running", started=time.time(), error=None)
+    threading.Thread(target=_run_validation, daemon=True, name="sched-validation").start()
+    return True
+
+
+def validation_state():
+    with _val_lock:
+        return dict(_val)
+
+
+# ── 실시간 라우팅 (로드밸런서 ④) ───────────────────────────────
+def rt_t_range():
+    """LSTM 라이브가 응답 가능한 슬롯 범위 (2026 축, 시간). 이력 168h 이후 ~ 데이터 끝-24h."""
+    st = api.status()
+    t_min = 168
+    if st["history_end"] is not None:
+        t_max = int((st["history_end"] - RT_BASE).total_seconds() // 3600) - 24
+    else:
+        t_max = t_min + 24 * 30
+    return t_min, max(t_min, t_max)
+
+
+@functools.lru_cache(maxsize=512)
+def realtime_route_slot(t_hour, alpha):
+    """슬롯 하나를 지금 LSTM 예측 + ILP 로 배정 (realtime_route.py 위임)."""
+    import realtime_route as rt
+
+    jobs_slot = rt.load_slot_jobs(int(t_hour), None)
+    return rt.route_slot(int(t_hour), jobs_slot, str(alpha), None, 0.8, None)
+
+
+# ── 로드밸런서 실험 재실행 (백그라운드 프로세스, ~40분) ───────────
+_exp = {"status": "idle", "proc": None, "log": None, "started": None, "returncode": None}
+_exp_lock = threading.Lock()
+_EXP_LOG = os.path.join(str(lb_config.RESULTS_DIR), "run_experiments.log")
+
+
+def start_experiments():
+    with _exp_lock:
+        if _exp["proc"] is not None and _exp["proc"].poll() is None:
+            return False
+        os.makedirs(str(lb_config.RESULTS_DIR), exist_ok=True)
+        log = open(_EXP_LOG, "w", encoding="utf-8")
+        proc = subprocess.Popen(
+            [sys.executable, os.path.join(LB_DIR, "run_experiments.py")],
+            cwd=LB_DIR, stdout=log, stderr=subprocess.STDOUT)
+        _exp.update(status="running", proc=proc, log=log, started=time.time(), returncode=None)
+        return True
+
+
+def experiments_state():
+    with _exp_lock:
+        proc = _exp["proc"]
+        if proc is not None and _exp["status"] == "running" and proc.poll() is not None:
+            _exp["status"] = "done" if proc.returncode == 0 else "error"
+            _exp["returncode"] = proc.returncode
+            try:
+                _exp["log"].close()
+            except Exception:  # noqa: BLE001
+                pass
+            _lb_load_all.cache_clear()
+        tail = ""
+        if os.path.exists(_EXP_LOG):
+            with open(_EXP_LOG, encoding="utf-8", errors="replace") as f:
+                tail = "".join(f.readlines()[-30:])
+        return dict(status=_exp["status"], started=_exp["started"],
+                    returncode=_exp["returncode"], log_tail=tail)
+
+
+# ── 서버 기동 시 미리 데우기 ─────────────────────────────────────
+def warm_up_async():
+    """첫 화면이 빨리 뜨도록 무거운 로딩을 백그라운드에서 미리 한다."""
+    def _warm():
+        try:
+            api.status()                    # LSTM 모델 로드 (~10초)
+            from interface import dashboard_core as core
+            core.load_map_jobs()            # 146k job
+            core.load_map_actual()
+        except Exception as e:  # noqa: BLE001
+            print(f"[warm-up] 메인 화면 준비 실패: {e}", file=sys.stderr)
+        try:
+            if lb_results_available():
+                lb_load_all()
+        except Exception as e:  # noqa: BLE001
+            print(f"[warm-up] 로드밸런서 결과 로딩 실패: {e}", file=sys.stderr)
+        start_validation_async()
+    threading.Thread(target=_warm, daemon=True, name="warm-up").start()
+
+
+def to_std(region_lb):
+    """LB 표기 → 표준 코드 (이미 표준이면 그대로)."""
+    return LB_TO_REGION.get(region_lb, region_lb)
+
+
+__all__ = [
+    "REPO_ROOT", "LB_DIR", "SCHED_DIR", "LB_REGIONS", "LB_T0", "RT_BASE", "REGIONS",
+    "lb_ts", "lb_results_available", "lb_load_all", "lb_alpha_runs",
+    "start_validation_async", "validation_state",
+    "rt_t_range", "realtime_route_slot",
+    "start_experiments", "experiments_state", "warm_up_async", "to_std", "np",
+]

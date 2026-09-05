@@ -7,24 +7,21 @@
 ## 실행법 (처음 클론했을 때)
 
 ```bash
-cd load_balancer/02_프레임워크
-python3 -m venv .venv                    # 1) 가상환경 (최초 1회)
-.venv/bin/pip install -r requirements.txt
-.venv/bin/streamlit run app.py           # 2) 웹 대시보드 (브라우저 자동 오픈)
+pip install -r requirements.txt          # 저장소 루트 (최초 1회) — dash · pulp · torch 포함
+python interface/dash_app.py             # 통합 대시보드 → http://localhost:8050/load-balancer
 ```
 
-실험을 직접 다시 돌리고 싶을 때 (1년치 전체 ~45분):
+실험을 직접 다시 돌리고 싶을 때 (1년치 전체 ~40분, 대시보드의 '실험 다시 실행' 버튼과 동일):
 
 ```bash
-.venv/bin/python run_experiments.py      # baseline + 고정 α 5개 + α=auto
+python load_balancer/02_프레임워크/run_experiments.py      # baseline + 고정 α 5개 + α=auto
 ```
 
-실시간 LSTM 예측을 받아 슬롯 하나를 라우팅하고 JSON으로 내보내기 (서빙 데모):
+실시간 LSTM 예측을 받아 슬롯 하나를 라우팅하고 JSON으로 내보내기 (서빙 데모, 대시보드 ④탭과 동일):
 
 ```bash
-.venv/bin/pip install -r ../../carbon-forecast-LSTM/requirements.txt   # torch 등 (최초 1회)
-.venv/bin/python realtime_route.py --t-hour 200                        # jobs.csv 슬롯 재생 → stdout JSON
-.venv/bin/python realtime_route.py --t-hour 200 --jobs-json my.json --out result.json
+python load_balancer/02_프레임워크/realtime_route.py --t-hour 200                        # jobs.csv 슬롯 재생 → stdout JSON
+python load_balancer/02_프레임워크/realtime_route.py --t-hour 200 --jobs-json my.json --out result.json
 ```
 
 ## 파일 구조
@@ -35,14 +32,14 @@ python3 -m venv .venv                    # 1) 가상환경 (최초 1회)
 | `simulator.py` | 핵심 엔진 — 1시간 슬롯마다 ILP(PuLP/CBC) 배정, α=auto 무릎점 선택 |
 | `run_experiments.py` | baseline + α 스윕 + auto 일괄 실행 → `results/` + `../03_라우팅결과/` |
 | `realtime_route.py` | 실시간 서빙 데모 — LSTM 예측(`interface/`)을 호출해 슬롯 1개 라우팅 → JSON |
-| `app.py` | Streamlit 대시보드 (입력 데이터 / 전후 비교 / 파레토 사후 평가) |
+| (대시보드) | `interface/dashboard/pages/load_balancer.py` — 입력 데이터 / 전후 비교 / α 스윕 / 실시간 라우팅 |
 | `results/` | 대시보드 분석용 내부 산출물 (summary.json, run별 배정·슬롯 기록) |
 
 ## 데이터 흐름
 
 ```
 01_데이터/jobs.csv ─┐
-01_데이터/lstm_eval/ ┤→ simulator.CarbonSeries ─→ run_experiments ─→ results/ → app.py
+01_데이터/lstm_eval/ ┤→ simulator.CarbonSeries ─→ run_experiments ─→ results/ → 통합 대시보드
   (y_true 실측 ·     │   · 탄소 회계 = y_true 적분              └→ 03_라우팅결과/ (스케줄러 인계)
    y_pred LSTM 예측) ┘   · 라우팅 예측 = y_pred (h=1)
 ```

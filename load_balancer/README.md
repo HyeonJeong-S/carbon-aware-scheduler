@@ -11,7 +11,7 @@ LSTM 탄소강도 예측 + ILP 최적화로 job을 **탄소가 깨끗한 리전�
 load_balancer/
 ├── 00_자료/          연구 참고자료 (논문 · 논문분석 · 설계 노트) — 파이프라인과 무관
 ├── 01_데이터/        ★ 입력: jobs.csv(1년 워크로드) + lstm_eval/(탄소 실측·LSTM 예측)
-├── 02_프레임워크/    엔진: 시뮬레이터(simulator.py) · 실험 러너 · Streamlit 대시보드
+├── 02_프레임워크/    엔진: 시뮬레이터(simulator.py) · 실험 러너 · 실시간 라우팅
 │   └── results/     분석용 산출물 (summary, run별 기록, 시간별 절감량)
 └── 03_라우팅결과/    ★ 출력: jobs_routed_*.csv — 스케줄러 인계용 납품물
 ```
@@ -25,10 +25,9 @@ load_balancer/
 ## 빠른 시작
 
 ```bash
-cd load_balancer/02_프레임워크
-python3 -m venv .venv && .venv/bin/pip install -r requirements.txt   # 최초 1회
-.venv/bin/streamlit run app.py           # 대시보드 (results가 있으면 바로 뜸)
-.venv/bin/python run_experiments.py      # 실험 재실행 (1년치 전체 ~40분)
+pip install -r requirements.txt                                  # 저장소 루트, 최초 1회
+python interface/dash_app.py                                      # 통합 대시보드 → /load-balancer
+python load_balancer/02_프레임워크/run_experiments.py             # 실험 재실행 (1년치 전체 ~40분)
 ```
 
 ## 동작 요약

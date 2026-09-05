@@ -1,4 +1,4 @@
-# interface — 모듈 간 데이터 계약
+# interface — 모듈 간 데이터 계약 + 통합 대시보드
 
 이 프로젝트는 담당이 3개로 나뉘어 있고, 각자 자기 폴더에서 독립적으로 작업합니다.
 
@@ -6,7 +6,7 @@
 carbon-forecast-LSTM/   탄소강도 24시간 예측        (LSTM 담당)
 load_balancer/          어느 리전에서 실행할지       (로드밸런서 담당)
 scheduler/              그 리전에서 언제 실행할지     (스케줄러 담당)
-interface/              ← 위 셋을 이어주는 계약 계층
+interface/              ← 위 셋을 이어주는 계약 계층 + Dash 대시보드
 ```
 
 모듈끼리 서로의 내부 구현(모델 구조, 최적화 알고리즘 등)을 알 필요가 없도록,
@@ -25,22 +25,44 @@ interface/              ← 위 셋을 이어주는 계약 계층
 
 ---
 
-## 0. 통합 대시보드 실행
-
-3개 모듈 UI를 한 앱에서 볼 수 있습니다.
+## 0. 통합 대시보드 (Dash)
 
 ```bash
-streamlit run interface/app.py
+python interface/dash_app.py        # → http://localhost:8050   (--port, --debug 옵션)
 ```
 
-| 화면 | 내용 | 실제 스크립트 |
-|---|---|---|
-| 전체 개요 | 연결 상태 한눈에 | `interface/views/overview.py` |
-| ① 로드밸런서 | 어느 리전에서 실행할지 | `load_balancer/05_프레임워크/app.py` (원본 그대로) |
-| ② LSTM | 탄소강도 24h 예측 | `interface/views/lstm_view.py` |
-| ③ 스케줄러 | 언제 실행할지 (time-shift) | `scheduler/scheduler/gui.py` (원본 그대로) |
+| 화면 | 경로 | 파일 | 시간축 |
+|---|---|---|---|
+| 메인 화면 | `/` | `dashboard/pages/main.py` (+ `dashboard_core.py`) | 2026 라이브 |
+| 전체 개요 | `/overview` | `dashboard/pages/overview.py` | — |
+| 로드밸런서 | `/load-balancer` | `dashboard/pages/load_balancer.py` | ①~③ 2025 · ④ 2026 라이브 |
+| LSTM | `/lstm` | `dashboard/pages/lstm.py` | 2026 라이브 |
+| 스케줄러 | `/scheduler` | `dashboard/pages/scheduler.py` | 2025 |
 
-각 모듈의 기존 앱을 **복제하지 않고 그대로 불러옵니다**. 개별 실행도 여전히 가능합니다.
+```
+interface/
+├── dash_app.py            진입점 (create_app → app.run)
+├── dashboard/
+│   ├── app.py             Dash(use_pages=True) + 상단 내비게이션
+│   ├── data.py            무거운 데이터 로더 (LB 결과 · 스케줄러 검증 백그라운드 실행 · 실시간 라우팅 · 실험 재실행)
+│   ├── theme.py           색 · plotly 레이아웃 · KPI/섹션/표 조각
+│   ├── assets/style.css   공통 CSS (Dash가 자동 서빙)
+│   └── pages/             화면 5개 (Dash Pages 자동 등록)
+└── dashboard_core.py      메인 화면 계산 로직 (지도 · 타임라인 · 누적 탄소)
+```
+
+- 서버가 뜨면 백그라운드에서 LSTM 모델 로드 · 146k job 로드 · 스케줄러 검증(약 1분)을 미리 돌려둔다.
+- 무거운 계산은 `functools.lru_cache` 로 프로세스 안에 한 번만 캐시된다.
+- 로드밸런서의 "실험 다시 실행"은 `run_experiments.py` 를 별도 프로세스로 띄우고 로그를 폴링한다 (~40분).
+
+### 시간축 두 개
+
+| 축 | t = 0 | 쓰는 곳 | 데이터 |
+|---|---|---|---|
+| **2025** | 2025-01-01 00:00 UTC | 로드밸런서 1년 실험 · 스케줄러 검증 | `load_balancer/01_데이터/lstm_eval/*_eval_records.csv` (실측 y_true + LSTM 사전계산 y_pred) |
+| **2026** | 2026-01-01 00:00 UTC | 메인 화면 · LSTM 화면 · 실시간 라우팅 | `carbon-forecast-LSTM/data/carbon_intensity_demo.csv` 위에서 LSTM 모델을 그 자리에서 호출 |
+
+두 축 모두 job 워크로드는 같은 `jobs.csv`(146,000개, 초 단위 UTC 절대축)를 쓴다.
 
 ---
 
@@ -85,9 +107,11 @@ forecast = carbon_forecast_api.get_forecast(t_hour=12, horizon=24)
 # -> {"KR": [24개 값], "FR": [...], ...}   단위 gCO₂/kWh, index 0 = 기준 시각
 ```
 
-**2단계 자동 폴백**으로 동작합니다 (import 시점에 `init_lstm()`이 자동 실행됨).
+**2단계 자동 폴백**으로 동작합니다. 모델 로딩(수 초~십수 초)은 import 시점이 아니라
+**첫 호출 때** 한 번 일어납니다 — `interface.regions` 만 쓰는 쪽이 로딩 비용을 떠안지 않게 하기 위해서입니다.
 
 1. **실제 LSTM** — torch 설치 + `models/*.pt` 존재 + 요청 시점 t 이전 **168시간 이력**이 있으면 진짜 예측
+   (날씨 리전 3곳은 예측 구간 t~t+23h 의 날씨도 있어야 하므로 이력 끝-24h 까지)
 2. **더미** — 위 조건이 안 되면 사인파 + 노이즈
 
 호출마다 어느 쪽이 응답했는지 `last_backend()`로 확인할 수 있습니다.
@@ -98,21 +122,26 @@ carbon_forecast_api.last_backend()   # 'lstm' | 'dummy'  ← 방금 그 호출�
 carbon_forecast_api.status()         # 예측 가능 구간 등 상세
 ```
 
-> LSTM 쪽 원래 시그니처는 `get_forecast_at(t, models, scalers, all_df)` 이며,
+> LSTM 쪽 원래 시그니처는 `get_forecast_at(t, models, scalers, all_df, weather_scalers)` 이며,
 > 이 어댑터가 그 호출과 리전 코드 변환을 대신 처리합니다.
 
 ### 입력 이력 — `carbon_history.py`
 
-LSTM은 t 이전 168시간의 `carbon_intensity` + `cfe_pct` + `re_pct` 를 요구합니다.
+LSTM은 t 이전 168시간의 `carbon_intensity` + `cfe_pct` + `re_pct` (+ 날씨 리전은 `wind_speed_10m`,
+`shortwave_radiation`, `temperature_2m`) 를 요구합니다.
 
 | 컬럼 | 현재 출처 |
 |---|---|
-| `carbon_intensity` | `load_balancer/…/data/carbon_intensity.csv` (8리전 × 192시간) |
-| `cfe_pct`, `re_pct` | ⚠️ **임시 추정값** — 실측 데이터가 아직 없어 탄소강도로부터 역산 |
+| 전부 | `carbon-forecast-LSTM/data/carbon_intensity_demo.csv` — 2026-01-01 ~ 07-20 실측 (`is_placeholder=False`) |
 
-이 때문에 **현재 실제 LSTM은 t ≈ 168~191h 구간에서만 동작**하고, 그 밖에서는 더미로 폴백합니다.
-데이터 파이프라인 담당이 실측 CSV(`timestamp, region, carbon_intensity, cfe_pct, re_pct`)를 주면
-`init_lstm(carbon_csv=…)`에 넘기는 것만으로 전 구간 실제 예측으로 바뀝니다.
+cfe/re 가 없는 CSV 나 더미 시계열로 이력을 만들 때는 탄소강도로부터 역산한 **임시 추정값**을 넣고
+`is_placeholder=True` 로 표시합니다. `load_actual_series()` 는 같은 파일에서 **탄소 회계용 실측 시계열**을 만듭니다.
+
+### 2025 사전계산 — `carbon_2025.py`
+
+로드밸런서의 1년 실험과 스케줄러 검증은 **같은 `eval_records`** 를 씁니다.
+한 행 = (예측 대상 시각, horizon, y_true, y_pred) 이므로 발행 시각 = timestamp − horizon 으로
+"t 시점에 알 수 있었던 향후 24시간 예측"을 그대로 복원합니다. 1월 1~7일은 1월 8일 프로파일 반복(합의 규약).
 
 ---
 
@@ -121,12 +150,13 @@ LSTM은 t 이전 168시간의 `carbon_intensity` + `cfe_pct` + `re_pct` 를 요�
 로드밸런서가 job별로 "어느 리전에서 돌릴지" 정한 결과를 읽습니다.
 **스케줄러는 리전을 스스로 고르지 않습니다.**
 
-지원 형식 2가지 (자동 인식):
+지원 형식 3가지 (자동 인식):
 
 | | 파일 | 원본 리전 | 배정 리전 |
 |---|---|---|---|
-| A | `load_balancer/05_프레임워크/results/assign_*.csv` | `origin` | `assigned` |
+| A | `load_balancer/02_프레임워크/results/assign_*.csv` | `origin` | `assigned` |
 | B | `scheduler/data/job/jobs_routed_alpha_auto.csv` | `region` | `배정` |
+| C | `load_balancer/03_라우팅결과/jobs_routed_*.csv` | `region` | `assigned_region` |
 
 ```python
 from interface.lb_assignment import load_assignments, attach_to_jobs

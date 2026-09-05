@@ -19,7 +19,7 @@
 
 - **로드밸런서**가 job을 어느 리전에서 돌릴지(Spatial shift) 이미 정해서 넘겨줍니다.
 - **스케줄러(우리)** 는 그 리전 안에서 **언제 실행할지(Time shift)** 만 결정합니다.
-- **LSTM**은 리전별 향후 24시간 탄소강도 예측을 제공합니다 (아직 미완성 → 현재는 더미 데이터).
+- **LSTM**은 리전별 향후 24시간 탄소강도 예측을 제공합니다 (`interface/carbon_forecast_api.py` 경유).
 
 ---
 
@@ -108,7 +108,8 @@ t*  = argmin score(t)          # 점수가 가장 낮은 시각으로 실행
 - 스케줄러가 실제로 계산하는 것은 **비교군 3의 실행 시각(time-shift)** 뿐입니다.
 - 2 → 3: "시간까지 옮기면" 추가로 얼마나 더 주는지 ← **우리(스케줄러) 기여분**
 
-> GUI에서는 우리 기여분을 명확히 보기 위해 비교군 2·3만 표시합니다. CLI(`run_cli.py`)는 3개 모두 출력합니다.
+> 통합 대시보드의 스케줄러 화면과 CLI(`run_cli.py`) 모두 3개 비교군을 출력합니다.
+> ① → ② 가 로드밸런서(공간 이동)의 기여, ② → ③ 이 스케줄러(시간 이동)의 기여입니다.
 
 ---
 
@@ -129,19 +130,23 @@ carbon_emitted = (실행 구간의 평균 탄소강도) × duration
 
 ## 6. 데이터
 
-### job 데이터 — `data/job/`
-- `gen_jobs.py` — job 생성기 (SEED=42, 재현 가능). 8리전 × 7일 × 50개/일 = **2,800개**
-- `jobs.csv` — 원본 job (리전·k·L_max·제출시각 포함, 시간 단위는 초)
-- `jobs_routed_alpha_auto.csv` — 로드밸런서가 **실제 리전 배정 결과**(`배정` 컬럼)와 슬롯별 `α`를 붙여 넘겨준 버전. 있으면 이 파일을 우선 사용.
-- `README_jobs.md` — job 데이터 상세 스펙
+### job 데이터
+기본은 **2025년 1년치** — 로드밸런서와 완전히 같은 입력을 씁니다.
+- `load_balancer/01_데이터/jobs.csv` — 146,000개 job (8리전 × 365일 × 50개/일, 시간 단위는 초)
+- `load_balancer/02_프레임워크/results/assign_alpha_auto.csv` — 로드밸런서의 **리전 배정 결과** (α=auto)
+
+위 파일이 없을 때만 `data/job/` 의 7일치(2,800개)로 폴백합니다.
+- `gen_jobs.py` — job 생성기 (SEED=42, 재현 가능, N_DAYS=7 개발용)
+- `jobs.csv` · `jobs_routed_alpha_auto.csv` · `README_jobs.md` (열 정의)
 
 스케줄러는 리전을 스스로 고르지 않습니다. 로드밸런서가 배정한 리전을 그대로 사용하며,
-읽는 일은 `interface/lb_assignment.py`가 맡습니다 (로드밸런서 공식 산출물 `assign_*.csv`도 동일하게 지원).
+읽는 일은 `interface/lb_assignment.py`가 맡습니다 (`assign_*.csv` · `jobs_routed_*.csv` 모두 지원).
 
-### 탄소강도 예측 — `interface/carbon_forecast_api.py`
-- 스케줄러는 `get_forecast(t_hour, horizon=24)` 하나만 호출합니다 (LSTM 내부는 모름)
-- **실제 LSTM 모델이 있으면 그걸 쓰고, 없으면 더미(사인파+노이즈)로 자동 폴백**합니다
-- 현재 어느 백엔드인지는 `backend_info()`로 확인 가능
+### 탄소강도 — `scheduler/carbon_forecast.py` → `interface/`
+- **2025 검증**: `interface/carbon_2025.py` 가 `eval_records` 에서 실측(y_true, 탄소 회계)과
+  발행 시각별 24h 예측(y_pred, 스케줄링 판단)을 복원합니다 — 로드밸런서와 동일 소스·시간축.
+- **라이브(2026)**: `interface/carbon_forecast_api.get_forecast(t_hour)` 가 실제 LSTM 모델을 호출하고,
+  torch가 없거나 이력이 부족하면 더미(사인파+노이즈)로 자동 폴백합니다. `backend_info()` 로 확인.
 
 ### 8개 리전 (LSTM zone 코드 기준으로 통일)
 `US-CAL-CISO`(미 서부/캘리포니아), `US-TEX-ERCO`(미 중부/텍사스), `US-NY-NYIS`(미 동부/뉴욕),
@@ -175,70 +180,62 @@ carbon-aware-scheduler/
         ├── data_loader.py       # job 로딩 + 로드밸런서 배정 붙이기
         ├── scheduler.py         # 핵심: α 계산, time-shift 알고리즘, 비교군 분기
         ├── simulator.py         # SimPy 이벤트 시뮬레이션 루프
-        ├── metrics.py           # 지표 집계·출력
-        └── gui.py               # Streamlit 웹 대시보드
+        └── metrics.py           # 지표 집계·출력
 ```
 
 시뮬레이션 흐름: `data_loader`가 job을 읽고 → `carbon_forecast`가 탄소 시계열을 만들고 →
 `simulator`가 각 job을 `scheduler.schedule_job()`으로 처리(SimPy로 도착→대기→실행 재현) →
-`metrics`가 집계 → `gui`/`run_cli`가 출력.
+`metrics`가 집계 → `run_cli` / 통합 대시보드(`interface/dashboard/pages/scheduler.py`)가 출력.
 
 ---
 
 ## 8. 실행 방법
 
-아래 명령은 모두 이 `scheduler/` 폴더 안에서 실행합니다.
-
-### 설치
+### 설치 (저장소 루트)
 ```bash
-cd scheduler
 python -m venv venv
 venv\Scripts\activate          # Windows (Git Bash: source venv/Scripts/activate)
-pip install -r requirements.txt
+pip install -r requirements.txt   # 루트 requirements — dash · simpy · torch 등 전부 포함
 ```
 
-### 웹 대시보드 (권장)
+### 통합 대시보드 (권장)
 ```bash
-streamlit run scheduler/gui.py
+python interface/dash_app.py
 ```
-브라우저에서 `http://localhost:8501` 접속.
+브라우저에서 `http://localhost:8050/scheduler` — 2025년 1년치 세 비교군 시뮬레이션이 서버 기동 시
+백그라운드로 실행되고(약 1분), 끝나면 절감률·지연·SLO 위반율·k별 분석·결과 CSV가 표시됩니다.
+시점별 세계지도·타임라인은 메인 화면(`/`)에 있습니다.
 
 ### 터미널 (숫자만 빠르게)
 ```bash
-python run_cli.py
+python scheduler/run_cli.py
 ```
 
 ---
 
-## 9. 대시보드 사용법
+## 9. 2025년 1년치 검증 결과
 
-**왼쪽 사이드바**
-- `시뮬레이션 실행` — 2,800개 job으로 시뮬레이션 수행
-- `시점 선택` — 일자(Day)·시각(시)을 +/- 로 조절하면 오른쪽이 즉시 갱신
-- `자동 재생 / 정지` — 0.6초마다 1시간씩 자동 전진
+| 비교군 | 총 탄소 | 평균 지연 | SLO 위반 |
+|---|---:|---:|---:|
+| ① 단순 LB + 즉시 | 29.23 tCO₂ | 0 h | 0 |
+| ② 탄소 LB + 즉시 | 12.61 tCO₂ | 0 h | 0 |
+| ③ **탄소 LB + time-shift (ours)** | **9.96 tCO₂** | 2.06 h | **0** |
 
-**메인 화면 (한 화면에 고정)**
-- 상단 지표 — 이 시점까지 누적 절감, 실행 중 job 수, 전체 7일 절감률
-- **세계지도 2개** — 왼쪽 즉시실행(회색) vs 오른쪽 time-shift(초록). 나라 위 숫자 = 그 순간 그 나라에서 실행 중인 job 수. 두 지도를 비교하면 "time-shift가 탄소 낮은 시간대로 미뤄 실행 나라가 줄어든" 효과가 보입니다.
-- **실행 중 job 표** — job별 `즉시실행 / time-shift / 절감` 배출량 (절감은 막대). `즉시실행 = time-shift + 절감`.
-- **타임라인** — job별 요청(◆)→대기(점선)→실행(초록), 빨간 선은 현재 시각. 선택한 날의 0~24시 기준.
+- ② → ③: time-shift 만으로 **추가 21.0 %** 절감 (2.65 tCO₂), 마감 위반 0.
+- ① → ③: 공간 + 시간 이동 합쳐 **65.9 %** 절감.
+- 지연은 여유 있는 job(k=1·2)에 집중되고 급한 job(k=3~5)은 사실상 즉시 실행됩니다.
 
 ---
 
 ## 10. 현재 상태 / 다음 단계
 
-**검증된 것 (스케줄러 = 우리 담당)**
+**검증된 것**
 - time-shift 알고리즘이 설계대로 동작 (k별 차등 지연, SLO 위반 0)
-- time-shift로 즉시실행 대비 추가 탄소 절감 확인
+- 2025년 1년치 실측 탄소강도 + 로드밸런서 실제 배정 위에서 추가 절감 확인
 
-**외부 입력 (다른 담당 → 데이터로만 받음, 우리가 구현/검증하지 않음)**
-- **로드밸런서** — 리전 배정은 로드밸런서 담당. 우리는 그 결과(`jobs_routed_alpha_auto.csv`의 `배정` 컬럼)를 입력 데이터로 받아 쓸 뿐이며, 스케줄러 코드에 LB 알고리즘은 없음.
-- **LSTM 탄소예측** — 탄소강도 예측은 LSTM 담당. 현재는 `carbon_forecast.py`가 사인파+노이즈 **더미**로 대체 중이며, 팀원의 실제 모델이 완성되면 **이 파일만 교체**하면 됨 (나머지 코드는 그대로).
+**외부 입력 (다른 담당 → 데이터로만 받음)**
+- **로드밸런서** — 리전 배정 결과(`assign_alpha_auto.csv`)를 입력으로만 사용. 스케줄러 코드에 LB 알고리즘은 없음.
+- **LSTM** — 2025 검증은 사전 계산된 예측(y_pred), 2026 라이브 데모는 실제 모델 호출. 둘 다 `interface/` 경유.
 
-**TODO**
-- 실제 LSTM 모델 연동 (`carbon_forecast.py` 교체). 교체 시 대시보드의 "LSTM 예측 데이터" 표가 자동으로 실제 예측값을 반영.
-
-> 로드밸런서·LSTM은 우리 담당이 아니므로, 이 저장소에는 그 **알고리즘이 아니라 입출력 데이터(또는 더미)만** 존재합니다. 지금의 절감률 수치는 더미 탄소 데이터 기반이라 참고용이며, 실제 LSTM 연동 후 값이 달라집니다.
-
-> 더미 데이터 기반이므로 지금의 절감률 수치 자체는 참고용이며, "로직이 정확히 동작한다"는 검증 목적입니다.
-> 실제 LSTM 연동 후 값이 달라집니다.
+**다음 단계**
+- 에너지 모델 정교화 (job 전력 프로파일), marginal emission factor 회계, 리전별 전력 단가를 포함한 다목적 최적화

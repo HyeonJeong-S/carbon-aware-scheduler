@@ -3,8 +3,8 @@
 + α=auto (매 슬롯 파레토 무릎점으로 α 자동 선택)
 
 결과 → results/summary.json + results/assign_<run>.csv
-     + ../06_라우팅결과/jobs_routed_<α>.csv (스케줄러 인계용)
-사용법: .venv/bin/python run_experiments.py
+     + ../03_라우팅결과/jobs_routed_<α>.csv (스케줄러 인계용)
+사용법: python run_experiments.py   (저장소 루트 venv 사용)
 """
 import json
 import time

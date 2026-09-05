@@ -69,7 +69,7 @@ BASE_FEATURE_COLS = [
 
 
 def get_feature_cols(region: str) -> list:
-    """리전별 LSTM 입력 피처 목록. WEATHER_REGIONS는 날씨 피처 2개가 추가됨."""
+    """리전별 LSTM 입력 피처 목록. WEATHER_REGIONS는 날씨 피처 3개가 추가됨 (10 → 13)."""
     if region in WEATHER_REGIONS:
         return BASE_FEATURE_COLS + WEATHER_FEATURE_COLS
     return BASE_FEATURE_COLS
@@ -88,7 +88,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 class CarbonLSTM(nn.Module):
     """
     탄소강도 24시간 예측 LSTM 모델
-    입력: (batch, 168, N)  ← N은 리전별로 다름 (기본 10, 날씨 리전은 12)
+    입력: (batch, 168, N)  ← N은 리전별로 다름 (기본 10, 날씨 리전은 13)
     출력: (batch, 24)  ← 정규화된 값, 역변환 후 gCO₂/kWh
     """
 

@@ -1,0 +1,91 @@
+/* CAST 통합 대시보드 공통 스타일 */
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: #fcfcfb; color: #0b0b0b;
+  font-family: system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif; font-size: 14px;
+}
+a { color: #2a78d6; }
+
+/* 상단 바 */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.55rem 1.5rem; border-bottom: 1px solid #e6e6e2; background: #fff;
+  position: sticky; top: 0; z-index: 50;
+}
+.brand { display: flex; align-items: baseline; gap: 0.7rem; text-decoration: none; color: inherit; }
+.brand-name { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em; }
+.brand-sub { font-size: 0.8rem; color: #888; }
+.nav { display: flex; gap: 0.25rem; }
+.nav a {
+  padding: 0.35rem 0.75rem; border-radius: 8px; text-decoration: none; color: #444; font-weight: 500;
+}
+.nav a:hover { background: #f1f1ee; }
+.nav a.active { background: #0b0b0b; color: #fff; }
+
+.page { padding: 1rem 1.5rem 2rem; max-width: 1600px; margin: 0 auto; }
+.page h1 { font-size: 1.5rem; margin: 0.2rem 0 0.2rem; }
+.page h2 { font-size: 1.15rem; margin: 1.2rem 0 0.5rem; }
+.section { margin: 1.1rem 0; }
+.section-title { font-size: 1.05rem; margin: 0 0 0.5rem; }
+.caption { font-size: 0.8rem; color: #888; margin: 0.35rem 0 0; line-height: 1.45; }
+.subtle { color: #888; }
+.hr { border: 0; border-top: 1px solid #e6e6e2; margin: 1.2rem 0; }
+
+/* KPI */
+.kpi-row { display: flex; gap: 1rem; flex-wrap: wrap; margin: 0.6rem 0; }
+.kpi { flex: 1; min-width: 150px; padding: 0.7rem 0.9rem; background: #fff; border: 1px solid #ecece8; border-radius: 10px; }
+.kpi-label { color: #666; font-size: 0.8rem; }
+.kpi-value { font-size: 1.55rem; font-weight: 700; margin-top: 0.15rem; }
+.kpi-delta { font-size: 0.8rem; margin-top: 0.1rem; }
+
+/* 그리드 */
+.row { display: flex; gap: 1.5rem; }
+.row > * { min-width: 0; }
+.col-1 { flex: 1; } .col-2 { flex: 2; } .col-3 { flex: 3; }
+.card { background: #fff; border: 1px solid #ecece8; border-radius: 10px; padding: 0.9rem 1rem; }
+
+/* 알림 */
+.notice { padding: 0.6rem 0.9rem; border-radius: 8px; margin: 0.5rem 0; font-size: 0.9rem; line-height: 1.5; }
+.notice-info { background: #eef4fb; color: #1d4f8a; }
+.notice-ok { background: #e8f5e9; color: #1b5e20; }
+.notice-warn { background: #fff4e5; color: #8a4b00; }
+.notice-error { background: #fdecea; color: #8a1c1c; }
+
+/* 접기 */
+.details { border: 1px solid #ecece8; border-radius: 8px; background: #fff; margin: 0.6rem 0; }
+.details > summary { cursor: pointer; padding: 0.55rem 0.9rem; font-weight: 600; }
+.details-body { padding: 0.2rem 0.9rem 0.8rem; }
+.md p { margin: 0.35rem 0; line-height: 1.55; }
+.md ul, .md ol { line-height: 1.55; }
+.md table { border-collapse: collapse; font-size: 0.85rem; }
+.md th, .md td { border: 1px solid #e6e6e2; padding: 3px 8px; }
+.md code { background: #f3f3f0; padding: 0 3px; border-radius: 3px; font-size: 0.85em; }
+.md pre { background: #f3f3f0; padding: 0.6rem 0.8rem; border-radius: 6px; overflow-x: auto; }
+
+/* 컨트롤 */
+.controls { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.controls label { font-size: 0.8rem; color: #666; }
+.btn { padding: 0.35rem 0.8rem; border: 1px solid #d8d8d3; background: #fff; border-radius: 7px; cursor: pointer; font-size: 0.85rem; }
+.btn:hover { background: #f4f4f1; }
+.btn-primary { background: #0b0b0b; color: #fff; border-color: #0b0b0b; }
+.btn-primary:hover { background: #333; }
+.btn-icon { width: 34px; padding: 0.35rem 0; text-align: center; }
+.radio-inline label { margin-right: 0.9rem; }
+.checks-inline label { margin-right: 0.7rem; font-size: 0.85rem; }
+.hour-input { width: 56px; text-align: center; padding: 0.3rem; border: 1px solid #d8d8d3; border-radius: 6px; }
+
+/* 탭 */
+.tabs { border-bottom: 1px solid #e6e6e2; margin-bottom: 0.8rem; }
+.tabs .tab { padding: 0.5rem 1rem !important; border: 0 !important; border-bottom: 2px solid transparent !important; background: transparent !important; color: #555; }
+.tabs .tab--selected { border-bottom: 2px solid #0b0b0b !important; color: #0b0b0b; font-weight: 600; }
+
+/* 메인 화면 */
+.main-split { display: flex; gap: 0; }
+.main-left { flex: 1; border-right: 2px solid #ddd; padding-right: 1.4rem; min-width: 0; }
+.main-right { flex: 3; padding-left: 1.4rem; min-width: 0; }
+.chart-title { font-weight: 700; margin: 0.6rem 0 0.2rem; }
+.map-wrap { border-radius: 24px; overflow: hidden; }
+
+.mono { font-family: ui-monospace, Consolas, monospace; font-size: 0.8rem; white-space: pre-wrap; background: #f3f3f0; padding: 0.6rem 0.8rem; border-radius: 6px; max-height: 320px; overflow: auto; }
+.pill { display: inline-block; padding: 0.1rem 0.55rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+.pill-ok { background: #e8f5e9; color: #1b5e20; } .pill-warn { background: #fff4e5; color: #8a4b00; }

@@ -1,8 +1,10 @@
-"""메인 대시보드(지도/그래프/표/타임라인) 계산 로직 — 프레임워크 무관.
+"""메인 화면(지도/그래프/표/타임라인) 계산 로직 — UI 프레임워크 무관.
 
-interface/views/main.py(Streamlit)와 interface/dash_app.py(Dash)가 공유한다.
-Streamlit 쪽 코드는 절대 건드리지 않기 위해, main.py에 있던 로직을 그대로
-복사해와서 st.cache_* 대신 functools.lru_cache로 캐싱한다.
+interface/dashboard/pages/main.py 가 이 모듈의 함수를 호출해 그림·표를 만든다.
+데이터 로딩은 functools.lru_cache 로 프로세스 안에 한 번만 캐시된다.
+
+시간축: 2026 라이브 데모 (t=0 ↔ 2026-01-01 00:00 UTC). LSTM 은 168h 워밍업 이후인
+2026-01-08 부터, 날씨 리전의 미래 24h 날씨가 있는 2026-07-19 23:00 까지 실제 모델로 응답한다.
 """
 
 import functools

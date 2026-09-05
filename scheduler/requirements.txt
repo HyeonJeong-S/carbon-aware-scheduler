@@ -1,6 +1,5 @@
-simpy
-numpy
-pandas
-streamlit
-matplotlib
-plotly
+# 스케줄러 단독 실행(run_cli.py)에 필요한 최소 의존성.
+# 통합 대시보드까지 쓰려면 저장소 루트의 requirements.txt 를 설치한다.
+simpy>=4.0
+numpy>=2.0
+pandas>=2.2
