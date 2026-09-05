@@ -23,8 +23,7 @@ pip install -r requirements.txt        # 저장소 루트의 requirements.txt �
 | 파일 | 내용 |
 |---|---|
 | `data/carbon_intensity_demo.csv` | 2026-01-01 ~ 2026-07-20 실측 이력 (8리전 × 시간별, cfe/re/날씨 포함) — 통합 대시보드의 **라이브 LSTM 입력** |
-| `data/{region}_eval_records_2025.csv` | 2025년 rolling-forecast 평가 기록 (timestamp, horizon, y_true, y_pred) — 로드밸런서 1년 실험 입력 |
-| `data/{region}_eval_records_2026.csv` | 2026년 상반기 평가 기록 |
+| `../load_balancer/data/lstm_eval/{region}_eval_records.csv` | 2025년 rolling-forecast 평가 기록 (timestamp, horizon, y_true, y_pred) — 로드밸런서 1년 실험 · 스케줄러 검증의 단일 출처 (이 폴더에 두던 사본은 중복이라 제거) |
 | `models/` | 배포 모델 (검증용 최종) · `models_demo/` 데모용 모델 (2026 H1) |
 
 ---
