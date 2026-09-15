@@ -24,28 +24,7 @@
 
 실행: python3 gen_figs.py
 """
-import math
-
 INK, FS, FB, FT = "#000000", 9, 10, 8
-
-def spark(x, y, w, h, n=24):
-    """24점 일간 탄소 곡선 아이콘 — 야간 높고 정오 낮은 형태.
-
-    그림 1에서 '값 하나'가 아니라 '곡선'이 흐른다는 것을 보이는 데 쓴다.
-    공간 이동은 현재 슬롯 값 1점으로 족하지만 시간 이동은 곡선 전체가 필요하다 —
-    이 대비가 §6.2(1 h 지평은 지속성 기준선이 우세, 6 h 이후만 LSTM 우세)의 예고다.
-    """
-    p = []
-    for i in range(n):
-        f = i / (n - 1)
-        v = 0.5 + 0.5 * math.cos(2 * math.pi * f)     # f=0,1 고탄소 / f=0.5 저탄소
-        p.append(f"{x + f * w:.1f},{y + (1 - v) * h:.1f}")
-    return (f'<polyline points="{" ".join(p)}" fill="none" stroke="{INK}" '
-            f'stroke-width="0.9" stroke-linejoin="round"/>')
-
-def dot(x, y, r=1.9):
-    """값 하나를 뜻하는 점 — spark() 와 대비시켜 쓴다."""
-    return f'<circle cx="{x}" cy="{y}" r="{r}" fill="{INK}"/>'
 
 def head(w, h, note):
     return (f'<!-- {note} · gen_figs.py 로 생성 (직접 편집 금지)\n'
@@ -78,7 +57,7 @@ def path(d, sw=1.1, dash=None, head_=True):
 
 # ═══════════ 그림 1 · 전체 구조 (전단) ═══════════
 def fig_architecture():
-    W, H = 451, 256
+    W, H = 451, 236
     L = [head(W, H, "그림 1 CAST 전체 구조")]
     L += [txt(178, 12, "작업 요청", anchor="middle", bold=True),
           box(154, 16, 48, 22),
@@ -103,18 +82,12 @@ def fig_architecture():
         L += [box(x, 86, 66, 46),
               txt(x + 33, 106, t1, anchor="middle", bold=True),
               txt(x + 33, 120, t2, anchor="middle", size=FT)]
-    # LSTM → 공간 이동 : 현재 슬롯 값 하나면 족하다
-    L += [arr(158, 109, 202, 109),
-          txt(180, 103, f"Ĉ{sb('r')}(t)", anchor="middle", it=True),
-          txt(180, 121, "값 1 개", anchor="middle", size=FT),
-          arr(270, 109, 314, 109), txt(292, 103, "리전 r(j)", anchor="middle")]
-    # LSTM → 시간 이동 : 향후 24 h 곡선 전체가 필요하다.
-    # 곡선을 작은 계기판에 담아 '이 선이 무엇을 나르는가'가 읽히게 한다.
-    L += [path("M125,132 L125,168 L349,168 L349,134"),
-          f'<rect x="188" y="152" width="140" height="22" fill="#fff"/>',
-          box(190, 154, 48, 18, sw=0.7), spark(193, 157, 42, 12),
-          txt(243, 165, f"Ĉ{sb('r')}(t … t+24)", it=True),
-          txt(243, 174, "24 h 곡선 전체", size=FT)]
+    L += [arr(158, 109, 202, 109), txt(180, 103, "Ĉ", anchor="middle", it=True),
+          txt(180, 121, "N × 24 h", anchor="middle", size=FT),
+          arr(270, 109, 314, 109), txt(292, 103, "리전 r(j)", anchor="middle"),
+          path("M125,132 L125,168 L349,168 L349,134"),
+          f'<rect x="216" y="162" width="26" height="11" fill="#fff"/>',
+          txt(229, 171, "Ĉ", anchor="middle", it=True)]
     L += [path("M365,132 L365,196", sw=1.3),
           f'<rect x="368" y="146" width="62" height="24" fill="#fff"/>',
           txt(371, 156, "실행 결정", size=FT), txt(371, 167, "(리전, 시각)", size=FT),
@@ -129,10 +102,6 @@ def fig_architecture():
             L.append(f'<rect x="{x+9}" y="{201+j*7}" width="46" height="4" fill="#fff" stroke="{INK}" stroke-width="0.5"/>')
         L.append(txt(x + 32, 236, f"R{sb(lab)}", anchor="middle"))
     L.append(txt(318, 214, "⋯", anchor="middle", bold=True))
-    # 각주 — 선행 연구와의 대조. 그림 3·4의 각주와 같은 격식.
-    L += [f'<line x1="6" y1="242" x2="445" y2="242" stroke="{INK}" stroke-width="0.5"/>',
-          txt(6, 252, "기존 연구는 현재값 1개로 리전만 정한다. "
-                      "CAST는 24 h 곡선으로 리전과 실행 시각을 함께 정한다.", size=FT)]
     L.append("</svg>")
     return "\n".join(L)
 

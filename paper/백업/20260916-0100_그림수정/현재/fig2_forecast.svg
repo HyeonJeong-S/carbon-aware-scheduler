@@ -1,0 +1,33 @@
+<!-- 그림 2 탄소집약도 예측 · gen_figs.py 로 생성 (직접 편집 금지)
+     1단위 = 1pt, 폭 451pt. 100% 크기로 삽입할 것. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 451 142" width="451pt" height="142pt"
+     font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif"
+     font-size="9" fill="#000000">
+<defs>
+  <marker id="a" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#000000"/></marker>
+</defs>
+<rect width="451" height="142" fill="#fff"/>
+<rect x="6" y="12" width="439" height="104" rx="7" fill="#fff" stroke="#000000" stroke-width="1.5"/>
+<text x="14" y="25" font-size="10" font-weight="bold">탄소집약도 예측 · 리전마다 독립된 LSTM</text>
+<rect x="18" y="38" width="104" height="44" fill="#fff" stroke="#000000" stroke-width="1"/>
+<text x="70" y="54" text-anchor="middle" font-weight="bold">입력 168 h</text>
+<text x="70" y="70" text-anchor="middle" font-size="8">10종 계통 · 시간 피처</text>
+<line x1="122" y1="60" x2="142" y2="60" stroke="#000000" stroke-width="1.3" marker-end="url(#a)"/>
+<rect x="144" y="38" width="100" height="44" fill="#fff" stroke="#000000" stroke-width="1"/>
+<text x="194" y="54" text-anchor="middle" font-weight="bold">LSTM 2층</text>
+<text x="194" y="70" text-anchor="middle" font-size="8">h = 64 · dropout 0.2</text>
+<line x1="244" y1="60" x2="272" y2="60" stroke="#000000" stroke-width="1.3" marker-end="url(#a)"/>
+<text x="258" y="54" text-anchor="middle" font-size="8">hidden 64</text>
+<rect x="274" y="38" width="92" height="44" fill="#fff" stroke="#000000" stroke-width="1"/>
+<text x="320" y="54" text-anchor="middle" font-weight="bold">Linear</text>
+<text x="320" y="70" text-anchor="middle" font-size="8">64 → 24</text>
+<line x1="366" y1="60" x2="386" y2="60" stroke="#000000" stroke-width="1.3" marker-end="url(#a)"/>
+<text x="392" y="54" font-size="10" font-style="italic">Ĉ<tspan font-size="6.5" dy="1.5">r</tspan><tspan dy="-1.5"></tspan>(t)</text>
+<text x="392" y="70" font-size="8">향후 24 h</text>
+<rect x="144" y="90" width="222" height="20" fill="#fff" stroke="#000000" stroke-width="0.9" stroke-dasharray="3 2"/>
+<text x="255" y="104" text-anchor="middle" font-size="8">기상 3 리전 : 미래 기상 24 × 3 을 별도 헤드로 결합</text>
+<path d="M194,82 L194,88" fill="none" stroke="#000000" stroke-width="0.9" stroke-dasharray="2.5 2" marker-end="url(#a)"/>
+<path d="M366,100 L378,100 L378,72" fill="none" stroke="#000000" stroke-width="0.9" stroke-dasharray="2.5 2" marker-end="url(#a)"/>
+<text x="6" y="134" font-size="8">리전마다 독립된 모델 N개 · 출력은 gCO₂/kWh 단위의 예측 원값</text>
+</svg>

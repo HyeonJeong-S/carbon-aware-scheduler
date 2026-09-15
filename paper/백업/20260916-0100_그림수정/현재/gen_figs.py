@@ -78,7 +78,7 @@ def path(d, sw=1.1, dash=None, head_=True):
 
 # ═══════════ 그림 1 · 전체 구조 (전단) ═══════════
 def fig_architecture():
-    W, H = 451, 256
+    W, H = 451, 252
     L = [head(W, H, "그림 1 CAST 전체 구조")]
     L += [txt(178, 12, "작업 요청", anchor="middle", bold=True),
           box(154, 16, 48, 22),
@@ -103,18 +103,16 @@ def fig_architecture():
         L += [box(x, 86, 66, 46),
               txt(x + 33, 106, t1, anchor="middle", bold=True),
               txt(x + 33, 120, t2, anchor="middle", size=FT)]
-    # LSTM → 공간 이동 : 현재 슬롯 값 하나면 족하다
+    # LSTM → 공간 이동 : 현재 슬롯 값 하나면 족하다 (점)
     L += [arr(158, 109, 202, 109),
-          txt(180, 103, f"Ĉ{sb('r')}(t)", anchor="middle", it=True),
-          txt(180, 121, "값 1 개", anchor="middle", size=FT),
+          txt(172, 102, "Ĉ", anchor="middle", it=True), dot(186, 99),
+          txt(180, 121, "t 시점 1점", anchor="middle", size=FT),
           arr(270, 109, 314, 109), txt(292, 103, "리전 r(j)", anchor="middle")]
-    # LSTM → 시간 이동 : 향후 24 h 곡선 전체가 필요하다.
-    # 곡선을 작은 계기판에 담아 '이 선이 무엇을 나르는가'가 읽히게 한다.
+    # LSTM → 시간 이동 : 향후 24 h 곡선 전체가 필요하다 (곡선)
     L += [path("M125,132 L125,168 L349,168 L349,134"),
-          f'<rect x="188" y="152" width="140" height="22" fill="#fff"/>',
-          box(190, 154, 48, 18, sw=0.7), spark(193, 157, 42, 12),
-          txt(243, 165, f"Ĉ{sb('r')}(t … t+24)", it=True),
-          txt(243, 174, "24 h 곡선 전체", size=FT)]
+          f'<rect x="192" y="157" width="106" height="17" fill="#fff"/>',
+          spark(196, 161, 42, 10),
+          txt(243, 171, "Ĉ", it=True), txt(251, 171, "24 h 곡선 전체", size=FT)]
     L += [path("M365,132 L365,196", sw=1.3),
           f'<rect x="368" y="146" width="62" height="24" fill="#fff"/>',
           txt(371, 156, "실행 결정", size=FT), txt(371, 167, "(리전, 시각)", size=FT),
@@ -130,8 +128,8 @@ def fig_architecture():
         L.append(txt(x + 32, 236, f"R{sb(lab)}", anchor="middle"))
     L.append(txt(318, 214, "⋯", anchor="middle", bold=True))
     # 각주 — 선행 연구와의 대조. 그림 3·4의 각주와 같은 격식.
-    L += [f'<line x1="6" y1="242" x2="445" y2="242" stroke="{INK}" stroke-width="0.5"/>',
-          txt(6, 252, "기존 연구는 현재값 1개로 리전만 정한다. "
+    L += [f'<line x1="6" y1="240" x2="445" y2="240" stroke="{INK}" stroke-width="0.5"/>',
+          txt(6, 249, "기존 연구는 현재값 1점으로 리전만 정한다. "
                       "CAST는 24 h 곡선으로 리전과 실행 시각을 함께 정한다.", size=FT)]
     L.append("</svg>")
     return "\n".join(L)

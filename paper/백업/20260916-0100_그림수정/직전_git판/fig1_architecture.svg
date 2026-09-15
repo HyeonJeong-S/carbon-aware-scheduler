@@ -1,13 +1,13 @@
 <!-- 그림 1 CAST 전체 구조 · gen_figs.py 로 생성 (직접 편집 금지)
      1단위 = 1pt, 폭 451pt. 100% 크기로 삽입할 것. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 451 256" width="451pt" height="256pt"
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 451 236" width="451pt" height="236pt"
      font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif"
      font-size="9" fill="#000000">
 <defs>
   <marker id="a" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
     <path d="M0,0 L10,5 L0,10 z" fill="#000000"/></marker>
 </defs>
-<rect width="451" height="256" fill="#fff"/>
+<rect width="451" height="236" fill="#fff"/>
 <text x="178" y="12" text-anchor="middle" font-weight="bold">작업 요청</text>
 <rect x="154" y="16" width="48" height="22" fill="#fff" stroke="#000000" stroke-width="1"/>
 <g stroke="#000000" stroke-width="0.6" fill="none"><line x1="160" y1="22" x2="196" y2="22"/><line x1="160" y1="27" x2="196" y2="27"/><line x1="160" y1="32" x2="196" y2="32" stroke-dasharray="2 1.5"/></g>
@@ -36,16 +36,13 @@
 <text x="349" y="106" text-anchor="middle" font-weight="bold">시간 이동</text>
 <text x="349" y="120" text-anchor="middle" font-size="8">마감 인지</text>
 <line x1="158" y1="109" x2="202" y2="109" stroke="#000000" stroke-width="1.1" marker-end="url(#a)"/>
-<text x="180" y="103" text-anchor="middle" font-style="italic">Ĉ<tspan font-size="6.5" dy="1.5">r</tspan><tspan dy="-1.5"></tspan>(t)</text>
-<text x="180" y="121" text-anchor="middle" font-size="8">값 1 개</text>
+<text x="180" y="103" text-anchor="middle" font-style="italic">Ĉ</text>
+<text x="180" y="121" text-anchor="middle" font-size="8">N × 24 h</text>
 <line x1="270" y1="109" x2="314" y2="109" stroke="#000000" stroke-width="1.1" marker-end="url(#a)"/>
 <text x="292" y="103" text-anchor="middle">리전 r(j)</text>
 <path d="M125,132 L125,168 L349,168 L349,134" fill="none" stroke="#000000" stroke-width="1.1" marker-end="url(#a)"/>
-<rect x="188" y="152" width="140" height="22" fill="#fff"/>
-<rect x="190" y="154" width="48" height="18" fill="#fff" stroke="#000000" stroke-width="0.7"/>
-<polyline points="193.0,157.0 194.8,157.2 196.7,157.9 198.5,158.9 200.3,160.2 202.1,161.8 204.0,163.4 205.8,165.0 207.6,166.5 209.4,167.7 211.3,168.5 213.1,168.9 214.9,168.9 216.7,168.5 218.6,167.7 220.4,166.5 222.2,165.0 224.0,163.4 225.9,161.8 227.7,160.2 229.5,158.9 231.3,157.9 233.2,157.2 235.0,157.0" fill="none" stroke="#000000" stroke-width="0.9" stroke-linejoin="round"/>
-<text x="243" y="165" font-style="italic">Ĉ<tspan font-size="6.5" dy="1.5">r</tspan><tspan dy="-1.5"></tspan>(t … t+24)</text>
-<text x="243" y="174" font-size="8">24 h 곡선 전체</text>
+<rect x="216" y="162" width="26" height="11" fill="#fff"/>
+<text x="229" y="171" text-anchor="middle" font-style="italic">Ĉ</text>
 <path d="M365,132 L365,196" fill="none" stroke="#000000" stroke-width="1.3" marker-end="url(#a)"/>
 <rect x="368" y="146" width="62" height="24" fill="#fff"/>
 <text x="371" y="156" font-size="8">실행 결정</text>
@@ -76,6 +73,4 @@
 <rect x="343" y="215" width="46" height="4" fill="#fff" stroke="#000000" stroke-width="0.5"/>
 <text x="366" y="236" text-anchor="middle">R<tspan font-size="6.5" dy="1.5">N</tspan><tspan dy="-1.5"></tspan></text>
 <text x="318" y="214" text-anchor="middle" font-weight="bold">⋯</text>
-<line x1="6" y1="242" x2="445" y2="242" stroke="#000000" stroke-width="0.5"/>
-<text x="6" y="252" font-size="8">기존 연구는 현재값 1개로 리전만 정한다. CAST는 24 h 곡선으로 리전과 실행 시각을 함께 정한다.</text>
 </svg>
