@@ -20,8 +20,14 @@ TABLE_COLUMNS = ["job_id", "task_type", "출발지", "도착지", "요청시각"
 SPEEDS = (0.5, 1.0, 1.25, 1.5, 2.0)
 
 layout = html.Div([
+    # 재생은 "틱마다 무조건 전진"이 아니라 "한 프레임 그리고 나면 다음 틱" 방식이다.
+    # 한 시각을 그리는 데 LSTM 예측 + 지도/타임라인까지 ~0.9s 가 들어서, 고정 간격으로
+    # 틱을 쏘면 시계만 앞서가고 화면이 계속 뒤처진다(2x 이상에서는 멈춘 것처럼 보인다).
+    # → 틱이 오면 즉시 Interval 을 끄고, 렌더가 끝났을 때(main-rendered) 재생 중이면 다시 켠다.
     dcc.Interval(id="main-tick", interval=int(core.PLAY_INTERVAL_SEC * 1000),
                  n_intervals=0, disabled=True),
+    dcc.Store(id="main-playing", data=False),
+    dcc.Store(id="main-rendered", data=0),
 
     html.Div([
         html.Div([
@@ -86,12 +92,14 @@ layout = html.Div([
 
 @callback(
     Output("main-tick", "disabled"),
+    Output("main-playing", "data"),
     Input("main-play", "n_clicks"),
     Input("main-stop", "n_clicks"),
     prevent_initial_call=True,
 )
 def toggle_play(_play, _stop):
-    return ctx.triggered_id != "main-play"
+    playing = ctx.triggered_id == "main-play"
+    return (not playing), playing
 
 
 @callback(Output("main-tick", "interval"), Input("main-speed", "value"))
@@ -103,6 +111,7 @@ def set_speed(speed):
     Output("main-date", "date"),
     Output("main-hour", "value"),
     Output("main-tick", "disabled", allow_duplicate=True),
+    Output("main-playing", "data", allow_duplicate=True),
     Input("main-tick", "n_intervals"),
     Input("main-hour-minus", "n_clicks"),
     Input("main-hour-plus", "n_clicks"),
@@ -117,8 +126,26 @@ def step_time(_n, _minus, _plus, picked_day, picked_hour):
     delta = -1 if ctx.triggered_id == "main-hour-minus" else 1
     nxt = max(core.MIN_T, min(t_now + delta, core.MAX_T))
     new_day = (core.BASE_TIME + pd.Timedelta(hours=nxt)).date()
-    hit_end = ctx.triggered_id == "main-tick" and nxt >= core.MAX_T
-    return new_day, int(nxt % 24), (True if hit_end else dash.no_update)
+    by_tick = ctx.triggered_id == "main-tick"
+    hit_end = by_tick and nxt >= core.MAX_T
+    # 틱으로 전진했으면 Interval 을 잠시 끈다 — 렌더가 끝나면 _resume_after_render 가 다시 켠다.
+    # 구간 끝에 닿았으면 재생 자체를 멈춘다.
+    tick_off = True if by_tick else dash.no_update
+    playing = False if hit_end else dash.no_update
+    return new_day, int(nxt % 24), tick_off, playing
+
+
+@callback(
+    Output("main-tick", "disabled", allow_duplicate=True),
+    Input("main-rendered", "data"),
+    State("main-playing", "data"),
+    prevent_initial_call=True,
+)
+def resume_after_render(_rendered, playing):
+    """한 프레임을 다 그린 뒤에만 다음 틱을 예약한다 (재생 중일 때만)."""
+    if not playing:
+        return dash.no_update
+    return False
 
 
 @callback(
@@ -130,10 +157,12 @@ def step_time(_n, _minus, _plus, picked_day, picked_hour):
     Output("main-table", "data"),
     Output("main-table", "style_data_conditional"),
     Output("main-timeline", "figure"),
+    Output("main-rendered", "data"),
     Input("main-date", "date"),
     Input("main-hour", "value"),
+    State("main-rendered", "data"),
 )
-def update_dashboard(picked_day, picked_hour):
+def update_dashboard(picked_day, picked_hour, rendered):
     picked_hour = int(picked_hour or 0)
     t_now = core.t_now_of(picked_day, picked_hour)
 
@@ -175,4 +204,5 @@ def update_dashboard(picked_day, picked_hour):
     bar_styles = theme.bar_style(SAVE_COL, core.MAP_SAVED_BAR_MAX)
 
     timeline_fig = core.draw_timeline(running, t_now, t_now - picked_hour, height=190)
-    return forecast_fig, lb_fig, lb_caption, map_fig, kpis, rows, bar_styles, timeline_fig
+    return (forecast_fig, lb_fig, lb_caption, map_fig, kpis, rows, bar_styles, timeline_fig,
+            (rendered or 0) + 1)
