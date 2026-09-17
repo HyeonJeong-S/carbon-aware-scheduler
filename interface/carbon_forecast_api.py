@@ -10,18 +10,21 @@
     dummy : 사인파 + 노이즈. 이력이 부족하거나 torch가 없을 때의 대체.
 
 어떤 백엔드로 응답했는지는 backend_info() / last_backend() 로 확인한다.
+
+초기화(모델 로딩)는 import 시점이 아니라 첫 get_forecast()/status() 호출 때 지연 실행된다.
 """
 
 import os
-import sys
+import threading
+import warnings
 
 import numpy as np
 
+import carbon_forecast_lstm
+
 from .regions import REGIONS, to_region
 
-_HERE = os.path.dirname(os.path.abspath(__file__))
-_REPO_ROOT = os.path.dirname(_HERE)
-LSTM_DIR = os.path.join(_REPO_ROOT, "carbon-forecast-LSTM")
+LSTM_DIR = os.path.dirname(os.path.abspath(carbon_forecast_lstm.__file__))
 LSTM_MODEL_DIR = os.path.join(LSTM_DIR, "models")
 LSTM_DATA_CSV = os.path.join(LSTM_DIR, "data", "carbon_intensity_demo.csv")
 
@@ -54,7 +57,7 @@ _state = {
 
 
 # ── 더미 백엔드 ──────────────────────────────────────────────
-def generate_master_series(total_hours):
+def generate_master_series(total_hours: int) -> dict[str, list[float]]:
     """시뮬레이션 전체 구간(0~total_hours)의 결정적 더미 탄소강도 시계열."""
     rng = np.random.default_rng(_DUMMY_SEED)
     hours = np.arange(total_hours)
@@ -80,14 +83,29 @@ def _slice_master(master_series, t_hour, horizon):
 
 
 # ── 실제 LSTM 백엔드 ─────────────────────────────────────────
-def init_lstm(carbon_csv=None, master_series=None, force=False):
+_init_lock = threading.Lock()
+_init_attempted = False
+
+
+def init_lstm(carbon_csv: str | None = None, master_series: dict[str, list[float]] | None = None,
+              force: bool = False) -> bool:
     """실제 LSTM을 초기화한다. 성공하면 True.
 
     carbon_csv    : 실측 이력 CSV (timestamp, region, carbon_intensity, cfe_pct, re_pct)
     master_series : 이력이 없을 때 더미 시계열로 이력을 구성 (시뮬레이션 전 구간 커버)
+
+    모델 로딩에 수 초~십수 초가 걸리므로 import 시점이 아니라 **처음 예측/상태를
+    요청할 때** 한 번 실행된다(_ensure_init). 명시적으로 미리 띄우고 싶으면 직접 호출한다.
     """
-    if _state["ready"] and not force:
-        return True
+    global _init_attempted
+    with _init_lock:
+        if _state["ready"] and not force:
+            return True
+        _init_attempted = True
+        return _init_lstm_locked(carbon_csv, master_series)
+
+
+def _init_lstm_locked(carbon_csv, master_series):
     _state["error"] = None
 
     if not os.path.isdir(LSTM_MODEL_DIR):
@@ -100,15 +118,19 @@ def init_lstm(carbon_csv=None, master_series=None, force=False):
         _state["error"] = f"torch 미설치 ({e})"
         return False
 
-    if LSTM_DIR not in sys.path:
-        sys.path.insert(0, LSTM_DIR)
     try:
-        import carbon_forecast as lstm_mod
+        from carbon_forecast_lstm import carbon_forecast as lstm_mod
+
         from .carbon_history import BASE_TIME, coverage, load_history
 
         history, placeholder = load_history(
             carbon_csv=carbon_csv, master_series=master_series)
-        models, scalers, weather_scalers = lstm_mod.load_all_models(LSTM_MODEL_DIR)
+        with warnings.catch_warnings():
+            # scaler.pkl은 학습 당시 scikit-learn 버전으로 저장되어 있어 버전이 다르면
+            # InconsistentVersionWarning이 뜬다. MinMaxScaler는 min/scale 두 값뿐이라
+            # 버전 간 호환에 문제가 없으므로 경고만 가린다.
+            warnings.simplefilter("ignore")
+            models, scalers, weather_scalers = lstm_mod.load_all_models(LSTM_MODEL_DIR)
         _, _, forecastable_from = coverage(history)
     except Exception as e:
         _state["error"] = f"{type(e).__name__}: {e}"
@@ -141,12 +163,21 @@ def _lstm_forecast(t_hour, horizon):
 
 
 # ── 공개 인터페이스 ──────────────────────────────────────────
-def get_forecast(t_hour, horizon=FORECAST_HORIZON, master_series=None,
-                 prefer_lstm=True):
+def _ensure_init():
+    """첫 사용 시 한 번만 LSTM 초기화를 시도한다 (실패해도 더미로 계속 동작)."""
+    if not _init_attempted:
+        init_lstm(carbon_csv=LSTM_DATA_CSV)
+
+
+def get_forecast(t_hour: float, horizon: int = FORECAST_HORIZON,
+                 master_series: dict[str, list[float]] | None = None,
+                 prefer_lstm: bool = True) -> dict[str, list[float]]:
     """t_hour 시점 기준 향후 horizon시간 예측 -> {표준리전코드: [값 …]}.
 
     실제 LSTM을 쓸 수 있으면 그걸 쓰고, 아니면 더미로 자동 폴백한다.
     """
+    if prefer_lstm:
+        _ensure_init()
     if prefer_lstm and _state["ready"]:
         pred = _lstm_forecast(t_hour, horizon)
         if pred is not None:
@@ -159,13 +190,14 @@ def get_forecast(t_hour, horizon=FORECAST_HORIZON, master_series=None,
     return _slice_master(master_series, t_hour, horizon)
 
 
-def last_backend():
+def last_backend() -> str | None:
     """마지막 get_forecast 호출이 실제로 사용한 백엔드 ('lstm' | 'dummy' | None)."""
     return _state["last_backend"]
 
 
-def status():
+def status() -> dict:
     """현재 LSTM 연결 상태 상세 (UI 표시용)."""
+    _ensure_init()
     return {
         "ready": _state["ready"],
         "error": _state["error"],
@@ -177,13 +209,11 @@ def status():
     }
 
 
-def backend_info():
+def backend_info() -> str:
     """현재 예측 백엔드 한 줄 설명."""
+    _ensure_init()
     if not _state["ready"]:
         return f"더미 예측 (사인파+노이즈) — LSTM 미연결: {_state['error'] or '미초기화'}"
     note = " · cfe/re는 임시 추정값" if _state["placeholder"] else ""
-    return f"실제 LSTM 모델 연결됨 (carbon-forecast-LSTM/models){note}"
+    return f"실제 LSTM 모델 연결됨 (carbon_forecast_lstm/models){note}"
 
-
-# import 시점에 한 번 자동 시도 (실패해도 더미로 계속 동작)
-init_lstm(carbon_csv=LSTM_DATA_CSV)

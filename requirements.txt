@@ -1,0 +1,2 @@
+# 의존성의 단일 출처는 pyproject.toml 이다. 이 파일은 `pip install -r requirements.txt` 습관을 위한 얇은 포워더.
+-e .[lstm,dev]

@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      # torch 는 CI 에서 설치하지 않는다 — LSTM 은 더미로 폴백되고, 실모델 테스트는 `slow` 마커로 제외된다.
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Unit tests
+        run: pytest
+
+      - name: Import smoke test (dashboard app builds)
+        run: python -c "from interface.dashboard.app import create_app; create_app(); print('dash app ok')"

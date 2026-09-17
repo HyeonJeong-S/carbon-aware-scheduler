@@ -3,7 +3,7 @@
 로드밸런서와 **완전히 같은 데이터·규약**을 쓴다. 그래야 LB의 리전 배정과
 스케줄러의 시간 이동이 같은 시간축·같은 탄소값 위에서 맞물린다.
 
-규약 (load_balancer/02_프레임워크/simulator.py 의 CarbonSeries와 동일):
+규약 (load_balancer/framework/simulator.py 의 CarbonSeries와 동일):
     시간축 : t=0h ↔ 2025-01-01 00:00 UTC, 1시간 해상도
     y_true : 실측 탄소강도 → **탄소 회계**(실제 배출량 계산)에 사용
     y_pred : LSTM 예측    → **스케줄링 판단**에 사용
@@ -19,16 +19,12 @@ import os
 import numpy as np
 import pandas as pd
 
+from load_balancer.framework.config import LSTM_EVAL_DIR
+
 from .regions import REGIONS, to_region
 
-_HERE = os.path.dirname(os.path.abspath(__file__))
-_REPO_ROOT = os.path.dirname(_HERE)
-
-# eval_records 위치 (LSTM 쪽 원본 / 로드밸런서 사본 중 있는 것)
-_EVAL_DIRS = [
-    os.path.join(_REPO_ROOT, "carbon-forecast-LSTM", "logs"),
-    os.path.join(_REPO_ROOT, "load_balancer", "01_데이터", "lstm_eval"),
-]
+# eval_records 위치 — 로드밸런서와 같은 파일을 읽어야 시간축·탄소값이 일치한다
+_EVAL_DIRS = [str(LSTM_EVAL_DIR)]
 
 BASE_TIME = pd.Timestamp("2025-01-01 00:00:00")  # 시뮬레이션 t=0
 HORIZON = 24
@@ -60,7 +56,7 @@ def _ffill(arr):
     return arr
 
 
-def load_2025():
+def load_2025() -> dict:
     """2025년 1년치 탄소 데이터를 읽는다.
 
     반환: dict
@@ -115,7 +111,7 @@ def load_2025():
     return {"actual": actual, "pred24": pred24, "n_hours": n_common}
 
 
-def actual_series(data, total_hours):
+def actual_series(data: dict, total_hours: int) -> dict[str, list[float]]:
     """탄소 회계용 실측 시계열 -> {리전: [시간별 값]} (스케줄러 시뮬레이터 입력 형식)."""
     out = {}
     for region, arr in data["actual"].items():
@@ -126,7 +122,7 @@ def actual_series(data, total_hours):
     return out
 
 
-def forecast_at(data, t_hour, horizon=HORIZON):
+def forecast_at(data: dict, t_hour: float, horizon: int = HORIZON) -> dict[str, list[float]]:
     """t 시점에 알 수 있었던 향후 horizon시간 예측 -> {리전: [값 …]}.
 
     index 0 = t 시각(현재, 실측으로 확정) · index i = t+i 시각의 LSTM 예측.

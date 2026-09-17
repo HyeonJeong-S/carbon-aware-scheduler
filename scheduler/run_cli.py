@@ -3,25 +3,24 @@
 기본은 **2025년 1년치**(로드밸런서와 동일한 job 목록 + 동일한 배정 결과).
 그 데이터가 없으면 저장소 안의 7일치로 폴백한다.
 
-사용법:
-    python run_cli.py
+사용법 (저장소 루트에서):
+    python -m scheduler.run_cli
 """
 
 import os
 
+from load_balancer.framework.config import JOBS_CSV as YEAR_JOBS_CSV
+from load_balancer.framework.config import RESULTS_DIR as LB_RESULTS_DIR
 from scheduler import carbon_forecast, data_loader, metrics, simulator
 
 _SCHED_ROOT = os.path.dirname(os.path.abspath(__file__))
-_REPO_ROOT = os.path.dirname(_SCHED_ROOT)
 
 JOB_DIR = os.path.join(_SCHED_ROOT, "data", "job")
 ROUTED_CSV = os.path.join(JOB_DIR, "jobs_routed_alpha_auto.csv")
 JOBS_CSV = os.path.join(JOB_DIR, "jobs.csv")
 
-# 2025년 1년치 (로드밸런서와 같은 소스)
-YEAR_JOBS_CSV = os.path.join(_REPO_ROOT, "load_balancer", "01_데이터", "jobs.csv")
-YEAR_ASSIGN_CSV = os.path.join(_REPO_ROOT, "load_balancer", "02_프레임워크",
-                               "results", "assign_alpha_auto.csv")
+# 2025년 1년치 (로드밸런서와 같은 소스) — 로드밸런서의 배정 결과를 그대로 사용
+YEAR_ASSIGN_CSV = LB_RESULTS_DIR / "assign_alpha_auto.csv"
 
 
 def load_jobs():

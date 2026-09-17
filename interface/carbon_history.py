@@ -6,15 +6,13 @@ LSTM은 예측 시점 t 이전 **168시간(1주일)** 의 이력을 요구하며
 원래는 데이터 파이프라인 담당이 공급해야 한다.
 
 현재 저장소에 있는 것:
-    load_balancer/05_프레임워크/data/carbon_intensity.csv
-        → 8리전 × 192시간, 15분 간격. carbon_intensity만 있고 cfe/re는 없음.
+    carbon_forecast_lstm/data/carbon_intensity_demo.csv
+        → 2026-01-01 ~ 2026-07-20, 8리전 × 시간별. carbon_intensity·cfe_pct·re_pct·날씨 실측 포함.
 
-따라서 이 모듈은
-    carbon_intensity : 위 파일(또는 더미 시계열)에서 가져오고
+이 파일이 있으면 그대로 LSTM 입력 이력이 된다(is_placeholder=False).
+cfe/re가 없는 CSV나 더미 시계열(master_series)로 이력을 만들 때는
     cfe_pct / re_pct : **임시 추정값**으로 채운다 (탄소강도가 낮을수록 청정 비중이 높다는 단순 가정)
-는 방식으로 이력을 구성한다. 임시값이라는 사실은 is_placeholder 플래그로 노출한다.
-
-실측 cfe/re 데이터가 확보되면 load_history(...)에 그 CSV를 넘기면 그대로 대체된다.
+그리고 임시값이라는 사실을 is_placeholder=True 로 노출한다.
 """
 
 import os
@@ -22,14 +20,11 @@ import os
 import numpy as np
 import pandas as pd
 
+import carbon_forecast_lstm
+
 from .regions import REGIONS, to_region
 
-_HERE = os.path.dirname(os.path.abspath(__file__))
-_REPO_ROOT = os.path.dirname(_HERE)
-
-# 로드밸런서가 쓰는 탄소강도 시계열 (wide 포맷: time_s + 리전 컬럼들)
-LB_CARBON_CSV = os.path.join(
-    _REPO_ROOT, "load_balancer", "05_프레임워크", "data", "carbon_intensity.csv")
+_LSTM_DIR = os.path.dirname(os.path.abspath(carbon_forecast_lstm.__file__))
 
 # 시뮬레이션 t=0 에 대응하는 실제 시각 (jobs 데이터 규약: 2026-01-01 00:00 UTC)
 BASE_TIME = pd.Timestamp("2026-01-01 00:00:00")
@@ -48,13 +43,15 @@ def _estimate_clean_pct(ci):
     return cfe, re
 
 
-def load_history(carbon_csv=None, master_series=None, base_time=BASE_TIME):
+def load_history(carbon_csv: str | None = None, master_series: dict[str, list[float]] | None = None,
+                 base_time: pd.Timestamp = BASE_TIME) -> tuple[pd.DataFrame, bool]:
     """LSTM 입력용 long-format 이력 DataFrame을 만든다.
 
     우선순위:
       1) carbon_csv 가 주어지고 실측 컬럼(cfe_pct, re_pct)까지 있으면 그대로 사용
-      2) master_series(더미 시계열)가 주어지면 그것으로 구성 (시뮬레이션 전 구간 커버)
-      3) 아무것도 없으면 로드밸런서의 carbon_intensity.csv 사용 (192시간만 커버)
+      2) carbon_csv 에 cfe/re가 없으면 carbon_intensity만 쓰고 cfe/re는 임시 추정
+      3) master_series(더미 시계열)가 주어지면 그것으로 구성 (시뮬레이션 전 구간 커버)
+      4) 아무것도 없으면 FileNotFoundError
 
     반환: (df, is_placeholder)
         df            : timestamp, region, carbon_intensity, cfe_pct, re_pct
@@ -76,36 +73,15 @@ def load_history(carbon_csv=None, master_series=None, base_time=BASE_TIME):
                 {"timestamp": ts, "region": r, "carbon_intensity": series}))
         frames = pd.concat(rows, ignore_index=True)
     else:
-        frames = _load_lb_carbon(base_time)
+        raise FileNotFoundError(
+            f"LSTM 입력 이력이 없습니다: carbon_csv={carbon_csv!r} (파일 없음), master_series=None")
 
     cfe, re = _estimate_clean_pct(frames["carbon_intensity"].values)
     frames = frames.assign(cfe_pct=cfe, re_pct=re)
     return frames, True
 
 
-def _load_lb_carbon(base_time):
-    """로드밸런서의 wide 포맷 탄소강도 CSV -> long 포맷(1시간 간격)."""
-    if not os.path.exists(LB_CARBON_CSV):
-        raise FileNotFoundError(f"탄소강도 데이터를 찾을 수 없습니다: {LB_CARBON_CSV}")
-    wide = pd.read_csv(LB_CARBON_CSV)
-    wide["timestamp"] = base_time + pd.to_timedelta(wide["time_s"], unit="s")
-    wide = wide.set_index("timestamp").drop(columns=["time_s"])
-    hourly = wide.resample("1h").mean()  # 15분 간격 -> 1시간
-
-    rows = []
-    for col in hourly.columns:
-        region = to_region(col)
-        if region not in REGIONS:
-            continue
-        rows.append(pd.DataFrame({
-            "timestamp": hourly.index,
-            "region": region,
-            "carbon_intensity": hourly[col].values,
-        }))
-    return pd.concat(rows, ignore_index=True)
-
-
-def coverage(df):
+def coverage(df: pd.DataFrame) -> tuple[pd.Timestamp, pd.Timestamp, pd.Timestamp]:
     """이력이 커버하는 (시작, 끝, 예측 가능 시작) 시각을 돌려준다.
 
     LSTM은 168시간 이력이 필요하므로 예측은 시작 + 168h 이후부터 가능하다.
@@ -115,11 +91,11 @@ def coverage(df):
 
 
 # 실제 탄소강도(실측) CSV — 배출량 회계의 정답값
-REAL_CARBON_CSV = os.path.join(
-    _REPO_ROOT, "carbon-forecast-LSTM", "data", "carbon_intensity_demo.csv")
+REAL_CARBON_CSV = os.path.join(_LSTM_DIR, "data", "carbon_intensity_demo.csv")
 
 
-def load_actual_series(total_hours, carbon_csv=REAL_CARBON_CSV, base_time=BASE_TIME):
+def load_actual_series(total_hours: int, carbon_csv: str = REAL_CARBON_CSV,
+                       base_time: pd.Timestamp = BASE_TIME) -> dict[str, list[float]] | None:
     """시뮬레이션 **탄소 회계용** 실측 시계열 -> {표준리전코드: [시간별 값]}.
 
     예측(get_forecast)이 아니라 "실제로 그 시각에 얼마나 배출됐는가"의 정답값이다.

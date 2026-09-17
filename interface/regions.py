@@ -38,7 +38,7 @@ _LEGACY_ALIASES = {
 }
 
 
-def to_region(name):
+def to_region(name: str) -> str:
     """어떤 표기로 들어오든 표준 리전 코드로 변환한다.
 
     로드밸런서 표기("Korea"), LSTM/표준 코드("KR"), 과거 코드("IN-NO") 모두 허용.
@@ -53,12 +53,12 @@ def to_region(name):
     return name
 
 
-def to_iso3(region):
+def to_iso3(region: str) -> str:
     """표준 리전 코드 -> ISO-3 국가코드 (지도 시각화용). 미국 3개 리전은 USA로 합쳐진다."""
     return REGION_TO_ISO3.get(to_region(region), region)
 
 
-def label(region):
+def label(region: str) -> str:
     """표준 리전 코드 -> 사람이 읽는 이름."""
     r = to_region(region)
     return REGION_LABELS.get(r, r)
