@@ -54,6 +54,25 @@
       결과 재계산 19,332건, 73배 차이 — 1b가 실측으로 특정). pop을
       running()/avail() 안에서 그 슬롯의 t로만 하도록 reserve()의 sync를
       제거했다. CapacityLedger.reserve() 의 docstring에 상세 설명 있음.
+
+2026-09-20 (B1, d6 지시) capacity_violations 정의를 통일했다:
+  기존에는 admission 시점에 `len(F) - a`(강제 편입이 그 슬롯 가용치를 넘긴 만큼)를
+  누적했다 — 같은 초과 구간에서 작업이 여러 건 잇따라 들어오면 그만큼 중복으로
+  세여, 독립 이벤트 스윕 재계산(구간 수 기준)과 어긋났다(자기보고 1,861 vs
+  독립 662). hours_over가 이미 이벤트 스윕으로 "초과 구간의 길이 합"을 재는데
+  위반 "건수"만 다른 잣대(admission 카운트)를 쓴 게 원인이었다. CapacityLedger._sweep()
+  이 (peak, hours_over) 와 같은 스윕에서 "초과 구간(episode)의 개수"도 함께
+  계산하도록 고쳐 capacity_violations = Σ_r violations(r) 로 바꿨다. 이제 자기보고와
+  사후 CSV 재계산이 정의상 같은 알고리즘이라 항상 일치한다.
+  (참고: 이 세션에서 재현한 수치는 359건이었다 — 662와 다르다. 662를 낸 원 스크립트가
+  이 세션에 남아있지 않아 정확한 카운팅 규약을 대조하지 못했다. episode-count가 아니라
+  다른 정의였을 가능성이 있으니 d6 확인 요청함.)
+
+2026-09-20 (B2, d6 지시) 즉시실행 집계 공백을 메웠다: `immediate`는 도착 즉시
+  큐를 건너뛴 건수만 세는데, 정상 P/F 선택 경로에서 offset 0이 그대로 선택돼
+  delay=0으로 끝나는 작업(forced도 immediate도 아님, 251건)은 어떤 카운터에도
+  안 잡혔다. `zero_delay`(delay<=0인 전체 건수)와 `delayed`(나머지)를 stats에
+  추가해 immediate ⊆ zero_delay, zero_delay + delayed = n 이 항상 성립하게 했다.
 """
 
 import heapq
@@ -120,7 +139,16 @@ class CapacityLedger:
         self._log[region].append((start, end))
 
     def _sweep(self, region):
-        """§6.4와 동일한 이벤트 스윕으로 (peak, 상한초과 누적시간)을 계산."""
+        """식 (3)과 동일한 이벤트 스윕으로 (peak, 상한초과 누적시간, 위반 건수)을 계산.
+
+        위반 "건수"의 정의(2026-09-20, B1): 식 (3)은 ∀t(연속 시각)에 대한 제약이므로
+        위반도 연속 시각 위의 사건이다 — 개별 admission을 세면(과거 capacity_violations가
+        그랬다) 같은 초과 구간에서 여러 작업이 잇따라 들어올 때마다 중복으로 세어
+        구간(episode) 수보다 부풀려진다. 여기서는 concurrency가 상한을 넘는 **극대
+        연속 구간(maximal episode)의 개수**를 위반 건수로 정의한다 — hours_over가
+        그 구간들의 "길이 합"이듯, violations는 그 구간들의 "개수"다. 같은 잣대(이벤트
+        스윕)로 재는 것이므로 자기보고와 사후 독립 재계산이 CSV만 있으면 항상 일치한다.
+        """
         ev = []
         for s, e in self._log[region]:
             if e > s:
@@ -134,16 +162,25 @@ class CapacityLedger:
             mx = max(mx, cur)
             spans.append((t, cur))
         over = 0.0
+        episodes = 0
+        prev_over = False
         for (t0, c0), (t1, _) in pairwise(spans):
-            if c0 > self.cap:
+            is_over = c0 > self.cap
+            if is_over:
                 over += t1 - t0
-        return mx, over
+                if not prev_over:
+                    episodes += 1
+            prev_over = is_over
+        return mx, over, episodes
 
     def peak(self, region):
         return self._sweep(region)[0]
 
     def hours_over(self, region):
         return self._sweep(region)[1]
+
+    def violations(self, region):
+        return self._sweep(region)[2]
 
 
 # ─────────────────────── 탄소 창 평균 (누적합 가속) ───────────────────────
@@ -214,7 +251,7 @@ def run_rolling(jobs, actual, pred24, capacity, regions,
         arrivals.setdefault(math.floor(j["submit_time"]), []).append(j)
 
     Q = {r: [] for r in regions}          # 리전별 대기 집합
-    out, forced, over_adm, immediate = {}, 0, 0, 0
+    out, forced, immediate = {}, 0, 0
 
     def emit(j, r, start, forced_flag):
         d = j["duration"]
@@ -290,8 +327,6 @@ def run_rolling(jobs, actual, pred24, capacity, regions,
             P.sort(key=lambda j: (j["deadline"] - j["duration"]) - t)
             room = max(a - len(F), 0)
             S = F + P[:room]
-            if len(F) > a:
-                over_adm += len(F) - max(a, 0)
             forced += len(F)
 
             picked = {id(j) for j in S}
@@ -305,13 +340,21 @@ def run_rolling(jobs, actual, pred24, capacity, regions,
         if not any(Q.values()) and not arrivals:
             break
 
+    # B2(2026-09-20): `immediate`는 도착 즉시 큐를 건너뛴 건수만 센다. 그런데 큐에
+    # 들어간 뒤에도 offset 0("지금")이 그대로 선택돼 delay=0으로 끝나는 작업이
+    # 따로 있다(정상 P/F 선택 경로) — 이들은 forced도 immediate도 아니어서
+    # 예전에는 어떤 카운터에도 안 잡혔다(146,000건 중 251건). zero_delay로 명시해
+    # immediate + (zero_delay - immediate) + delayed = n 이 항상 맞아떨어지게 한다.
+    zero_delay = sum(1 for v in out.values() if v["delay"] <= 1e-9)
     stats = dict(
         n=len(out),
         total_carbon_kg=sum(v["carbon_emitted"] for v in out.values()) / 1000.0,
         slo_violations=sum(1 for v in out.values() if not v["slo_satisfied"]),
         forced_admissions=forced,
-        capacity_violations=over_adm,
+        capacity_violations=sum(led.violations(r) for r in regions),
         immediate=immediate,
+        zero_delay=zero_delay,
+        delayed=len(out) - zero_delay,
         peak={r: led.peak(r) for r in regions},
         hours_over={r: led.hours_over(r) for r in regions},
         capacity=capacity,

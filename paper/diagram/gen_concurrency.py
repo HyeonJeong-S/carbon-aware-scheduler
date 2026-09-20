@@ -1,0 +1,108 @@
+# -*- coding: utf-8 -*-
+"""그림 5(안) · 시간 이동 전후 CAL 리전 동시실행수 — 41 -> 19.
+
+데이터 출처: scheduler.simulator(mode="carbon_lb_timeshift", 무제약) 과
+scheduler.capacity.run_rolling(capacity=12, 온라인) 을 2025년 1년치 job
+146,000건에 대해 직접 실행해 CAL(US-CAL-CISO) 리전의 (start,end) 배정을
+연속 시각 이벤트 스윕한 결과다 (§6.4 정의: tau_j<=t<tau_j+d_j).
+독립 재계산 결과가 정리.txt [26]의 41건/19건, 초과시간 867h/12h 와 정확히
+일치함을 확인했다 (scratchpad/run_c5.py).
+
+레포 코드(scheduler/, capacity.py)는 실행만 했을 뿐 수정하지 않았다.
+데이터는 이 스크립트 옆의 c5_cal_concurrency.json 에서 읽는다
+(run_c5.py 로 재생성 가능 — 8초 내외).
+
+실행: ./.venv/bin/python paper/diagram/gen_concurrency.py
+"""
+import json
+import os
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
+DATA_PATH = os.path.join(_HERE, "c5_cal_concurrency.json")
+
+for name in ("Apple SD Gothic Neo", "AppleGothic", "Malgun Gothic", "Noto Sans KR"):
+    if any(name.lower() in f.name.lower() for f in fm.fontManager.ttflist):
+        plt.rcParams["font.family"] = name
+        break
+plt.rcParams["axes.unicode_minus"] = False
+
+INK = "#000000"
+
+
+def step_xy(events):
+    xs, ys = [], []
+    for t, v in events:
+        if xs:
+            xs.append(t)
+            ys.append(ys[-1])
+        xs.append(t)
+        ys.append(v)
+    return xs, ys
+
+
+def main():
+    with open(DATA_PATH) as f:
+        d = json.load(f)
+
+    win_lo, win_hi = d["win_lo"], d["win_hi"]
+    ev_a, ev_b = d["win_events_a"], d["win_events_b"]
+    cap = d["cap"]
+    day0 = win_lo // 24
+
+    xa, ya = step_xy(ev_a)
+    xb, yb = step_xy(ev_b)
+
+    W_IN, H_IN = 239 / 72.0, 184 / 72.0
+    fig, ax = plt.subplots(figsize=(W_IN, H_IN), dpi=300)
+
+    ax.plot(xa, ya, color=INK, lw=0.9, ls=(0, (3, 1.5)), label="무제약 (시간이동, 용량 미인지)")
+    ax.plot(xb, yb, color=INK, lw=1.3, label="온라인 (용량 인지, Algorithm 1)")
+    ax.axhline(cap, color=INK, lw=0.6, ls=(0, (1, 1)))
+    ax.text(win_hi - win_lo, cap + 0.8, f"상한 {cap}", ha="right", va="bottom", fontsize=7)
+
+    # 이 구간(1주)의 국소 최대값을 그대로 표시한다 — 연중 최대(41/19)는
+    # 서로 다른 주에서 나오므로 혼동을 막기 위해 아래 각주에 따로 밝힌다.
+    pa = max(ya)
+    ia = ya.index(pa)
+    ax.annotate(f"{pa}", (xa[ia], pa), textcoords="offset points", xytext=(2, 3),
+                fontsize=7.5, fontweight="bold")
+    pb = max(yb)
+    ib = yb.index(pb)
+    ax.annotate(f"{pb}", (xb[ib], pb), textcoords="offset points", xytext=(2, -9),
+                fontsize=7.5, fontweight="bold")
+
+    ax.set_xlim(0, win_hi - win_lo)
+    ax.set_ylim(0, max(ya) * 1.12)
+    xt = list(range(0, win_hi - win_lo + 1, 24))
+    ax.set_xticks(xt)
+    ax.set_xticklabels([f"{day0 + i // 24}" for i in xt], fontsize=7)
+    ax.tick_params(axis="y", labelsize=7)
+    ax.set_xlabel("연중 일수 (day)", fontsize=8)
+    ax.set_ylabel("CAL 리전 동시 실행 수", fontsize=8)
+
+    for spine in ("top", "right"):
+        ax.spines[spine].set_visible(False)
+    for spine in ("left", "bottom"):
+        ax.spines[spine].set_linewidth(0.7)
+    ax.grid(axis="y", color="#dddddd", lw=0.4)
+
+    ax.legend(loc="upper right", fontsize=6.5, frameon=False, handlelength=2.2)
+
+    fig.text(0.02, 0.012,
+              f"위 구간은 연중 한 주(day {day0}–{win_hi // 24})의 예시다. 연중 전체\n"
+              f"최대 동시실행은 무제약 {d['peak_a']}건 → 온라인 {d['peak_b']}건(다른 주, §6.4 정의).",
+              fontsize=5.5, ha="left", linespacing=1.4)
+
+    fig.tight_layout(rect=(0, 0.10, 1, 1), pad=0.5)
+    out = os.path.join(_HERE, "fig5_concurrency.png")
+    fig.savefig(out)
+    print("wrote", out)
+
+
+if __name__ == "__main__":
+    main()
