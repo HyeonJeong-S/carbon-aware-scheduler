@@ -26,7 +26,7 @@ import time
 
 import numpy as np
 
-from . import capacity, carbon_forecast, data_loader, simulator
+from . import capacity, carbon_forecast, data_loader, simulator, timeshift
 from interface import carbon_2025
 from interface.regions import REGIONS
 from load_balancer.framework.config import JOBS_CSV as YEAR_JOBS_CSV
@@ -54,6 +54,92 @@ def _load_carbon_2025():
 
 
 # ─────────────────────────── 표2 핵심 5행 ───────────────────────────
+def _overlap_violating(jobs, cap, start_key):
+    """구간 스윕으로 concurrency > cap 인 시각 구간(over span)을 구하고, 실행구간이
+    그 구간과 조금이라도 겹치는 작업 전부를 위반으로 반환한다 — 662-규약(admission,
+    "자기 시작 순간에 n>=cap")보다 넓은 정의다: 시작할 때는 안 걸려도 실행 도중에
+    남이 상한을 넘기면 같이 걸린다. posthoc_enforce()가 쓰는 정의이며, 위반 시작
+    시점만 보는 admission 정의로는 사후강제(11,873.0kg/31,250건)가 재현되지
+    않는다(2026-09-21 확인, 10,763.1kg/21,341건으로 불일치)."""
+    ev = []
+    for j in jobs:
+        s = j[start_key]
+        e = s + j["duration"]
+        if e > s:
+            ev.append((s, 1))
+            ev.append((e, -1))
+    ev.sort(key=lambda x: (x[0], -x[1]))
+    cur = 0
+    pts = []
+    for t, d in ev:
+        cur += d
+        pts.append((t, cur))
+    over_spans = [(t0, t1) for (t0, c0), (t1, _) in zip(pts, pts[1:])
+                  if c0 > cap and t1 > t0]
+    viol = set()
+    for idx, j in enumerate(jobs):
+        s = j[start_key]
+        e = s + j["duration"]
+        for a, b in over_spans:
+            if s < b and a < e:
+                viol.add(idx)
+                break
+    return viol
+
+
+def posthoc_enforce(res_0, carbon_series, cap):
+    """표2 ③′ +시간 사후강제 — 정리.txt [26], 절차는 원고 문단680/682에서 복원.
+
+    "일부러 멍청한" 순진한 하한: Algorithm 0(무제약) 스케줄에서 출발해, 리전별로
+    독립적으로 다음을 상한 초과가 사라질 때까지 반복한다.
+      1. 그 리전 작업들의 **현재** (start,end)로 연속시각 스윕 -> concurrency>cap
+         인 구간을 찾는다.
+      2. 아직 안 되돌린 작업 중 그 구간과 실행 구간이 겹치는 것 전부를 즉시실행
+         (start=submit_time)으로 되돌린다. 새로 되돌릴 게 없으면 멈춘다(이
+         "더 없음을 확인한" 마지막 패스도 반복 횟수에 들어간다 — 아래 검증 참고).
+    재배치는 하지 않는다(되돌린 작업은 그 자리에 고정) — 그래서 "일부러 멍청하다".
+
+    2026-09-21 검증: 이 절차로 총 되돌림 31,250건(문단682와 일치), FR 5회·
+    US-CAL-CISO 3회 수렴(문단680과 일치), 총배출 11,873.0kg(정리.txt [26]과
+    소수점까지 일치) — 세 기준 전부 맞아 원래 절차로 확정.
+    """
+    schedule = {r["job_id"]: dict(r, cur_start=r["scheduled_start"], reverted=False)
+                for r in res_0}
+    by_region = {}
+    for r in res_0:
+        by_region.setdefault(r["region"], []).append(schedule[r["job_id"]])
+
+    reverted_total = set()
+    rounds_by_region = {}
+    for region, jobs in by_region.items():
+        rnd = 0
+        while True:
+            viol_idx = _overlap_violating(jobs, cap, "cur_start")
+            new_reverts = [idx for idx in viol_idx if not jobs[idx]["reverted"]]
+            rnd += 1   # 되돌린 라운드든, "더 없음"을 확인한 마지막 라운드든 1회로 센다
+            if not new_reverts:
+                break
+            for idx in new_reverts:
+                jobs[idx]["reverted"] = True
+                jobs[idx]["cur_start"] = jobs[idx]["submit_time"]
+                reverted_total.add(jobs[idx]["job_id"])
+        rounds_by_region[region] = rnd
+
+    total_kg = 0.0
+    for r in res_0:
+        st = schedule[r["job_id"]]
+        if st["reverted"]:
+            series = carbon_series[r["region"]]
+            rate = timeshift.mean_carbon(series, st["cur_start"], r["duration"], len(series))
+            total_kg += rate * r["duration"]
+        else:
+            total_kg += r["carbon_emitted"]
+    total_kg /= 1000.0
+
+    return dict(total_carbon_kg=total_kg, reverted=len(reverted_total),
+                rounds_by_region=rounds_by_region)
+
+
 def table2(jobs=None, data=None):
     """표2 — 정리.txt [26].
 
@@ -61,14 +147,7 @@ def table2(jobs=None, data=None):
     ② 공간 이동만(비교군2, simulator mode="carbon_lb_immediate")
     ③ +시간 무제약(비교군3=Algorithm 0, mode="carbon_lb_timeshift") — 9,958.2
     ④ +시간 온라인(Algorithm 1, capacity.run_rolling(cap=12)) — 10,830.4 (62.94%)
-    ③′ +시간 사후강제 — ** 이 함수는 재현하지 않는다. ** 정리.txt [26]엔 결과값
-        (11,873.0)만 있고 "원래 시각으로 되돌리기만 하고 재배치 안 함"이라는
-        한 줄 설명 외엔 정확한 절차(위반을 어떻게 정의해 어떤 작업들을 되돌렸는지)가
-        안 남아있다. 2026-09-21 시도: Algorithm 0 스케줄에서 662-규약 위반 작업
-        20,208건을 즉시실행으로 되돌려 재계산 -> 10,763.1 kg, 목표(11,873.0)와
-        9.3% 차이로 불일치. 원래 스크립트/정확한 절차를 찾거나 be가 정의를
-        다시 내려주기 전까지는 이 행을 자동 재현하지 않는다 — 틀린 숫자를
-        표에 넣느니 "미해결"로 남기는 편이 낫다.
+    ③′ +시간 사후강제(posthoc_enforce, ③의 스케줄에 반복 되돌리기 적용) — 11,873.0
     """
     jobs = jobs or _load_jobs()
     data = data or _load_carbon_2025()
@@ -78,27 +157,32 @@ def table2(jobs=None, data=None):
     total_hours = int(horizon_hours) + 48
     carbon_series, is_real = carbon_forecast.load_actual_series(total_hours)
 
-    def kg_of(mode):
-        res = simulator.run_simulation(jobs, carbon_series, mode)
-        return sum(r["carbon_emitted"] for r in res) / 1000.0
-
     t0 = time.time()
-    spatial_kg = kg_of("carbon_lb_immediate")
-    unconstrained_kg = kg_of("carbon_lb_timeshift")
+    res_spatial = simulator.run_simulation(jobs, carbon_series, "carbon_lb_immediate")
+    spatial_kg = sum(r["carbon_emitted"] for r in res_spatial) / 1000.0
+
+    res_0 = simulator.run_simulation(jobs, carbon_series, "carbon_lb_timeshift")
+    unconstrained_kg = sum(r["carbon_emitted"] for r in res_0) / 1000.0
+
+    posthoc = posthoc_enforce(res_0, carbon_series, CAP)
+
     _, stats = capacity.run_rolling(jobs, actual, pred24, capacity=CAP, regions=REGIONS)
     online_kg = stats["total_carbon_kg"]
     dt = time.time() - t0
 
     rows = [
-        ("① 기준",              BASELINE_KG,     0.0),
-        ("② 공간 이동만",        spatial_kg,      100 * (1 - spatial_kg / BASELINE_KG)),
-        ("③ +시간 무제약(반사실)", unconstrained_kg, 100 * (1 - unconstrained_kg / BASELINE_KG)),
-        ("④ +시간 온라인(ours)",  online_kg,       100 * (1 - online_kg / BASELINE_KG)),
+        ("① 기준",                BASELINE_KG,       0.0),
+        ("② 공간 이동만",          spatial_kg,        100 * (1 - spatial_kg / BASELINE_KG)),
+        ("③ +시간 무제약(반사실)",   unconstrained_kg,  100 * (1 - unconstrained_kg / BASELINE_KG)),
+        ("④ +시간 온라인(ours)",    online_kg,         100 * (1 - online_kg / BASELINE_KG)),
+        ("③′ +시간 사후강제(하한)",  posthoc["total_carbon_kg"],
+         100 * (1 - posthoc["total_carbon_kg"] / BASELINE_KG)),
     ]
     print(f"\n[표2] ({dt:.1f}s, 실측={'예' if is_real else '아니오'})")
     for label, kg, pct in rows:
         print(f"  {label:<22} {kg:>10,.1f} kg   {pct:5.2f}%")
-    print("  ③′ +시간 사후강제       (미해결 — 위 docstring 참고, be 확인 필요)")
+    print(f"  (사후강제 되돌림 {posthoc['reverted']:,}건, FR {posthoc['rounds_by_region'].get('FR')}회 / "
+          f"US-CAL-CISO {posthoc['rounds_by_region'].get('US-CAL-CISO')}회 수렴)")
     return rows
 
 
