@@ -1,17 +1,25 @@
 # -*- coding: utf-8 -*-
 """CAST 논문 그림 4종 생성기 — 흑백 SVG 만.
 
-  fig1_architecture   전체 구조   전단 451pt
-  fig2_forecast       탄소 예측   단내 215pt
+  fig1_architecture   전체 구조   전단 451pt  (통합/개요 그림 — 유일하게 전단)
+  fig2_forecast       탄소 예측   단내 215pt  (본문에서 빠짐, 목차.txt 결정)
   fig3_loadbalancer   로드밸런서  단내 215pt
   fig4_scheduler      스케줄러    단내 215pt
+
+  2026-09-21 배치 규칙 확정(be): "통합(개요) 그림만 전단, 개별 설명 그림은
+  단내." 이전엔 이 표가 fig3·4를 "단내"라 적어놓고 실제 코드는 451pt 전단으로
+  만들어(9pt 글씨 기준이 안 맞음, E9에서 발견) 표와 코드가 어긋나 있었다 —
+  이번에 fig3·4를 실제로 세로 스택 215pt로 재설계해서 표가 처음으로 코드와
+  맞는다. fig1(구조)만 세 단계를 한눈에 보여주는 통합 그림이라 전단 유지.
 
 설계 원칙
   · 식은 넣지 않는다. 식 (6)~(11)은 본문에 이미 조판돼 있어 그림에 다시 넣으면
     순수 중복이고, 본문을 한 줄도 줄여주지 못하면서 그림만 커진다.
     그림은 구조와 흐름만 맡고, 화살표에 흐르는 기호(Ĉ · ℓ · x_jr · avail_r)만 남긴다.
-  · 상세 3장은 단내(215pt). 전단 그림은 높이만큼 양쪽 단을 동시에 막지만
-    단내는 한쪽만 막아 실효 비용이 절반이다.
+  · 개별 설명 그림(로드밸런서·스케줄러)은 단내(215pt) 세로 스택. 전단 그림은
+    높이만큼 양쪽 단을 동시에 막지만 단내는 한쪽만 막아 실효 비용이 절반이다.
+    9pt 글씨를 지키려고 요소 수를 줄인다 — 캡션과 겹치는 각주, 본문 수식과
+    겹치는 산식(avail_r=⌊η·cap_r⌋−…)은 그림에서 빼고 본문에만 남긴다.
   · IEEE : 최종 인쇄 크기 작도(1단위 = 1pt), 글씨 9pt · 부제 8pt · 아래첨자 6.5pt.
 
 칠판 스케치와 동료 세션 검증 반영
@@ -170,86 +178,66 @@ def fig_forecast():
     L.append("</svg>")
     return "\n".join(L)
 
-# ═══════════ 그림 3 · 로드밸런서 (전단) ═══════════
+# ═══════════ 그림 2 · 로드밸런서 (단내, 세로 스택) ═══════════
+# 2026-09-21 재설계: "통합(개요) 그림만 전단, 개별 설명 그림은 단내"로 배치
+# 규칙이 확정됨(be) — 451pt 가로 배치를 215pt 세로 스택으로 바꾸고, 9pt 글씨를
+# 유지하려고 요소 수를 줄였다. 뺀 것: 지연행렬 아이콘, "직전 1h 작업" 별도 박스
+# (하나의 입력 박스로 통합), avail_r 원(⊕) 도식과 그 산식(본문 §5.4/식(3)에
+# 이미 있어 중복) — 대신 로드밸런서 박스 안 문장에 "avail_r 이하로"만 남겨
+# 용량 제약이 있다는 사실 자체는 유지한다. 하단 각주도 뺐다(캡션이 이미
+# "슬롯 단위 ILP"라고 말해 반복이었음).
 def fig_loadbalancer():
-    W, H = 451, 192
-    L = [head(W, H, "그림 3 공간 이동 · 로드밸런서")]
-    def oplus(cx, cy, r=11):
-        return (f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="#fff" stroke="{INK}" stroke-width="1.1"/>'
-                f'<line x1="{cx-5}" y1="{cy}" x2="{cx+5}" y2="{cy}" stroke="{INK}" stroke-width="1.1"/>'
-                f'<line x1="{cx}" y1="{cy-5}" x2="{cx}" y2="{cy+5}" stroke="{INK}" stroke-width="1.1"/>')
-    L += [txt(8, 16, "공간 이동 · 슬롯 단위 ILP 로드밸런서", bold=True, size=FB),
-          f'<rect x="6" y="26" width="439" height="142" rx="7" fill="#fff" stroke="{INK}" stroke-width="1" stroke-dasharray="5 3"/>',
-          txt(438, 38, "점선 안이 한 슬롯(1 h) 처리 단위", anchor="end", size=FT, it=True),
-          box(14, 44, 72, 18, sw=0.9), txt(50, 57, "LSTM 예측", anchor="middle", size=FT),
-          arr(86, 53, 122, 53), txt(104, 48, "\u0108", anchor="middle", it=True),
-          f'<g stroke="{INK}" stroke-width="0.9" fill="none"><rect x="30" y="72" width="40" height="28"/>'
-          f'<line x1="43.3" y1="72" x2="43.3" y2="100"/><line x1="56.6" y1="72" x2="56.6" y2="100"/>'
-          f'<line x1="30" y1="81.3" x2="70" y2="81.3"/><line x1="30" y1="90.6" x2="70" y2="90.6"/></g>',
-          txt(50, 112, "지연 행렬 N \u00d7 N", anchor="middle", size=FT),
-          arr(70, 86, 122, 86), txt(96, 81, "\u2113", anchor="middle", it=True),
-          box(14, 122, 72, 18, sw=0.9), txt(50, 135, "직전 1 h 작업", anchor="middle", size=FT),
-          arr(86, 131, 122, 131), txt(104, 126, "작업들", anchor="middle", size=FT),
-          box(124, 44, 144, 88, sw=1.3), txt(196, 58, "로드밸런서", anchor="middle", bold=True),
-          f'<line x1="124" y1="64" x2="268" y2="64" stroke="{INK}" stroke-width="0.5"/>',
-          txt(132, 80, "\u2460 \u03b1 결정 — 슬롯마다 자동", size=FT),
-          txt(132, 98, "\u2461 ILP 배정 — 용량 제약", size=FT),
-          f'<rect x="132" y="110" width="128" height="16" rx="8" fill="#fff" stroke="{INK}" stroke-width="1.1"/>',
-          txt(196, 122, "배정 x" + sb("jr"), anchor="middle", size=FT),
-          arr(268, 78, 390, 78, 1.3), txt(329, 72, "배정 확정", anchor="middle", size=FT),
-          f'<g stroke="{INK}" stroke-width="1.1" fill="none"><path d="M402,50 L394,50 L394,132 L402,132"/></g>',
-          txt(406, 54, "R" + sb("1")), txt(406, 95, "\u22ee", bold=True), txt(406, 136, "R" + sb("N")),
-          # anchor="middle"/"end" + 아래첨자 tspan + 그 뒤 한글이 오는 조합은
-          # 렌더러가 폭을 잘못 재서 겹친다(2026-09-21, fig1과 같은 버그 재발견).
-          # 왼쪽 정렬로 회피 — x를 눈대중 중앙에 오도록 당겨줌.
-          # ⊕ 반지름을 11->8로 줄여 바로 밑 "avail_r 계산" 라벨과의 겹침을
-          # 없앴다(2026-09-21, fe 발견 — 아래첨자 렌더링 버그가 아니라 원 도형과
-          # 라벨의 y 간격이 애초에 부족했던 레이아웃 문제였음. 격리 테스트로
-          # 확인: 같은 텍스트를 원 없이 단독으로 그리면 안 겹친다).
-          oplus(300, 150, r=8), txt(278, 168, "avail" + sb("r", " 계산"), size=FT),
-          txt(222, 153, "\u230a\u03b7 \u00b7 cap" + sb("r") + "\u230b", anchor="middle", size=FT),
-          arr(252, 150, 291, 150, 0.9),
-          path("M394,132 L394,150 L309,150", sw=0.9),
-          txt(354, 145, "실행 중 작업 수", anchor="middle", size=FT),
-          path("M300,142 L300,136 L196,136 L196,132", sw=1, dash="4 2.5"),
-          txt(6, 186, "실행 시각은 이 단계에서 정하지 않는다 — 다음 단계인 시간 이동이 정한다.", size=FT)]
+    W, H = 215, 214
+    L = [head(W, H, "그림 2 공간 이동 · 로드밸런서")]
+    L += [txt(107, 13, "공간 이동", anchor="middle", bold=True, size=FB),
+          txt(107, 25, "슬롯 단위 ILP 로드밸런서", anchor="middle", size=FT),
+          box(10, 34, 195, 26, sw=0.9),
+          txt(107, 45, "입력", anchor="middle", size=FT, bold=True),
+          txt(107, 56, f"예측 Ĉ{sb('r')}(t) · 지연 ℓ · 직전 작업", anchor="middle", size=6.8),
+          arr(107, 60, 107, 74),
+          box(10, 74, 195, 92, sw=1.3),
+          txt(107, 90, "로드밸런서", anchor="middle", bold=True),
+          f'<line x1="10" y1="96" x2="205" y2="96" stroke="{INK}" stroke-width="0.5"/>',
+          txt(18, 112, "① α 자동 결정", size=FT),
+          txt(28, 124, "— 슬롯마다 파레토 무릎점", size=6.8),
+          txt(18, 140, "② ILP 배정", size=FT),
+          txt(28, 152, "— avail" + sb("r") + " 이하로 제한", size=6.8),
+          f'<rect x="47" y="158" width="122" height="16" rx="8" fill="#fff" stroke="{INK}" stroke-width="1.1"/>',
+          txt(107, 170, "배정 x" + sb("jr"), anchor="middle", size=FT),
+          arr(107, 166, 107, 180),
+          txt(107, 194, "배정 확정 → R" + sb("1") + " … R" + sb("N"), anchor="middle", bold=True, size=FT)]
     L.append("</svg>")
     return "\n".join(L)
 
-# ═══════════ 그림 4 · 스케줄러 (전단) ═══════════
+# ═══════════ 그림 3 · 시간 이동 스케줄러 (단내, 세로 스택) ═══════════
 def fig_scheduler():
-    W, H = 451, 196
-    L = [head(W, H, "그림 4 시간 이동 · 마감 인지 스케줄러")]
-    L += [txt(8, 16, "시간 이동 · 마감 인지 스케줄러", bold=True, size=FB),
-          box(14, 42, 76, 18, sw=0.9), txt(52, 55, "작업 j", anchor="middle", size=FT),
-          arr(90, 51, 108, 51),
-          f'<circle cx="52" cy="96" r="15" fill="#fff" stroke="{INK}" stroke-width="1.1"/>',
-          txt(52, 100, "r(j)", anchor="middle", size=FT), txt(52, 124, "배정 리전", anchor="middle", size=FT),
-          arr(67, 96, 108, 96),
-          box(14, 136, 76, 18, sw=0.9), txt(52, 149, "LSTM 예측", anchor="middle", size=FT),
-          arr(90, 145, 108, 145),
-          box(110, 30, 190, 136, sw=1.3),
-          txt(205, 44, "탐색 윈도우 안에서 점수 최소 슬롯", anchor="middle", size=FT, bold=True),
-          txt(122, 104, "gCO\u2082/kWh", anchor="middle", size=FT),
-          f'<g stroke="{INK}" stroke-width="1" fill="none"><path d="M130,54 L130,140"/>'
-          f'<path d="M130,140 L292,140" marker-end="url(#a)"/></g>',
-          txt(290, 152, "t (h)", anchor="end", size=FT),
-          f'<path d="M134,62 C154,70 168,108 192,122 C214,134 240,118 264,82 C274,68 282,62 290,60" '
-          f'fill="none" stroke="{INK}" stroke-width="1.5"/>',
-          f'<rect x="180" y="116" width="34" height="18" fill="#fff" stroke="{INK}" stroke-width="1.8"/>',
-          txt(197, 110, "선택", anchor="middle", size=FT),
-          f'<line x1="272" y1="54" x2="272" y2="140" stroke="{INK}" stroke-width="1.1" stroke-dasharray="3 2"/>',
-          txt(270, 52, "마감", anchor="end", size=FT),
-          f'<g stroke="{INK}" stroke-width="0.8" fill="none"><path d="M134,152 L272,152"/>'
-          f'<path d="M134,149 L134,155"/><path d="M272,149 L272,155"/></g>',
-          txt(203, 164, "탐색 윈도우", anchor="middle", size=FT),
-          arr(302, 98, 322, 98, 1.3),
-          box(326, 84, 114, 30, sw=1.1), txt(383, 97, "실행 시각 T", anchor="middle", bold=True),
-          txt(383, 109, "UTC 절대 시각", anchor="middle", size=FT),
-          txt(326, 134, "작업별 결정", bold=True, size=FT),
-          txt(326, 148, "(r" + sb("1") + ", T" + sb("1") + ")  (r" + sb("2") + ", T" + sb("2") + ")  \u22ef", size=FT),
-          txt(326, 162, "용량 제약은 두지 않는다.", size=FT),
-          txt(6, 188, "사후 용량 강제는 \u00a76.4 검증 단계에서만 수행한다. 온라인 구성요소가 아니다.", size=FT)]
+    W, H = 215, 240
+    L = [head(W, H, "그림 3 시간 이동 · 마감 인지 스케줄러")]
+    L += [txt(107, 13, "시간 이동", anchor="middle", bold=True, size=FB),
+          txt(107, 25, "마감 인지 스케줄러", anchor="middle", size=FT),
+          box(10, 34, 195, 26, sw=0.9),
+          txt(107, 45, "입력", anchor="middle", size=FT, bold=True),
+          txt(107, 56, "작업 j · 리전 r(j) · 예측 Ĉ", anchor="middle", size=6.8),
+          arr(107, 60, 107, 74),
+          box(10, 74, 195, 108, sw=1.3),
+          txt(107, 87, "탐색 윈도우 안 점수 최소 슬롯", anchor="middle", size=6.8, bold=True),
+          txt(24, 130, "gCO₂/kWh", anchor="middle", size=6.5),
+          f'<g stroke="{INK}" stroke-width="1" fill="none"><path d="M30,94 L30,166"/>'
+          f'<path d="M30,166 L188,166" marker-end="url(#a)"/></g>',
+          txt(186, 178, "t (h)", anchor="end", size=6.8),
+          f'<path d="M34,102 C54,110 66,148 88,158 C108,166 130,154 150,124 C160,110 166,104 172,102" '
+          f'fill="none" stroke="{INK}" stroke-width="1.4"/>',
+          f'<rect x="78" y="150" width="28" height="15" fill="#fff" stroke="{INK}" stroke-width="1.6"/>',
+          txt(92, 161, "선택", anchor="middle", size=6.5),
+          f'<line x1="168" y1="94" x2="168" y2="166" stroke="{INK}" stroke-width="1.1" stroke-dasharray="3 2"/>',
+          txt(168, 92, "마감", anchor="middle", size=6.5),
+          f'<g stroke="{INK}" stroke-width="0.8" fill="none"><path d="M34,172 L168,172"/>'
+          f'<path d="M34,169 L34,175"/><path d="M168,169 L168,175"/></g>',
+          txt(101, 182, "탐색 윈도우", anchor="middle", size=6.5),
+          arr(107, 182, 107, 196),
+          box(45, 196, 124, 30, sw=1.1),
+          txt(107, 210, "실행 시각 T", anchor="middle", bold=True, size=FT),
+          txt(107, 221, "(UTC 절대 시각)", anchor="middle", size=6.5)]
     L.append("</svg>")
     return "\n".join(L)
 
