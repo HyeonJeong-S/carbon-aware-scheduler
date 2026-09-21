@@ -21,12 +21,21 @@ CAST는 한글 논문이라 "그림 N." 뒤에 한 문장으로 같은 절제를
   논문 그림  파일                          rId(문서 내)         비고
   그림1      fig1_architecture.png         rId49                옛 image3.png 자리
   그림2      fig3_loadbalancer.png         rId55                image6.png, 3.4절
+             ⚠ 2026-09-21 215pt 단내로 재설계됨(세로 스택) — 아래 참고
   그림3      fig4_pareto.png               rId50                image4.png, 옛 image4 자리
              ⚠ 파일명은 "fig4_"이지만 논문 번호는 그림3(stage7 맞교체)
   그림4      fig4_scheduler.png            rId56                image7.png, 3.5절
              ⚠ 파일명은 "fig4_scheduler"이지만 논문 번호는 그림4로 그대로
                (우연히 파일명 번호 "4"와 논문 번호 "4"가 일치 — 헷갈리지 말 것,
                파레토 쪽(그림3)이 어긋난 것이다)
+             ⚠ 2026-09-21 215pt 단내로 재설계됨(세로 스택) — 아래 참고
+
+  ** 2026-09-21 그림2·4 재설계 — "통합 그림만 전단, 개별 설명 그림은 단내"
+  규칙 확정(be). 그림2(로드밸런서)·그림4(스케줄러) 둘 다 451pt 가로 배치를
+  버리고 215pt 세로 스택으로 새로 그렸다(gen_figs.py). 새 EMU·삽입 방법
+  (wp:anchor→wp:inline 전환 포함)은 paper/그림교체_실행계획.txt의 "4d 대기
+  작업" 절 참고. 그림1(구조)만 세 단계를 한눈에 보여주는 통합 그림이라
+  전단으로 남았고, 이제 그림2~6 다섯 개가 전부 단내로 통일됐다. **
   그림5      fig5_concurrency.png          rId57                image8.png, 4.5절
   그림6      fig6_capacity_sweep.png       rId58                image9.png, 4.6절
 

@@ -204,7 +204,7 @@ def fig_loadbalancer():
           txt(28, 152, "— avail" + sb("r") + " 이하로 제한", size=6.8),
           f'<rect x="47" y="158" width="122" height="16" rx="8" fill="#fff" stroke="{INK}" stroke-width="1.1"/>',
           txt(107, 170, "배정 x" + sb("jr"), anchor="middle", size=FT),
-          arr(107, 166, 107, 180),
+          arr(107, 174, 107, 186),
           txt(107, 194, "배정 확정 → R" + sb("1") + " … R" + sb("N"), anchor="middle", bold=True, size=FT)]
     L.append("</svg>")
     return "\n".join(L)
@@ -221,7 +221,8 @@ def fig_scheduler():
           arr(107, 60, 107, 74),
           box(10, 74, 195, 108, sw=1.3),
           txt(107, 87, "탐색 윈도우 안 점수 최소 슬롯", anchor="middle", size=6.8, bold=True),
-          txt(24, 130, "gCO₂/kWh", anchor="middle", size=6.5),
+          txt(16, 100, "gCO₂", anchor="start", size=6),
+          txt(16, 108, "/kWh", anchor="start", size=6),
           f'<g stroke="{INK}" stroke-width="1" fill="none"><path d="M30,94 L30,166"/>'
           f'<path d="M30,166 L188,166" marker-end="url(#a)"/></g>',
           txt(186, 178, "t (h)", anchor="end", size=6.8),
