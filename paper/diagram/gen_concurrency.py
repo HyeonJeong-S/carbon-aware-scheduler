@@ -57,7 +57,9 @@ def main():
     xa, ya = step_xy(ev_a)
     xb, yb = step_xy(ev_b)
 
-    W_IN, H_IN = 239 / 72.0, 184 / 72.0
+    # 215pt = 단내(single-column) 폭 — gen_figs.py 관례와 동일, 2.99in @300dpi.
+    # 2026-09-21까지 239pt로 잘못 잡혀 있었음(수정).
+    W_IN, H_IN = 215 / 72.0, 184 / 72.0
     fig, ax = plt.subplots(figsize=(W_IN, H_IN), dpi=300)
 
     ax.plot(xa, ya, color=INK, lw=0.9, ls=(0, (3, 1.5)), label="무제약 (시간이동, 용량 미인지)")

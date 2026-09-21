@@ -1,6 +1,7 @@
 <!-- 그림 1 CAST 전체 구조 · gen_figs.py 로 생성 (직접 편집 금지)
      1단위 = 1pt, 폭 451pt. 100% 크기로 삽입할 것. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 451 256" width="451pt" height="256pt"
+     xml:space="preserve"
      font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif"
      font-size="9" fill="#000000">
 <defs>
@@ -52,7 +53,7 @@
 <text x="371" y="167" font-size="8">(리전, 시각)</text>
 <path d="M398,210 L432,210 L432,76 L262,76 L262,84" fill="none" stroke="#000000" stroke-width="1.1" stroke-dasharray="4 2.5" marker-end="url(#a)"/>
 <rect x="270" y="62" width="116" height="12" fill="#fff"/>
-<text x="273" y="72" font-size="8">avail<tspan font-size="6.5" dy="1.5">r</tspan><tspan dy="-1.5"></tspan> · 슬롯별 잔여 용량</text>
+<text x="273" y="72" font-size="8">avail<tspan font-size="6.5" dy="1.5">r</tspan><tspan dy="-1.5"> · 슬롯별 잔여 용량</tspan></text>
 <text x="6" y="192" font-weight="bold">리전 R<tspan font-size="6.5" dy="1.5">1</tspan><tspan dy="-1.5"></tspan> … R<tspan font-size="6.5" dy="1.5">N</tspan><tspan dy="-1.5"></tspan></text>
 <text x="150" y="192" font-style="italic">동시 실행 수 ≤ avail<tspan font-size="6.5" dy="1.5">r</tspan><tspan dy="-1.5"></tspan></text>
 <rect x="70" y="196" width="64" height="28" fill="#fff" stroke="#000000" stroke-width="0.9"/>

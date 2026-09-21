@@ -51,14 +51,22 @@ def head(w, h, note):
     return (f'<!-- {note} · gen_figs.py 로 생성 (직접 편집 금지)\n'
             f'     1단위 = 1pt, 폭 {w}pt. 100% 크기로 삽입할 것. -->\n'
             f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}pt" height="{h}pt"\n'
+            f'     xml:space="preserve"\n'
+            # 아래첨자 tspan 뒤에 이어지는 선행 공백이 기본 XML 공백정리 규칙으로
+            # 사라져 글자가 붙어 보이는 문제(2026-09-21, avail_r 라벨에서 발견)
+            # 를 막는다 — SVG는 xml:space 미지정 시 공백을 압축한다.
             f'     font-family="\'Malgun Gothic\',\'Apple SD Gothic Neo\',\'Noto Sans KR\',sans-serif"\n'
             f'     font-size="{FS}" fill="{INK}">\n<defs>\n'
             f'  <marker id="a" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">\n'
             f'    <path d="M0,0 L10,5 L0,10 z" fill="{INK}"/></marker>\n'
             f'</defs>\n<rect width="{w}" height="{h}" fill="#fff"/>')
 
-def sb(t):   # 아래첨자
-    return f'<tspan font-size="6.5" dy="1.5">{t}</tspan><tspan dy="-1.5"></tspan>'
+def sb(t, rest=""):   # 아래첨자. rest가 있으면 dy 복귀 tspan 안에 같이 넣는다 —
+    # 빈 tspan으로 dy만 되돌리면(rest="") 그 바깥의 평문(특히 한글)과의 커서
+    # 위치 계산이 렌더러마다 달라 글자가 붙거나 겹친다(2026-09-21, pymupdf는
+    # 심하게 겹치고 Chrome은 살짝 붙는 정도로 다르게 틀렸음 — fe 발견).
+    # 뒤에 텍스트가 이어지면 반드시 rest로 넘길 것, 문자열 이어붙이기(+) 금지.
+    return f'<tspan font-size="6.5" dy="1.5">{t}</tspan><tspan dy="-1.5">{rest}</tspan>'
 def box(x, y, w, h, **kw):
     d = kw.get("dash", "")
     return (f'<rect x="{x}" y="{y}" width="{w}" height="{h}" fill="#fff" stroke="{INK}" '
@@ -122,7 +130,7 @@ def fig_architecture():
           f'<rect x="270" y="62" width="116" height="12" fill="#fff"/>',
           # anchor="end" + 아래첨자 tspan 조합은 일부 SVG 렌더러가 전체 폭을
           # 잘못 계산해 글자가 겹친다(2026-09-21 발견, fe 점검). 왼쪽 정렬로 회피.
-          txt(273, 72, f"avail{sb('r')} · 슬롯별 잔여 용량", size=FT)]
+          txt(273, 72, f"avail{sb('r', ' · 슬롯별 잔여 용량')}", size=FT)]
     L += [txt(6, 192, f"리전 R{sb('1')} … R{sb('N')}", bold=True),
           txt(150, 192, f"동시 실행 수 ≤ avail{sb('r')}", it=True)]
     for x, lab in ((70, "1"), (154, "2"), (238, "3"), (334, "N")):
@@ -194,7 +202,7 @@ def fig_loadbalancer():
           # anchor="middle"/"end" + 아래첨자 tspan + 그 뒤 한글이 오는 조합은
           # 렌더러가 폭을 잘못 재서 겹친다(2026-09-21, fig1과 같은 버그 재발견).
           # 왼쪽 정렬로 회피 — x를 눈대중 중앙에 오도록 당겨줌.
-          oplus(300, 150), txt(278, 164, "avail" + sb("r") + " 계산", size=FT),
+          oplus(300, 150), txt(278, 164, "avail" + sb("r", " 계산"), size=FT),
           txt(222, 153, "\u230a\u03b7 \u00b7 cap" + sb("r") + "\u230b", anchor="middle", size=FT),
           arr(252, 150, 287, 150, 0.9),
           path("M394,132 L394,150 L313,150", sw=0.9),

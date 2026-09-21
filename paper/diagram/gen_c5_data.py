@@ -21,10 +21,10 @@ sys.path.insert(0, _REPO_ROOT)
 
 from scheduler import data_loader, simulator, capacity as cap_mod
 from interface import carbon_2025
+from load_balancer.framework.config import JOBS_CSV as YEAR_JOBS_CSV
+from load_balancer.framework.config import RESULTS_DIR as _LB_RESULTS_DIR
 
-YEAR_JOBS_CSV = os.path.join(_REPO_ROOT, "load_balancer", "01_데이터", "jobs.csv")
-YEAR_ASSIGN_CSV = os.path.join(_REPO_ROOT, "load_balancer", "02_프레임워크",
-                                "results", "assign_alpha_auto.csv")
+YEAR_ASSIGN_CSV = _LB_RESULTS_DIR / "assign_alpha_auto.csv"
 
 CAL = "US-CAL-CISO"
 

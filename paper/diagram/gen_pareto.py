@@ -5,9 +5,9 @@
 alpha_auto 행이 논문 표2 ②12,609.8kg 과 정확히 일치함을 확인한 표).
 숫자를 다시 계산하지 않고 그 표를 그대로 옮긴다 — 이 스크립트는 그림만 만든다.
 
-기존 load_balancer/02_프레임워크/results/figures/pareto_curve.png 와 데이터는
+기존 load_balancer/framework/results/figures/pareto_curve.png 와 데이터는
 같다(같은 [17] 표). 색을 뺀 IEEE 흑백 스타일로, fig1~4(gen_figs.py)와 같은
-결(단내 239pt, Malgun/Apple SD Gothic Neo/Noto Sans KR, 굵은 표식 없이 얇은 선)로
+결(단내 215pt, Malgun/Apple SD Gothic Neo/Noto Sans KR, 굵은 표식 없이 얇은 선)로
 새로 그린다.
 
 실행: ./.venv/bin/python paper/diagram/gen_pareto.py
@@ -43,7 +43,9 @@ def main():
     xs = [p[1] for p in POINTS]
     ys = [p[2] for p in POINTS]
 
-    W_IN, H_IN = 239 / 72.0, 190 / 72.0
+    # 215pt = 단내(single-column) 폭 — gen_figs.py 관례와 동일, 2.99in @300dpi.
+    # 2026-09-21까지 239pt로 잘못 잡혀 있었음(수정).
+    W_IN, H_IN = 215 / 72.0, 190 / 72.0
     fig, ax = plt.subplots(figsize=(W_IN, H_IN), dpi=300)
 
     ax.plot(xs, ys, color=INK, lw=1.1, zorder=2)

@@ -54,7 +54,9 @@ def main():
     baseline_kg = 29225.6
     savings = [(1 - c * 1000 / baseline_kg) * 100 for c in carbon]
 
-    W_IN, H_IN = 239 / 72.0, 190 / 72.0
+    # 215pt = 단내(single-column) 폭 — gen_figs.py 관례와 동일, 2.99in @300dpi.
+    # 2026-09-21까지 239pt로 잘못 잡혀 있었음(수정).
+    W_IN, H_IN = 215 / 72.0, 190 / 72.0
     fig, ax1 = plt.subplots(figsize=(W_IN, H_IN), dpi=300)
 
     ax1.plot(xs, carbon, color=INK, lw=1.1, marker="o", ms=3.2, zorder=3,
