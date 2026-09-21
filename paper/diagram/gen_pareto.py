@@ -73,6 +73,13 @@ def main():
     ax.annotate("", xy=(xs[AUTO_IDX], ys[AUTO_IDX]), xytext=(xs[2], ys[2]),
                 arrowprops=dict(arrowstyle="-", lw=0.5, color="#999999",
                                  shrinkA=3, shrinkB=3, linestyle=(0, (1, 1.5))))
+    mid_x = (xs[2] + xs[AUTO_IDX]) / 2
+    mid_y = (ys[2] + ys[AUTO_IDX]) / 2
+    ax.annotate("+6.7 ms, -3,108.8 kg\n(464.9 kg/ms, 전 구간 최대)",
+                xy=(mid_x, mid_y), xytext=(70, 18), textcoords="data",
+                fontsize=5.3, ha="left", va="top", linespacing=1.3, color="#444444",
+                arrowprops=dict(arrowstyle="-", lw=0.4, color="#999999",
+                                 shrinkA=2, shrinkB=2))
 
     ax.set_xlim(-6, 122)
     ax.set_ylim(-4, 74)

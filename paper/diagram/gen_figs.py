@@ -120,7 +120,9 @@ def fig_architecture():
           txt(371, 156, "실행 결정", size=FT), txt(371, 167, "(리전, 시각)", size=FT),
           path("M398,210 L432,210 L432,76 L262,76 L262,84", dash="4 2.5"),
           f'<rect x="270" y="62" width="116" height="12" fill="#fff"/>',
-          txt(384, 72, f"avail{sb('r')} · 슬롯별 잔여 용량", anchor="end", size=FT)]
+          # anchor="end" + 아래첨자 tspan 조합은 일부 SVG 렌더러가 전체 폭을
+          # 잘못 계산해 글자가 겹친다(2026-09-21 발견, fe 점검). 왼쪽 정렬로 회피.
+          txt(273, 72, f"avail{sb('r')} · 슬롯별 잔여 용량", size=FT)]
     L += [txt(6, 192, f"리전 R{sb('1')} … R{sb('N')}", bold=True),
           txt(150, 192, f"동시 실행 수 ≤ avail{sb('r')}", it=True)]
     for x, lab in ((70, "1"), (154, "2"), (238, "3"), (334, "N")):

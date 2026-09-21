@@ -63,7 +63,8 @@ def main():
     ax.plot(xa, ya, color=INK, lw=0.9, ls=(0, (3, 1.5)), label="무제약 (시간이동, 용량 미인지)")
     ax.plot(xb, yb, color=INK, lw=1.3, label="온라인 (용량 인지, Algorithm 1)")
     ax.axhline(cap, color=INK, lw=0.6, ls=(0, (1, 1)))
-    ax.text(win_hi - win_lo, cap + 0.8, f"상한 {cap}", ha="right", va="bottom", fontsize=7)
+    ax.text(win_hi - win_lo, cap + 0.8, f"상한 {cap}", ha="right", va="bottom", fontsize=7,
+            bbox=dict(facecolor="white", edgecolor="none", pad=1.0))
 
     # 이 구간(1주)의 국소 최대값을 그대로 표시한다 — 연중 최대(41/19)는
     # 서로 다른 주에서 나오므로 혼동을 막기 위해 아래 각주에 따로 밝힌다.
@@ -94,9 +95,9 @@ def main():
     ax.legend(loc="upper right", fontsize=6.5, frameon=False, handlelength=2.2)
 
     fig.text(0.02, 0.012,
-              f"위 구간은 연중 한 주(day {day0}–{win_hi // 24})의 예시다. 연중 전체\n"
-              f"최대 동시실행은 무제약 {d['peak_a']}건 → 온라인 {d['peak_b']}건(다른 주, §6.4 정의).",
-              fontsize=5.5, ha="left", linespacing=1.4)
+              f"위 구간은 연중 한 주(day {day0}–{win_hi // 24})의 예시다.\n"
+              f"연중 전체 최대 동시실행: 무제약 {d['peak_a']}건 → 온라인 {d['peak_b']}건(다른 주, §6.4 정의).",
+              fontsize=5.3, ha="left", linespacing=1.4)
 
     fig.tight_layout(rect=(0, 0.10, 1, 1), pad=0.5)
     out = os.path.join(_HERE, "fig5_concurrency.png")
