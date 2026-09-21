@@ -94,8 +94,11 @@ _val = {"status": "idle", "started": None, "elapsed": None, "error": None,
 _val_lock = threading.Lock()
 
 
+CAPACITY_CAP = 12  # 유효 상한 K_r = floor(0.8 * cap_r), 공식.txt §0 / scheduler.reproduce.CAP 과 동일
+
+
 def _run_validation():
-    from scheduler import carbon_forecast, data_loader, metrics, simulator
+    from scheduler import capacity, carbon_forecast, data_loader, metrics, simulator
 
     t0 = time.time()
     try:
@@ -104,6 +107,18 @@ def _run_validation():
         carbon_series, is_real = carbon_forecast.load_actual_series(int(horizon) + 48)
         results = simulator.run_all_modes(jobs, carbon_series)
         comparison = metrics.compare_modes(results)
+
+        # 4번째 비교군 — 온라인 용량 인지 시간 이동(Algorithm 1, 이 논문의 헤드라인).
+        # 앞의 세 비교군과 같은 job·같은 리전 배정 위에서 돈다. 예측 소스(actual/pred24)가
+        # 있을 때만 추가한다 — 없으면(더미 백엔드) 기존 3비교군만 보여준다.
+        c25 = carbon_forecast.use_2025()
+        if c25 is not None:
+            cap_out, _ = capacity.run_rolling(jobs, c25["actual"], c25["pred24"],
+                                              capacity=CAPACITY_CAP, regions=REGIONS)
+            cap_results = list(cap_out.values())
+            results["capacity_online"] = cap_results
+            comparison["capacity_online"] = metrics.aggregate(cap_results)
+
         with _val_lock:
             _val.update(status="done", results=results, comparison=comparison,
                         n_jobs=len(jobs), horizon_hours=horizon, carbon_is_real=is_real,

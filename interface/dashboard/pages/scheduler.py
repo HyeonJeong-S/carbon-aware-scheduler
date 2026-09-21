@@ -9,15 +9,15 @@ import plotly.graph_objects as go
 from dash import Input, Output, callback, dcc, html
 
 from interface.dashboard import data, theme
-from scheduler.config import MODES
 
 dash.register_page(__name__, path="/scheduler", name="스케줄러", order=4)
 
-MODE_ORDER = ["simple_lb_immediate", "carbon_lb_immediate", "carbon_lb_timeshift"]
+MODE_ORDER = ["simple_lb_immediate", "carbon_lb_immediate", "carbon_lb_timeshift", "capacity_online"]
 MODE_LABEL = {"simple_lb_immediate": "단순 LB + 즉시", "carbon_lb_immediate": "탄소 LB + 즉시",
-              "carbon_lb_timeshift": "탄소 LB + time-shift (ours)"}
+              "carbon_lb_timeshift": "탄소 LB + time-shift (무제약)",
+              "capacity_online": "탄소 LB + 온라인 용량인지 (Algorithm 1, ours)"}
 MODE_COLOR = {"simple_lb_immediate": theme.BASELINE_GRAY, "carbon_lb_immediate": theme.ACCENT,
-              "carbon_lb_timeshift": theme.OURS_GREEN}
+              "carbon_lb_timeshift": theme.OURS_GREEN, "capacity_online": theme.SHIFT_GREEN}
 
 
 def layout(**_):
@@ -74,15 +74,21 @@ def _render_results(st):
     slo_viol = comparison["carbon_lb_timeshift"]["slo_violation_rate"]
     saved_total = total_imm - total_shift
 
-    kpis = theme.kpi_row(
-        theme.kpi("time-shift 절감률", f"{overall_pct:.1f}%", "탄소 LB 즉시실행 대비", "good"),
+    kpi_cards = [
+        theme.kpi("time-shift 절감률(무제약)", f"{overall_pct:.1f}%", "탄소 LB 즉시실행 대비", "good"),
         theme.kpi("절감한 탄소", f"{saved_total / 1e6:,.2f} tCO₂", f"{saved_total:,.0f} g"),
         theme.kpi("평균 지연", f"{avg_delay:.2f} h", "time-shift 로 미룬 시간"),
         theme.kpi("SLO(마감) 위반율", f"{slo_viol * 100:.2f}%",
                   "정상" if slo_viol == 0 else "위반 발생", "good" if slo_viol == 0 else "bad"),
-        theme.kpi("전체 절감 (단순 LB 대비)", f"{(1 - total_shift / total_simple) * 100:.1f}%",
+        theme.kpi("전체 절감 (단순 LB 대비, 무제약)", f"{(1 - total_shift / total_simple) * 100:.1f}%",
                   f"공간 {(1 - total_imm / total_simple) * 100:.1f}% + 시간 추가", "good"),
-    )
+    ]
+    if "capacity_online" in comparison:
+        total_online = comparison["capacity_online"]["total_carbon"]
+        online_pct = (1 - total_online / total_simple) * 100 if total_simple else 0.0
+        kpi_cards.append(theme.kpi("온라인 용량인지 절감률(ours, 실현 가능)", f"{online_pct:.1f}%",
+                                   "단순 LB 대비 — 리전 용량 상한을 지키는 실제 헤드라인", "good"))
+    kpis = theme.kpi_row(*kpi_cards)
 
     # (좌) 비교군별 총 탄소
     modes = [m for m in MODE_ORDER if m in comparison]
@@ -115,7 +121,7 @@ def _render_results(st):
 
     # 상세
     cdf = pd.DataFrame(comparison).T.loc[modes]
-    cdf.insert(0, "비교군", [MODES[m] for m in modes])
+    cdf.insert(0, "비교군", [MODE_LABEL[m] for m in modes])
     cdf["n_jobs"] = cdf["n_jobs"].map(lambda v: f"{v:,.0f}")
     cdf["total_carbon"] = cdf["total_carbon"].map(lambda v: f"{v:,.0f} g")
     cdf["avg_delay"] = cdf["avg_delay"].map(lambda v: f"{v:.3f} h")
