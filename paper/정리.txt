@@ -1637,3 +1637,15 @@ A4 2단, 여백 상하38.5mm 좌우30mm) 전부 원문 PDF/hwp로 확정.
 소수점까지 일치. 4장 제목 변경이 4.1~4.4 소절·전방참조(idx197)에
 영향 없음 확인. 경미 사항(idx608 복문 인용 범위 모호) — 학술 관행상
 문제 아님, 수정 불필요로 판정.
+
+[65] 2026-09-21 ACM 인용 잔여 6/7건 원문 대조 완료
+==========================================================
+백그라운드 조사로 DACF·CarbonCast·SIGENERGY 3편의 오픈액세스 사본
+확보(저자 GitHub·UMass 연구실·교수 개인 페이지, 전부 실재 확인):
+  DACF: https://raw.githubusercontent.com/carbonfirst/DACF/main/DACF.pdf
+  CarbonCast: https://lass.cs.umass.edu/papers/pdf/buildsys2022-carboncast.pdf
+  SIGENERGY: https://groups.cs.umass.edu/ramesh/.../3607114.3607117.pdf
+다운로드해 실제 대조 — ** 6건(DACF 3, CarbonCast 2, SIGENERGY 1)
+전부 원문과 일치. ** [52]의 "완전 미대조 7건"이 6건으로 줄고 그 6건이
+전부 정확함이 확정됨. 잔여 1건(Asadov, MDPI, 자동화 차단)은 별도
+확인 진행 중.
