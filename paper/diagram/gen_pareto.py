@@ -102,6 +102,7 @@ def main():
     fig.tight_layout(rect=(0, 0.10, 1, 1), pad=0.5)
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fig4_pareto.png")
     fig.savefig(out)
+    fig.savefig(out.replace(".png", ".pdf"))  # KCI 인쇄 대비 벡터판
     print("wrote", out)
 
 

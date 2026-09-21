@@ -191,7 +191,10 @@ def fig_loadbalancer():
           arr(268, 78, 390, 78, 1.3), txt(329, 72, "배정 확정", anchor="middle", size=FT),
           f'<g stroke="{INK}" stroke-width="1.1" fill="none"><path d="M402,50 L394,50 L394,132 L402,132"/></g>',
           txt(406, 54, "R" + sb("1")), txt(406, 95, "\u22ee", bold=True), txt(406, 136, "R" + sb("N")),
-          oplus(300, 150), txt(300, 164, "avail" + sb("r") + " 계산", anchor="middle", size=FT),
+          # anchor="middle"/"end" + 아래첨자 tspan + 그 뒤 한글이 오는 조합은
+          # 렌더러가 폭을 잘못 재서 겹친다(2026-09-21, fig1과 같은 버그 재발견).
+          # 왼쪽 정렬로 회피 — x를 눈대중 중앙에 오도록 당겨줌.
+          oplus(300, 150), txt(278, 164, "avail" + sb("r") + " 계산", size=FT),
           txt(222, 153, "\u230a\u03b7 \u00b7 cap" + sb("r") + "\u230b", anchor="middle", size=FT),
           arr(252, 150, 287, 150, 0.9),
           path("M394,132 L394,150 L313,150", sw=0.9),
