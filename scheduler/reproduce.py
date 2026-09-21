@@ -612,9 +612,6 @@ def capacity_sweep_abs(jobs=None, data=None):
     California 배정 수가 cap에 대해 단조증가(=cap이 클수록 더 많이 배정)하는지로
     판정한다.
     """
-    with open(os.path.join(SWEEP_DIR, "sweep_summary.csv")) as f:
-        summary_by_level = {r["level"]: r for r in csv.DictReader(f)}
-
     main_rows, region_rows = [], []
     ca_n_by_level = {}
 
@@ -714,7 +711,7 @@ def capacity_check_598_600(jobs=None, data=None):
     600: 캘리포니아 초과 구간(concurrency>cap인 연속시각 구간)의 시간을
     hour-of-day(UTC, 0~23)로 쪼개, 19~21시대 비중이 77.7%에 맞는지."""
     records = _load_sweep_level("1x")
-    regions = sorted(set(v["region"] for v in records))
+    regions = sorted({v["region"] for v in records})
 
     print("\n[문단598 검증] 리전별 초과시간(hours_over), cap=12")
     hours_over = {}
@@ -801,9 +798,9 @@ def lstm_mae_table(horizons=(1, 6, 24)):
         lstm_wins = [r for r in regions if rows[r][H][0] < rows[r][H][1]]
         print(f"  h={H}: LSTM이 지속성보다 나은 리전 {len(lstm_wins)}/8 — {lstm_wins}")
 
-    l, p = rows["FR"][1]
-    print(f"  프랑스 1h — LSTM {l:.2f}% / 지속성 {p:.2f}%  (문단574 주장: 27.14%/10.29%) -> "
-          f"{'일치' if abs(l-27.14)<0.1 and abs(p-10.29)<0.1 else '불일치'}")
+    lstm_mae, persist_mae = rows["FR"][1]
+    print(f"  프랑스 1h — LSTM {lstm_mae:.2f}% / 지속성 {persist_mae:.2f}%  (문단574 주장: 27.14%/10.29%) -> "
+          f"{'일치' if abs(lstm_mae-27.14)<0.1 and abs(persist_mae-10.29)<0.1 else '불일치'}")
     return rows
 
 
