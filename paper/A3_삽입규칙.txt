@@ -1,0 +1,46 @@
+A3_삽입규칙 — 초록·키워드를 표제부(2구역)에 삽입
+==========================================================
+작성: 2026-09-21, carbon-aware-scheduler-4d(원고 트랙)
+대상 파일: paper/CAST.docx (be 커밋 bac41be 기준 현재 상태)
+
+** 조사 결과 — 지금 그 자리에 뭐가 있나 **
+문단0 = 국문 제목("CAST: 리전 용량 제약을 고려한 탄소 인지 시공간
+워크로드 스케줄링"), 문단1 = 영문 제목("CAST: Carbon-Aware
+Spatio-Temporal Scheduling"). 그 뒤 문단2~16, ** 15개가 전부
+완전히 빈 문단 **이다(정리.txt "지금 초록이 아예 없다"와 일치).
+문단16이 이 구역(표제부, 연속 섹션)을 끝내는 <w:sectPr>를 갖고
+있다 — 이후 문단17 "1. 서론"부터 2단 본문이 시작된다.
+
+저자명·소속 등 서지정보 칸은 이 15개 빈 문단 안 어디에도 구분되어
+있지 않다(그냥 다 똑같이 빈 줄) — 저자정보는 A3 범위 밖(초록_초안
+.txt 작성 때도 그렇게 명시했음)이라 이번엔 안 건드렸다. 나중에
+저자정보를 넣을 때는 이 규칙이 추가한 8개 문단과 문단16(sectPr)
+사이에 남는 빈 문단들에 넣거나, 이 규칙이 추가하는 문단들 앞에
+끼워 넣으면 된다.
+
+** 삽입 전략 **: 기존 빈 문단 15개는 ** 하나도 건드리지 않았다 **
+(특히 문단16의 sectPr는 절대 손대면 안 됨). 대신 영문 제목
+문단(문단1)의 끝 바로 뒤, 문단2 앞에 새 문단 8개를 끼워 넣는다.
+그러면 순서는: 국문제목 / 영문제목 / [새: 초록 4종 8문단] /
+(기존 빈 문단 15개, 그대로) / 1. 서론.
+
+내용은 paper/초록_초안.txt 확정본 그대로(국문 477자, 영문 171
+words, 규정 300~500자/100~200단어 안). 서식: 굵게 "초록"/"주제어:"
+/"Abstract"/"Keywords:" 라벨 + 평문 본문, 한 단락에 한 run(어절
+안 쪼갬 — 다른 새 삽입 문단들과 같은 방식). 별도 논문 서식 규칙
+(들여쓰기, 정렬 등)이 아직 안 정해져 있어서 본문 기본 서식을
+그대로 썼다 — KCI 투고 양식 확정되면(아직 "학회 미정", 정리.txt
+[17] 참고) 조정 필요할 수 있음.
+
+** 검증 완료 **: 새로 넣는 8개 문단만 따로도, 전체 document.xml에
+실제로 치환해 넣은 뒤로도 xml.etree로 well-formed 파싱 통과
+확인(2026-09-21). 문단 수 849(be 커밋 시점) -> 857로 +8 정확히
+일치.
+
+==========================================================
+
+ANCHOR (find, count=1 verified):
+<w:t>-Temporal Scheduling</w:t></w:r></w:p>
+
+REPLACE WITH (anchor text preserved + 8 new paragraphs appended right after it):
+<w:t>-Temporal Scheduling</w:t></w:r></w:p><w:p w14:paraId="A3000001" w14:textId="77777777" w:rsidR="00CA0C2E" w:rsidRDefault="00CA0C2E"/><w:p w14:paraId="A3000002" w14:textId="77777777" w:rsidR="00CA0C2E" w:rsidRDefault="00000000"><w:r><w:rPr><w:b/><w:bCs/></w:rPr><w:t xml:space="preserve">초록  </w:t></w:r><w:r><w:t xml:space="preserve">데이터센터의 탄소 배출량은 같은 작업이라도 어느 리전에서 언제 실행하느냐에 따라 크게 달라진다. 본 연구는 미래 탄소집약도를 LSTM으로 예측하고, 정수계획법으로 작업을 저탄소 리전에 배정한 뒤, 마감 시한 안에서 시간을 옮겨 배출량을 한 번 더 줄이는 CAST를 제안한다. 탄소와 지연 사이의 가중치는 고정하지 않고, 매 시간 슬롯마다 파레토 곡선의 무릎점에서 자동으로 정한다. 8개 리전, 1년치 실측 탄소 데이터 위에서 돌린 합성 작업 146,000건으로 실험한 결과, 시간 이동만으로 18.58%, 리전 이동만으로 56.85%를 줄였고 둘을 결합하면 62.94%를 줄였으며 마감 위반은 없었다. 무릎점 자동 선택은 가중치 고정(알파=0.5) 대비 지연 6.7ms만 더 쓰고 탄소는 10.64%포인트 더 줄인다. 다만 리전별 용량 제한을 지키면 시간 이동의 몫은 이론상 9.07%포인트에서 6.09%포인트로 줄어, 용량이 시간 이동 효과를 제한함을 정량적으로 보였다.</w:t></w:r></w:p><w:p w14:paraId="A3000003" w14:textId="77777777" w:rsidR="00CA0C2E" w:rsidRDefault="00CA0C2E"/><w:p w14:paraId="A3000004" w14:textId="77777777" w:rsidR="00CA0C2E" w:rsidRDefault="00000000"><w:r><w:rPr><w:b/><w:bCs/></w:rPr><w:t xml:space="preserve">주제어: </w:t></w:r><w:r><w:t xml:space="preserve">탄소 인지 스케줄링, 워크로드 이동, 정수 계획법, 리전 용량, LSTM</w:t></w:r></w:p><w:p w14:paraId="A3000005" w14:textId="77777777" w:rsidR="00CA0C2E" w:rsidRDefault="00CA0C2E"/><w:p w14:paraId="A3000006" w14:textId="77777777" w:rsidR="00CA0C2E" w:rsidRDefault="00000000"><w:r><w:rPr><w:b/><w:bCs/></w:rPr><w:t xml:space="preserve">Abstract  </w:t></w:r><w:r><w:t xml:space="preserve">The carbon footprint of a cloud workload varies substantially depending on which region and when it runs. We present CAST, a carbon-aware scheduler that forecasts future carbon intensity with an LSTM, places jobs across regions via integer programming, and further shifts them in time within each job's deadline. Rather than fixing the trade-off between carbon and latency, CAST selects it automatically at every time slot by locating the knee point of the Pareto curve. Evaluated on 146,000 synthetic jobs driven by one year of measured carbon-intensity data across 8 regions, temporal shifting alone reduces emissions by 18.58%, spatial placement alone by 56.85%, and combining both reduces emissions by 62.94% with zero deadline violations. The automatic knee-point weight cuts 10.64 percentage points more carbon than a fixed weight (alpha=0.5), at the cost of only 6.7ms additional latency. However, enforcing per-region capacity limits shrinks temporal shifting's marginal contribution from an unconstrained upper bound of 9.07 percentage points to 6.09 percentage points, quantifying how regional capacity constrains the benefit of shifting workloads in time.</w:t></w:r></w:p><w:p w14:paraId="A3000007" w14:textId="77777777" w:rsidR="00CA0C2E" w:rsidRDefault="00CA0C2E"/><w:p w14:paraId="A3000008" w14:textId="77777777" w:rsidR="00CA0C2E" w:rsidRDefault="00000000"><w:r><w:rPr><w:b/><w:bCs/></w:rPr><w:t xml:space="preserve">Keywords: </w:t></w:r><w:r><w:t xml:space="preserve">Carbon-aware scheduling, Workload shifting, Integer programming, Regional capacity, LSTM</w:t></w:r></w:p>

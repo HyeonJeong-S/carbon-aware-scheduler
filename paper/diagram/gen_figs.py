@@ -179,7 +179,7 @@ def fig_loadbalancer():
                 f'<line x1="{cx-5}" y1="{cy}" x2="{cx+5}" y2="{cy}" stroke="{INK}" stroke-width="1.1"/>'
                 f'<line x1="{cx}" y1="{cy-5}" x2="{cx}" y2="{cy+5}" stroke="{INK}" stroke-width="1.1"/>')
     L += [txt(8, 16, "공간 이동 · 슬롯 단위 ILP 로드밸런서", bold=True, size=FB),
-          f'<rect x="6" y="26" width="439" height="140" rx="7" fill="#fff" stroke="{INK}" stroke-width="1" stroke-dasharray="5 3"/>',
+          f'<rect x="6" y="26" width="439" height="142" rx="7" fill="#fff" stroke="{INK}" stroke-width="1" stroke-dasharray="5 3"/>',
           txt(438, 38, "점선 안이 한 슬롯(1 h) 처리 단위", anchor="end", size=FT, it=True),
           box(14, 44, 72, 18, sw=0.9), txt(50, 57, "LSTM 예측", anchor="middle", size=FT),
           arr(86, 53, 122, 53), txt(104, 48, "\u0108", anchor="middle", it=True),
@@ -202,12 +202,16 @@ def fig_loadbalancer():
           # anchor="middle"/"end" + 아래첨자 tspan + 그 뒤 한글이 오는 조합은
           # 렌더러가 폭을 잘못 재서 겹친다(2026-09-21, fig1과 같은 버그 재발견).
           # 왼쪽 정렬로 회피 — x를 눈대중 중앙에 오도록 당겨줌.
-          oplus(300, 150), txt(278, 164, "avail" + sb("r", " 계산"), size=FT),
+          # ⊕ 반지름을 11->8로 줄여 바로 밑 "avail_r 계산" 라벨과의 겹침을
+          # 없앴다(2026-09-21, fe 발견 — 아래첨자 렌더링 버그가 아니라 원 도형과
+          # 라벨의 y 간격이 애초에 부족했던 레이아웃 문제였음. 격리 테스트로
+          # 확인: 같은 텍스트를 원 없이 단독으로 그리면 안 겹친다).
+          oplus(300, 150, r=8), txt(278, 168, "avail" + sb("r", " 계산"), size=FT),
           txt(222, 153, "\u230a\u03b7 \u00b7 cap" + sb("r") + "\u230b", anchor="middle", size=FT),
-          arr(252, 150, 287, 150, 0.9),
-          path("M394,132 L394,150 L313,150", sw=0.9),
+          arr(252, 150, 291, 150, 0.9),
+          path("M394,132 L394,150 L309,150", sw=0.9),
           txt(354, 145, "실행 중 작업 수", anchor="middle", size=FT),
-          path("M300,139 L300,136 L196,136 L196,132", sw=1, dash="4 2.5"),
+          path("M300,142 L300,136 L196,136 L196,132", sw=1, dash="4 2.5"),
           txt(6, 186, "실행 시각은 이 단계에서 정하지 않는다 — 다음 단계인 시간 이동이 정한다.", size=FT)]
     L.append("</svg>")
     return "\n".join(L)

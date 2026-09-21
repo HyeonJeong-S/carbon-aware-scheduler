@@ -10,7 +10,7 @@
 </defs>
 <rect width="451" height="192" fill="#fff"/>
 <text x="8" y="16" font-size="10" font-weight="bold">공간 이동 · 슬롯 단위 ILP 로드밸런서</text>
-<rect x="6" y="26" width="439" height="140" rx="7" fill="#fff" stroke="#000000" stroke-width="1" stroke-dasharray="5 3"/>
+<rect x="6" y="26" width="439" height="142" rx="7" fill="#fff" stroke="#000000" stroke-width="1" stroke-dasharray="5 3"/>
 <text x="438" y="38" text-anchor="end" font-size="8" font-style="italic">점선 안이 한 슬롯(1 h) 처리 단위</text>
 <rect x="14" y="44" width="72" height="18" fill="#fff" stroke="#000000" stroke-width="0.9"/>
 <text x="50" y="57" text-anchor="middle" font-size="8">LSTM 예측</text>
@@ -37,12 +37,12 @@
 <text x="406" y="54">R<tspan font-size="6.5" dy="1.5">1</tspan><tspan dy="-1.5"></tspan></text>
 <text x="406" y="95" font-weight="bold">⋮</text>
 <text x="406" y="136">R<tspan font-size="6.5" dy="1.5">N</tspan><tspan dy="-1.5"></tspan></text>
-<circle cx="300" cy="150" r="11" fill="#fff" stroke="#000000" stroke-width="1.1"/><line x1="295" y1="150" x2="305" y2="150" stroke="#000000" stroke-width="1.1"/><line x1="300" y1="145" x2="300" y2="155" stroke="#000000" stroke-width="1.1"/>
-<text x="278" y="164" font-size="8">avail<tspan font-size="6.5" dy="1.5">r</tspan><tspan dy="-1.5"> 계산</tspan></text>
+<circle cx="300" cy="150" r="8" fill="#fff" stroke="#000000" stroke-width="1.1"/><line x1="295" y1="150" x2="305" y2="150" stroke="#000000" stroke-width="1.1"/><line x1="300" y1="145" x2="300" y2="155" stroke="#000000" stroke-width="1.1"/>
+<text x="278" y="168" font-size="8">avail<tspan font-size="6.5" dy="1.5">r</tspan><tspan dy="-1.5"> 계산</tspan></text>
 <text x="222" y="153" text-anchor="middle" font-size="8">⌊η · cap<tspan font-size="6.5" dy="1.5">r</tspan><tspan dy="-1.5"></tspan>⌋</text>
-<line x1="252" y1="150" x2="287" y2="150" stroke="#000000" stroke-width="0.9" marker-end="url(#a)"/>
-<path d="M394,132 L394,150 L313,150" fill="none" stroke="#000000" stroke-width="0.9" marker-end="url(#a)"/>
+<line x1="252" y1="150" x2="291" y2="150" stroke="#000000" stroke-width="0.9" marker-end="url(#a)"/>
+<path d="M394,132 L394,150 L309,150" fill="none" stroke="#000000" stroke-width="0.9" marker-end="url(#a)"/>
 <text x="354" y="145" text-anchor="middle" font-size="8">실행 중 작업 수</text>
-<path d="M300,139 L300,136 L196,136 L196,132" fill="none" stroke="#000000" stroke-width="1" stroke-dasharray="4 2.5" marker-end="url(#a)"/>
+<path d="M300,142 L300,136 L196,136 L196,132" fill="none" stroke="#000000" stroke-width="1" stroke-dasharray="4 2.5" marker-end="url(#a)"/>
 <text x="6" y="186" font-size="8">실행 시각은 이 단계에서 정하지 않는다 — 다음 단계인 시간 이동이 정한다.</text>
 </svg>
