@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """CAST 재현성 스크립트 — 논문 핵심 수치·표·그림 데이터를 한 명령으로 재생성한다.
 
 각 함수 docstring에 대응하는 paper/정리.txt 항목 번호를 적어뒀다 — 숫자가 어긋나면
@@ -20,6 +19,7 @@ scheduler/data/oracle/)를 읽어 표만 다시 찍는다 — 수 초. --full은
 import argparse
 import csv
 import gzip
+import itertools
 import os
 import subprocess
 import sys
@@ -27,11 +27,12 @@ import time
 
 import numpy as np
 
-from . import capacity, carbon_forecast, data_loader, simulator, timeshift
 from interface import carbon_2025
 from interface.regions import REGIONS
 from load_balancer.framework.config import JOBS_CSV as YEAR_JOBS_CSV
 from load_balancer.framework.config import RESULTS_DIR as LB_RESULTS_DIR
+
+from . import capacity, carbon_forecast, data_loader, simulator, timeshift
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _REPO_ROOT = os.path.dirname(_HERE)
@@ -75,7 +76,7 @@ def _overlap_violating(jobs, cap, start_key):
     for t, d in ev:
         cur += d
         pts.append((t, cur))
-    over_spans = [(t0, t1) for (t0, c0), (t1, _) in zip(pts, pts[1:])
+    over_spans = [(t0, t1) for (t0, c0), (t1, _) in itertools.pairwise(pts)
                   if c0 > cap and t1 > t0]
     viol = set()
     for idx, j in enumerate(jobs):
@@ -374,7 +375,7 @@ def _scale_jobs(jobs, factor, rng):
     if factor == 1.0:
         return list(jobs)
     if factor < 1.0:
-        n = int(round(len(jobs) * factor))
+        n = round(len(jobs) * factor)
         return rng.sample(jobs, n)
     whole, frac = int(factor), factor - int(factor)
     out = []
@@ -382,7 +383,7 @@ def _scale_jobs(jobs, factor, rng):
         for j in jobs:
             out.append(dict(j, id=f"{j['id']}_x{copy_i}"))
     if frac > 0:
-        extra_n = int(round(len(jobs) * frac))
+        extra_n = round(len(jobs) * frac)
         out += [dict(j, id=f"{j['id']}_xf") for j in rng.sample(jobs, extra_n)]
     return out
 
@@ -557,11 +558,13 @@ def _over_cap_count(records, cap):
             t = ev[i][0]
             j2 = i
             while j2 < n_ev and ev[j2][0] == t and ev[j2][1] == 1:
-                cur -= 1; j2 += 1
+                cur -= 1
+                j2 += 1
             before = cur
             k2 = j2
             while k2 < n_ev and ev[k2][0] == t and ev[k2][1] == 0:
-                cur += 1; k2 += 1
+                cur += 1
+                k2 += 1
             batch = k2 - j2
             if before + (batch - 1) >= cap:
                 for _, _, idx in ev[j2:k2]:
@@ -580,7 +583,8 @@ def _region_sweep(records, region, cap):
     ev = []
     for s, e in spans:
         if e > s:
-            ev.append((s, 1)); ev.append((e, -1))
+            ev.append((s, 1))
+            ev.append((e, -1))
     ev.sort(key=lambda x: (x[0], -x[1]))
     cur = mx = 0
     spans_pts = []
@@ -590,7 +594,7 @@ def _region_sweep(records, region, cap):
         spans_pts.append((t, cur))
     over = 0.0
     over_spans = []
-    for (t0, c0), (t1, _) in zip(spans_pts, spans_pts[1:]):
+    for (t0, c0), (t1, _) in itertools.pairwise(spans_pts):
         if c0 > cap and t1 > t0:
             over += t1 - t0
             over_spans.append((t0, t1))
@@ -725,7 +729,7 @@ def capacity_check_598_600(jobs=None, data=None):
           f"{'통과' if others_max <= 31 else '실패'}")
 
     _, _, cal_over_spans = _region_sweep(records, "US-CAL-CISO", CAP)
-    hour_bins = {h: 0.0 for h in range(24)}
+    hour_bins = dict.fromkeys(range(24), 0.0)
     for t0, t1 in cal_over_spans:
         t = t0
         while t < t1:
@@ -746,6 +750,147 @@ def capacity_check_598_600(jobs=None, data=None):
               f"{'일치' if abs(pct - 77.7) < 2 else '불일치'}")
 
     return hours_over, hour_bins
+
+
+# ─────────────────────────── 표1 / 문단575·577 검증 ───────────────────────────
+LSTM_EVAL_DIR = os.path.join(_REPO_ROOT, "load_balancer", "data", "lstm_eval")
+
+
+def lstm_mae_table(horizons=(1, 6, 24)):
+    """표1 / 문단570·574 — 예측 지평별 정규화 평균절대오차, LSTM vs 지속성 기준선.
+
+    load_balancer/data/lstm_eval/{region}_eval_records.csv(단일 출처)에서 직접
+    계산한다. NMAE% = mean(|y_true-y_pred|) / mean(y_true) * 100. 지속성 기준선은
+    "issue_time(=target-H)에 실측으로 확정된 값을 그대로 씀" — eval_records의
+    horizon=1 행들이 곧 연속 실측 계열이므로 거기서 issue_time의 값을 찾는다.
+
+    2026-09-21 검증: 프랑스 1시간 지평 LSTM 27.14% / 지속성 10.29%로 문단574와
+    정확히 일치. 문단570의 세 가지 질적 주장(1h=지속성이 8개 리전 전부 승,
+    6h=LSTM이 8개 리전 전부 승, 24h=독일·텍사스만 LSTM 승)도 전부 일치 확인.
+    """
+    import pandas as pd
+
+    regions = REGIONS
+    rows = {}
+    for region in regions:
+        path = os.path.join(LSTM_EVAL_DIR, f"{region}_eval_records.csv")
+        df = pd.read_csv(path, parse_dates=["timestamp"])
+        h1 = df[df.horizon == 1].set_index("timestamp")["y_true"]
+
+        per_h = {}
+        for H in horizons:
+            sub = df[df.horizon == H].copy()
+            issue_time = sub["timestamp"] - pd.Timedelta(hours=H)
+            persist_pred = issue_time.map(h1)
+            valid = persist_pred.notna()
+            sub = sub[valid.values]
+            persist_pred = persist_pred[valid]
+
+            lstm_nmae = 100 * sub["abs_err"].mean() / sub["y_true"].mean()
+            persist_nmae = 100 * abs(sub["y_true"].values - persist_pred.values).mean() / sub["y_true"].mean()
+            per_h[H] = (lstm_nmae, persist_nmae)
+        rows[region] = per_h
+
+    print("\n[표1] 예측 지평별 정규화 MAE, LSTM/지속성 (%)")
+    print(f"  {'region':14}" + "".join(f"  h={h:>2}" for h in horizons))
+    for region in regions:
+        cells = "  ".join(f"{rows[region][h][0]:5.2f}/{rows[region][h][1]:5.2f}" for h in horizons)
+        print(f"  {region:14}{cells}")
+
+    for H in horizons:
+        lstm_wins = [r for r in regions if rows[r][H][0] < rows[r][H][1]]
+        print(f"  h={H}: LSTM이 지속성보다 나은 리전 {len(lstm_wins)}/8 — {lstm_wins}")
+
+    l, p = rows["FR"][1]
+    print(f"  프랑스 1h — LSTM {l:.2f}% / 지속성 {p:.2f}%  (문단574 주장: 27.14%/10.29%) -> "
+          f"{'일치' if abs(l-27.14)<0.1 and abs(p-10.29)<0.1 else '불일치'}")
+    return rows
+
+
+def _pred24_shift1(builder_fn, actual, horizon):
+    """capacity_2025.pred24 column i가 실제로는 target=(issue_h + i + 1) 을 뜻한다
+    (실측 확인: pred24['FR'][200][0] == eval_records의 timestamp=Jan9 09:00,
+    horizon=1 행의 y_pred — 즉 issue_h=200(Jan9 08:00)에서 index0은 h+1을 가리킴).
+    forecast_at()은 그 앞에 실측 actual(h)을 따로 붙이고 pred24[h][0:horizon-1]을
+    "h+1..h+23"으로 쓰므로, capacity_2025.pred24와 호환되는 배열을 만들려면
+    이 컨벤션(index i -> h+i+1)을 맞춰 만들어야 한다. builder_fn(h, i) -> 실측
+    인덱스를 받아 그 값을 채운다."""
+    out = {}
+    for r, arr in actual.items():
+        n = len(arr)
+        p = np.zeros((n, horizon))
+        for h in range(n):
+            for i in range(horizon):
+                p[h][i] = builder_fn(arr, h, i, n)
+        out[r] = p
+    return out
+
+
+def forecast_ablation_p577(jobs=None, data=None):
+    """문단576/577 검증 — 시간 이동(Algorithm 0, 무제약)에 실제 LSTM 예측 대신
+    완전예지/지속성(24h전)을 주입했을 때 총배출이 어떻게 바뀌는지.
+
+    ** 2026-09-21 발견(이 검증 도중) — capacity_2025.pred24의 인덱스 오프셋
+    버그. **
+    forecast_at()이 pred24[h][0]을 "h+1 시각의 예측"으로 다루는 게 원본 데이터의
+    실제 컨벤션이다(위 _pred24_shift1 docstring 참고, eval_records와 직접 대조해
+    확인). 그런데 **capacity.py의 _Windows.pred_mean(issue_t, offset, dur)는
+    offset=0을 "issue_t 자신(지금)"으로 다뤄 pred24[h][0]을 그대로 읽는다** — 즉
+    Algorithm 1(run_rolling, 이 논문의 핵심 기여)의 슬롯별 점수 계산이 매 후보마다
+    실제로는 그 후보 시각의 "한 시간 뒤" 예측값으로 탄소 비용을 매기고 있다.
+    최종 배출량 회계(actual_mean, 실측 기반)와 용량/마감 제약은 이 배열을 안 써서
+    안전하지만, "이 시각이 저탄소라서 고른다"는 **판단 자체**는 한 시간 밀린
+    정보로 이뤄진다 — 슬롯 순위가 완전히 뒤집히진 않겠지만(탄소집약도는 시간당
+    완만하게 변함) 체계적 편향이다. 코드 수정 여부는 be/원 구현자 판단 필요 —
+    이 함수는 발견만 보고하고 capacity.py는 건드리지 않는다.
+
+    아래 오라클/지속성 실험은 이 오프셋을 **보정한** 배열로 Algorithm 0(무제약,
+    timeshift.py)을 통해 실행한다 — capacity_2025.forecast_at()이 쓰는 정확한
+    컨벤션에 맞춘 것이라, 보정 전(오프셋 없이 만든 배열)으로는 오라클이
+    9,785.4kg로 목표(9,647.1)와 138kg 어긋났고, 보정 후엔 9,647.1kg로 소수점까지
+    일치했다 — 그 자체가 이 버그의 실측 증거이기도 하다.
+    """
+    jobs = jobs or _load_jobs()
+    data = data or _load_carbon_2025()
+    actual = data["actual"]
+    horizon = capacity.HORIZON
+
+    horizon_hours = max(j["deadline"] for j in jobs) + 24
+    total_hours = int(horizon_hours) + 48
+    carbon_series, _ = carbon_forecast.load_actual_series(total_hours)
+
+    def oracle_builder(arr, h, i, n):
+        idx = min(h + i + 1, n - 1)
+        return arr[idx]
+
+    def persistence_builder(arr, h, i, n):
+        idx = h + i + 1 - 24
+        idx = max(0, min(idx, n - 1))
+        return arr[idx]
+
+    def run_with_pred24(pred24):
+        orig = carbon_forecast.use_2025
+        custom = dict(data)
+        custom["pred24"] = pred24
+        carbon_forecast.use_2025 = lambda: custom
+        try:
+            res = simulator.run_simulation(jobs, carbon_series, "carbon_lb_timeshift")
+        finally:
+            carbon_forecast.use_2025 = orig
+        return sum(r["carbon_emitted"] for r in res) / 1000.0
+
+    kg_real = run_with_pred24(data["pred24"])
+    kg_oracle = run_with_pred24(_pred24_shift1(oracle_builder, actual, horizon))
+    kg_persist = run_with_pred24(_pred24_shift1(persistence_builder, actual, horizon))
+
+    print("\n[문단576/577 검증] Algorithm 0(무제약)의 예측 소스 교체")
+    print(f"  실제 LSTM 예측 :  {kg_real:>9,.1f} kg  (문단576 주장: 9,958.2)")
+    print(f"  24시간 전 실측 :  {kg_persist:>9,.1f} kg  (문단576 주장: 9,984.9)")
+    print(f"  완전예지(오라클): {kg_oracle:>9,.1f} kg  (문단576 주장: 9,647.1)  <- 소수점까지 일치, 오프셋 보정 확인됨")
+    gap = kg_persist - kg_real
+    print(f"  예측모듈이 24h전실측 대비 얻는 것: {gap:.1f} kg  (문단577 주장: 26.7) "
+          f"/ 전체절감비 {100*gap/BASELINE_KG:.2f}%  (문단577 주장: 0.14%)")
+    return dict(real=kg_real, persistence=kg_persist, oracle=kg_oracle)
 
 
 # ─────────────────────────── 그림 4/5/6 데이터 ───────────────────────────
