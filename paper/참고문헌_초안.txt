@@ -1,0 +1,45 @@
+참고문헌 초안 — 미완성, 중단됨 (사용자 지시로 E2 작업 중단, 2026-09-21)
+==========================================================
+** 이 파일은 완성본이 아니다. 서지정보(저자/제목/게재지/권호/쪽/연도/DOI 정식
+표기)와 paraId 매핑표는 아직 안 만들었다 — 아래는 딱 한 단계, "라이브 docx에
+있는 고유 인용 URL을 본문 첫 등장 순서대로 뽑아낸 목록"까지만 된 상태다. **
+
+다음에 이어서 할 작업(순서대로):
+  1. 아래 17개 URL 각각의 정식 서지정보(저자·제목·게재지·권호·쪽·연도·DOI)를
+     PDF/공식 페이지에서 확정 — 정리.txt [45]·[52]가 이미 검증해둔 저자/venue/
+     연도 정보를 우선 재사용하고, 없는 건 새로 찾을 것.
+  2. KCI 국문지 표준 서식으로 번호부 목록 작성: [n] 저자, "제목," 게재지,
+     권(호), 쪽, 연도. DOI.
+  3. 각 파란 인용(paraId)이 어느 [n]으로 바뀔지 매핑표 작성 — 투고 직전
+     "인용 장치 → [n]+References" 전환 스크립트의 사양이 됨.
+  4. 번호는 본문 등장 순서(KCI 관행) — 아래 목록이 이미 그 순서다.
+
+** 전환 자체는 사용자가 "인용 장치를 걷어내라"고 결정한 뒤에만 문서에 적용한다
+(정리.txt [15]: 지금은 URL 인라인 방식 유지, 투고 직전에 한 번에 변환). **
+
+==========================================================
+본문 첫 등장 순서 — 고유 URL 17개, 등장 횟수 포함(라이브 docx 기준)
+==========================================================
+ 1. https://www.iea.org/reports/energy-and-ai/executive-summary (4회)
+ 2. https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32023L1791 (1회)
+ 3. https://www.gstatic.com/gumdrop/sustainability/24x7-carbon-free-energy-methodologies-metrics.pdf (1회)
+ 4. https://doi.org/10.1145/3634769.3634812 — Caspian, Bahreini/Tantawi/Tardieu, MASCOTS'24 (9회)
+ 5. https://doi.org/10.3390/su17146433 (1회)
+ 6. https://arxiv.org/pdf/2106.11750 — CICS, Radovanović et al., IEEE Trans. Power Systems (5회)
+ 7. https://dl.acm.org/doi/10.1145/3604930.3605711 — VMware GSLB, Maji et al., HotCarbon'23 (2회)
+ 8. https://doi.org/10.1145/3627703.3650079 — Sukprasert et al., EuroSys'24 (14회, 최다 인용)
+ 9. https://arxiv.org/abs/2505.18357 — CarbonFlex, Hanafy/Wu/Irwin/Shenoy (4회)
+10. https://www.electricitymaps.com/data-portal (1회)
+11. https://doi.org/10.1145/3538637.3538849 — DACF, Maji/Sitaraman/Shenoy (2회)
+12. https://doi.org/10.1145/3563357.3564079 — CarbonCast, Maji/Shenoy/Sitaraman (1회)
+13. https://doi.org/10.1145/3607114.3607117 — CarbonCast 확장판(SIGENERGY) (1회)
+14. https://www.electricitymaps.com/data/methodology (3회)
+15. https://arxiv.org/abs/2512.08725 — Attenni et al. (2회)
+16. https://doi.org/10.1109/MASCOTS64422.2024.10786568 (4번과 중복 — Caspian 논문의
+    다른 DOI 표기 가능성, 확인 필요)
+17. https://learn.microsoft.com/en-us/azure/networking/azure-network-latency (1회)
+
+주: [45]에서 확인된 13개 "출처"(서지 단위)와 위 17개 URL이 정확히 안 맞는다 —
+같은 논문이 doi.org와 arxiv.org 등 복수 URL로 인용됐거나, 위 16번이 4번과
+같은 문헌의 중복 표기일 가능성이 있다. 서지정보 확정 단계에서 URL을 "고유
+문헌" 단위로 다시 묶어야 한다(현재는 URL 문자열 단위로만 집계함).
