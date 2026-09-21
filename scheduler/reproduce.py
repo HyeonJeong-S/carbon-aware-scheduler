@@ -273,17 +273,7 @@ def oracle_b6(jobs=None, data=None):
     actual = data["actual"]
     horizon = capacity.HORIZON
 
-    oracle_pred24 = {}
-    for r, arr in actual.items():
-        n = len(arr)
-        p = np.zeros((n, horizon))
-        for h in range(n):
-            end = min(h + horizon, n)
-            vals = arr[h:end]
-            if len(vals) < horizon:
-                vals = np.concatenate([vals, np.full(horizon - len(vals), arr[-1])])
-            p[h] = vals
-        oracle_pred24[r] = p
+    oracle_pred24 = _oracle_pred24(actual, horizon)
 
     out, stats = capacity.run_rolling(jobs, actual, oracle_pred24, capacity=CAP, regions=REGIONS)
 
@@ -389,15 +379,22 @@ def _scale_jobs(jobs, factor, rng):
 
 
 def _oracle_pred24(actual, horizon):
+    """완전예지 오라클 배열 — capacity.py의 pred24 컨벤션(열 j = 실측(h+j+1),
+    2026-09-21 오프셋 보정, 정리.txt [49]/[51])에 맞춰 만든다. 옛 컨벤션(열0=지금)
+    으로 만들면 _Windows가 실측(h)을 다시 index0에 덮어써서 실측(h)이 두 번
+    들어가고 나머지가 한 칸씩 밀리는 이중 오프셋이 생긴다 — 오라클 재현이
+    9,647.1(문단576) 대신 9,785.4로 어긋났던 원인이 이거였다(보정 후 정확히 일치)."""
     out = {}
     for r, arr in actual.items():
         n = len(arr)
         p = np.zeros((n, horizon))
         for h in range(n):
-            end = min(h + horizon, n)
-            vals = arr[h:end]
+            start = h + 1
+            end = min(start + horizon, n)
+            vals = arr[start:end]
             if len(vals) < horizon:
-                vals = np.concatenate([vals, np.full(horizon - len(vals), arr[-1])])
+                pad = arr[-1] if len(vals) == 0 else vals[-1]
+                vals = np.concatenate([vals, np.full(horizon - len(vals), pad)])
             p[h] = vals
         out[r] = p
     return out

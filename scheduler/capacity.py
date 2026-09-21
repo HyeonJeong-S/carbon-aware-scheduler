@@ -201,11 +201,32 @@ class _Windows:
     def __init__(self, actual, pred24):
         # actual[r] : (n_hours,)          실측 — 탄소 회계용
         # pred24[r] : (n_issue, HORIZON)  발행 시각별 향후 24 h 예측 — 판단용
+        #
+        # 2026-09-21 오프셋 보정(be 승인, 정리.txt [49]): pred24[h][0]은 "h(지금)"이
+        # 아니라 "h+1(한 시간 뒤)"의 예측이다 — carbon_2025.load_2025()가 열 색인을
+        # horizon-1로 채우고(horizon=1이 열0), eval_records의 horizon은 "발행 시각
+        # 기준 몇 시간 뒤"이므로 열0=1시간 뒤가 원자료 자체의 규약이다(실측 대조로
+        # 확인: pred24['FR'][200][0]이 eval_records의 timestamp=발행시각+1h,
+        # horizon=1 행의 y_pred와 정확히 일치). carbon_2025.forecast_at()은 이미 이
+        # 보정을 하고 있다(index0을 실측 actual(h)로 갈아끼우고 pred[h][:23]을
+        # "h+1..h+23"으로 씀) — 그 컨벤션을 그대로 재사용해서 pred_mean()의 창별
+        # 인덱싱 코드는 그대로 두고, 여기 배열 조립 단계에서만 "combined[h] =
+        # [actual(h), pred24(h)[0], ..., pred24(h)[22]]" 로 다시 쌓는다. 이렇게 하면
+        # offset=0이 진짜 "지금(실측)"을, offset=i(i>=1)가 진짜 "h+i"를 가리키게 된다.
+        combined = {}
+        for r, p in pred24.items():
+            a = actual[r]
+            n = min(len(a), p.shape[0])
+            c = np.empty((n, HORIZON))
+            c[:, 0] = a[:n]
+            c[:, 1:] = p[:n, : HORIZON - 1]
+            combined[r] = c
+
         self.act = {r: np.concatenate([[0.0], np.cumsum(v)]) for r, v in actual.items()}
         self.act_n = {r: len(v) for r, v in actual.items()}
         self.prd = {r: np.concatenate([np.zeros((v.shape[0], 1)), np.cumsum(v, axis=1)], axis=1)
-                    for r, v in pred24.items()}
-        self.prd_n = {r: v.shape[0] for r, v in pred24.items()}
+                    for r, v in combined.items()}
+        self.prd_n = {r: v.shape[0] for r, v in combined.items()}
 
     def actual_mean(self, r, start, dur_h):
         cs, n = self.act[r], self.act_n[r]
