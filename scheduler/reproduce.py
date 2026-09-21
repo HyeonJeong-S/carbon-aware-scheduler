@@ -12,9 +12,10 @@ scheduler/data/oracle/)를 읽어 표만 다시 찍는다 — 수 초. --full은
 실행한다.
 
 사용법 (저장소 루트에서):
-    ./.venv/bin/python -m scheduler.reproduce             # 표만, 빠름
-    ./.venv/bin/python -m scheduler.reproduce --full       # 전부 재계산
-    ./.venv/bin/python -m scheduler.reproduce --figures    # 그림 데이터까지
+    ./.venv/bin/python -m scheduler.reproduce                # 표만, 빠름
+    ./.venv/bin/python -m scheduler.reproduce --full          # B4 스윕까지 전부 재계산
+    ./.venv/bin/python -m scheduler.reproduce --figures       # 그림 데이터까지
+    ./.venv/bin/python -m scheduler.reproduce --sensitivity   # E5 민감도 실험 3종까지 (수 분)
 """
 import argparse
 import csv
@@ -365,6 +366,144 @@ def capacity_sweep(jobs=None, data=None, full=False):
     return summary_rows
 
 
+# ─────────────────────────── E5: 민감도 실험 ───────────────────────────
+def _scale_jobs(jobs, factor, rng):
+    """factor배로 job 수를 늘리거나 줄인다 — 0.5x는 무작위 다운샘플(제출시각·리전
+    분포는 원본 그대로 유지), 2x는 정수배만큼 통짜 복제(id만 분리) + 소수부는
+    추가 다운샘플. 둘 다 시드 고정(rng)이라 재현 가능하다."""
+    if factor == 1.0:
+        return list(jobs)
+    if factor < 1.0:
+        n = int(round(len(jobs) * factor))
+        return rng.sample(jobs, n)
+    whole, frac = int(factor), factor - int(factor)
+    out = []
+    for copy_i in range(whole):
+        for j in jobs:
+            out.append(dict(j, id=f"{j['id']}_x{copy_i}"))
+    if frac > 0:
+        extra_n = int(round(len(jobs) * frac))
+        out += [dict(j, id=f"{j['id']}_xf") for j in rng.sample(jobs, extra_n)]
+    return out
+
+
+def _oracle_pred24(actual, horizon):
+    out = {}
+    for r, arr in actual.items():
+        n = len(arr)
+        p = np.zeros((n, horizon))
+        for h in range(n):
+            end = min(h + horizon, n)
+            vals = arr[h:end]
+            if len(vals) < horizon:
+                vals = np.concatenate([vals, np.full(horizon - len(vals), arr[-1])])
+            p[h] = vals
+        out[r] = p
+    return out
+
+
+def _dump_gz(out, path, cols):
+    with gzip.open(path, "wt", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(cols)
+        for v in out.values():
+            w.writerow([v.get(c) for c in cols])
+
+
+def sensitivity(jobs=None, data=None):
+    """E5 민감도 실험 3종 — 정리.txt (be가 기록하는 번호, reproduce.py 기준 2026-09-21
+    작성 시점 최신 항목은 [39]). 전부 롤링(Algorithm 1, cap=12) 기준.
+
+    1. 작업량 스케일 0.5x/1x/2x — 절감률·위반·지연이 부하에 어떻게 반응하는지.
+       기준(baseline)은 그 스케일된 job 집합 자체로 다시 잰다(simple_lb_immediate).
+    2. 예측오차 주입 σ=0(오라클)/10/20/30% — 오라클(B6, 정리.txt [38])에 상대적
+       가우시안 노이즈(승법, 음수 클리핑)를 얹어 절감률-오차 곡선을 얻는다.
+    3. 예측지평 H=12/24/48h — capacity.run_rolling(horizon=H)만 바꾼다.
+       ** H=48은 데이터 한계로 H=24와 완전히 같은 결과가 나온다 ** — 원본
+       eval_records가 애초에 24h 앞까지만 예측을 담고 있어서(carbon_2025.HORIZON),
+       _Windows.pred_mean이 offset을 23으로 clip한다. 즉 이 스크립트가 48h 앞
+       예측을 "가짜로 정확하게" 만들어내지 않는 한 H=48은 시험 불가능하다 —
+       그래서 안 만들었고, 대신 이 사실 자체를 결과로 보고한다.
+
+    출력: scheduler/data/sensitivity/*.csv.gz (레벨별 per-job), 반환값은 세
+    딕셔너리의 튜플(scale_rows, noise_rows, horizon_rows).
+    """
+    jobs = jobs or _load_jobs()
+    data = data or _load_carbon_2025()
+    actual, pred24 = data["actual"], data["pred24"]
+    out_dir = os.path.join(_HERE, "data", "sensitivity")
+    os.makedirs(out_dir, exist_ok=True)
+    job_cols = ["job_id", "k", "region", "submit_time", "duration", "scheduled_start",
+                "delay", "carbon_emitted", "slo_satisfied", "forced"]
+
+    # 1) 작업량 스케일
+    print("\n[E5-1] 작업량 스케일")
+    rng = __import__("random").Random(42)
+    scale_rows = []
+    for label, factor in [("0.5x", 0.5), ("1x", 1.0), ("2x", 2.0)]:
+        scaled = _scale_jobs(jobs, factor, rng)
+        horizon_hours = max(j["deadline"] for j in scaled) + 24
+        total_hours = int(horizon_hours) + 48
+        carbon_series, _ = carbon_forecast.load_actual_series(total_hours)
+        res_base = simulator.run_simulation(scaled, carbon_series, "simple_lb_immediate")
+        baseline_kg = sum(r["carbon_emitted"] for r in res_base) / 1000.0
+
+        out, stats = capacity.run_rolling(scaled, actual, pred24, capacity=CAP, regions=REGIONS)
+        n = len(out)
+        delays = [v["delay"] for v in out.values()]
+        red_pct = 100 * (1 - stats["total_carbon_kg"] / baseline_kg)
+        row = dict(label=label, n=n, baseline_kg=baseline_kg,
+                   online_kg=stats["total_carbon_kg"], reduction_pct=red_pct,
+                   slo_violations=stats["slo_violations"], forced=stats["forced_admissions"],
+                   capacity_violations=stats["capacity_violations"],
+                   avg_delay_h=sum(delays) / n)
+        scale_rows.append(row)
+        print(f"  {label:<5} n={n:>7,}  기준 {baseline_kg:>10,.1f}kg  온라인 {stats['total_carbon_kg']:>10,.1f}kg"
+              f"  절감률 {red_pct:5.2f}%  위반 {stats['capacity_violations']:>6,}  지연 {sum(delays)/n:.3f}h")
+        _dump_gz(out, os.path.join(out_dir, f"scale_{label}.csv.gz"), job_cols)
+
+    # 2) 예측오차 주입
+    print("\n[E5-2] 예측오차 주입 (오라클 + 가우시안 노이즈)")
+    oracle = _oracle_pred24(actual, capacity.HORIZON)
+    noise_rng = np.random.default_rng(42)
+    noise_rows = []
+    for sigma in (0.0, 0.10, 0.20, 0.30):
+        if sigma == 0.0:
+            pred = oracle
+        else:
+            pred = {}
+            for r, p in oracle.items():
+                noisy = p * (1.0 + noise_rng.normal(0.0, sigma, size=p.shape))
+                np.clip(noisy, 0.0, None, out=noisy)
+                pred[r] = noisy
+        out, stats = capacity.run_rolling(jobs, actual, pred, capacity=CAP, regions=REGIONS)
+        red_pct = 100 * (1 - stats["total_carbon_kg"] / BASELINE_KG)
+        row = dict(sigma=sigma, total_carbon_kg=stats["total_carbon_kg"], reduction_pct=red_pct,
+                   slo_violations=stats["slo_violations"],
+                   capacity_violations=stats["capacity_violations"])
+        noise_rows.append(row)
+        print(f"  σ={int(sigma*100):>3}%  {stats['total_carbon_kg']:>10,.1f}kg  절감률 {red_pct:5.2f}%"
+              f"  위반 {stats['capacity_violations']:>4,}")
+        _dump_gz(out, os.path.join(out_dir, f"noise_sigma{int(sigma*100)}.csv.gz"), job_cols)
+
+    # 3) 예측 지평
+    print("\n[E5-3] 예측 지평 H")
+    horizon_rows = []
+    for H in (12, 24, 48):
+        out, stats = capacity.run_rolling(jobs, actual, pred24, capacity=CAP, regions=REGIONS, horizon=H)
+        red_pct = 100 * (1 - stats["total_carbon_kg"] / BASELINE_KG)
+        row = dict(H=H, total_carbon_kg=stats["total_carbon_kg"], reduction_pct=red_pct,
+                   slo_violations=stats["slo_violations"],
+                   capacity_violations=stats["capacity_violations"])
+        horizon_rows.append(row)
+        print(f"  H={H:>2}h  {stats['total_carbon_kg']:>10,.1f}kg  절감률 {red_pct:5.2f}%"
+              f"  위반 {stats['capacity_violations']:>4,}"
+              + ("  (데이터 상한 24h로 H=24와 동일 — 진짜 48h 예측 없음)" if H == 48 else ""))
+        _dump_gz(out, os.path.join(out_dir, f"horizon_H{H}.csv.gz"), job_cols)
+
+    return scale_rows, noise_rows, horizon_rows
+
+
 # ─────────────────────────── 그림 4/5/6 데이터 ───────────────────────────
 def figures():
     """paper/diagram/의 생성 스크립트를 순서대로 실행한다 — 이 함수는 그 스크립트를
@@ -383,6 +522,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--full", action="store_true", help="용량 스윕(B4)까지 전부 재계산")
     ap.add_argument("--figures", action="store_true", help="그림 4/5/6 데이터도 재생성")
+    ap.add_argument("--sensitivity", action="store_true", help="E5 민감도 실험 3종도 재생성 (수 분)")
     args = ap.parse_args()
 
     print("job/탄소 데이터 로딩...")
@@ -394,6 +534,8 @@ def main():
     table_b7(jobs, data)
     oracle_b6(jobs, data)
     capacity_sweep(jobs, data, full=args.full)
+    if args.sensitivity:
+        sensitivity(jobs, data)
     if args.figures:
         figures()
 
