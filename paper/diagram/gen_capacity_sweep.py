@@ -98,8 +98,9 @@ def main():
                handlelength=2.0)
 
     fig.text(0.02, 0.012,
-              "용량을 6→∞로 늘리면 총배출은 12.21→9.97 t(58.2→65.9%)로,\n"
-              "강제 편입은 40,377→10,378건으로 함께 준다. 모든 구간 마감위반 0.",
+              f"용량을 6→∞로 늘리면 총배출은 {carbon[0]:.2f}→{carbon[-1]:.2f} t"
+              f"({savings[0]:.1f}→{savings[-1]:.1f}%)로,\n"
+              f"강제 편입은 {forced[0]:,}→{forced[-1]:,}건으로 함께 준다. 모든 구간 마감위반 0.",
               fontsize=5.3, ha="left", linespacing=1.4)
 
     fig.tight_layout(rect=(0, 0.10, 1, 1), pad=0.5)
