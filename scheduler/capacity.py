@@ -55,18 +55,25 @@
       running()/avail() 안에서 그 슬롯의 t로만 하도록 reserve()의 sync를
       제거했다. CapacityLedger.reserve() 의 docstring에 상세 설명 있음.
 
-2026-09-20 (B1, d6 지시) capacity_violations 정의를 통일했다:
-  기존에는 admission 시점에 `len(F) - a`(강제 편입이 그 슬롯 가용치를 넘긴 만큼)를
-  누적했다 — 같은 초과 구간에서 작업이 여러 건 잇따라 들어오면 그만큼 중복으로
-  세여, 독립 이벤트 스윕 재계산(구간 수 기준)과 어긋났다(자기보고 1,861 vs
-  독립 662). hours_over가 이미 이벤트 스윕으로 "초과 구간의 길이 합"을 재는데
-  위반 "건수"만 다른 잣대(admission 카운트)를 쓴 게 원인이었다. CapacityLedger._sweep()
-  이 (peak, hours_over) 와 같은 스윕에서 "초과 구간(episode)의 개수"도 함께
-  계산하도록 고쳐 capacity_violations = Σ_r violations(r) 로 바꿨다. 이제 자기보고와
-  사후 CSV 재계산이 정의상 같은 알고리즘이라 항상 일치한다.
-  (참고: 이 세션에서 재현한 수치는 359건이었다 — 662와 다르다. 662를 낸 원 스크립트가
-  이 세션에 남아있지 않아 정확한 카운팅 규약을 대조하지 못했다. episode-count가 아니라
-  다른 정의였을 가능성이 있으니 d6 확인 요청함.)
+2026-09-20 (B1, d6 지시, 1차) capacity_violations 를 episode(극대 연속 구간) 수로
+  정의했었다 — 359건. d6가 정리.txt [26]의 원래 정의를 확인해 정정: 662건은
+  episode가 아니라 "같은 리전의 다른 작업 i 중 τ_i ≤ τ_j < τ_i+d_i 인 개수 n 이
+  cap 이상인 j 의 admission" 개수였다(마감임박 강제 411 + 즉시실행 우회 251).
+
+2026-09-21 (B1, be 지시, 2차 — 재정정) 1차 시도는 emit() 안에서 reserve() 직전에
+  led.avail(r,t)를 읽어(이 작업이 들어오기 전 가용치) over_cap = (avail<=0) 으로
+  근사했는데, 3,278건이 나와 662와 크게 어긋났다. 원인: 같은 tick에 여러 작업이
+  동시에 시작하면 정의상 서로가 서로를 "이미 실행 중"(τ_i=τ_j 도 ≤ 를 만족)으로
+  보는데, avail() 근사는 emit() 호출 순서(코드가 우연히 처리하는 순서)만 "이미"로
+  잡아 같은 배치 안에서도 먼저 처리된 것과 나중 처리된 것을 다르게 셌다 — 실제
+  동시성 정의와 코드의 임의 순서가 어긋난 것.
+  고친 방법: _over_cap_admissions() 가 admission 도중에 아무것도 추적하지 않고,
+  루프가 다 끝난 완성된 스케줄(out, 즉 최종 (start,end) 전량)에서 이벤트 스윕으로
+  사후 재구성한다 — 동시각 시작 배치는 배치 전체를 하나로 묶어(자기 자신만 제외)
+  n_other 를 계산하므로 처리 순서에 의존하지 않는다. be가 준 정의로 독립 검증한
+  스크립트와 대조해 662 = forced 411 + immediate 251 + normal 0 을 정확히
+  재현하는 것을 확인했다(2026-09-21). episode 수·hours_over 는
+  capacity_violation_episodes 로 이름 바꿔 보조 지표로 남겼다.
 
 2026-09-20 (B2, d6 지시) 즉시실행 집계 공백을 메웠다: `immediate`는 도착 즉시
   큐를 건너뛴 건수만 세는데, 정상 P/F 선택 경로에서 offset 0이 그대로 선택돼
@@ -224,6 +231,61 @@ def _alpha(k):
     return (6 - k) / 5
 
 
+def _over_cap_admissions(out, regions, cap):
+    """상한 위반 배정 개수 — 정리.txt [26]의 정확한 정의를 완성된 스케줄(out)에서 그대로 잰다.
+
+    정의: 작업 j 에 대해 같은 리전의 다른 작업 i 중 τ_i ≤ τ_j < τ_i+d_i 인 개수를
+    n 이라 할 때, n ≥ cap 이면 j 의 admission을 위반으로 센다. admission 시점의
+    내부 장부 상태(led.avail 등)를 실행 도중에 추적하지 않고, 다 끝난 스케줄의
+    (start, end) 쌍만으로 사후에 재구성한다 — 그래야 이 함수 자체가 곧 "독립
+    재계산"이라 자기보고와 사후 검증이 절대 어긋날 수 없다.
+
+    같은 시각에 여러 작업이 동시에 시작하면(흔하다 — 슬롯이 정수 tick이므로) 서로가
+    서로를 "이미 실행 중"으로 본다(τ_i = τ_j 도 ≤ 를 만족). 그래서 동시각 배치는
+    이벤트 스윕에서 종료를 먼저 처리한 뒤(반개구간 배제) 시작을 한 번에 묶어서
+    처리하고, 그 직전 concurrency + (배치 크기 − 1) 을 배치 내 각 작업의 n 으로 쓴다.
+    """
+    forced_ct = immediate_ct = normal_ct = 0
+    by_region = {r: [] for r in regions}
+    for v in out.values():
+        by_region[v["region"]].append(v)
+
+    for jobs_r in by_region.values():
+        ev = []
+        for idx, v in enumerate(jobs_r):
+            ev.append((v["scheduled_start"], 0, idx))
+            ev.append((v["scheduled_start"] + v["duration"], 1, idx))
+        ev.sort(key=lambda x: (x[0], -x[1]))   # 동시각이면 종료(1)를 먼저
+
+        cur = 0
+        i, n_ev = 0, len(ev)
+        while i < n_ev:
+            t = ev[i][0]
+            j2 = i
+            while j2 < n_ev and ev[j2][0] == t and ev[j2][1] == 1:
+                cur -= 1
+                j2 += 1
+            before = cur
+            k2 = j2
+            while k2 < n_ev and ev[k2][0] == t and ev[k2][1] == 0:
+                cur += 1
+                k2 += 1
+            batch = k2 - j2
+            n_other = before + (batch - 1)
+            if n_other >= cap:
+                for _, _, idx in ev[j2:k2]:
+                    v = jobs_r[idx]
+                    if v["forced"]:
+                        forced_ct += 1
+                    elif v["immediate"]:
+                        immediate_ct += 1
+                    else:
+                        normal_ct += 1
+            i = k2
+
+    return forced_ct, immediate_ct, normal_ct
+
+
 # ───────────────────────────── Algorithm 1 ─────────────────────────────
 def run_rolling(jobs, actual, pred24, capacity, regions,
                 n_hours=None, horizon=HORIZON, home_region=False):
@@ -253,7 +315,7 @@ def run_rolling(jobs, actual, pred24, capacity, regions,
     Q = {r: [] for r in regions}          # 리전별 대기 집합
     out, forced, immediate = {}, 0, 0
 
-    def emit(j, r, start, forced_flag):
+    def emit(j, r, start, forced_flag, immediate_flag):
         d = j["duration"]
         led.reserve(r, start, d)
         rate = W.actual_mean(r, start, d)
@@ -264,6 +326,7 @@ def run_rolling(jobs, actual, pred24, capacity, regions,
             carbon_emitted=rate * d,
             slo_satisfied=(start + d) <= j["deadline"] + 1e-9,
             forced=forced_flag,
+            immediate=immediate_flag,
         )
 
     for t in range(0, n_hours + 2):
@@ -274,8 +337,10 @@ def run_rolling(jobs, actual, pred24, capacity, regions,
             # 비교하면 L_max>0인 한 항상 거짓이 되어(버그, 2026-09-16 발견) 우회가
             # 무용지물이었다 — floor 를 씌워 "정수 슬롯 격자 위에 다른 후보가
             # 있는가"로 바꿨다. k=3,4,5(전체의 60.1%)의 대부분이 여기 해당한다.
+            # 이 경로는 용량 검사를 받지 않는다(미룰 수 없는 작업이라 막을 수 없음,
+            # 정리.txt [26] 항목3) — 그래서 emit()에서 over_cap 여부만 별도로 집계한다.
             if math.floor(j["deadline"] - j["duration"]) <= math.floor(j["submit_time"]):
-                emit(j, r, j["submit_time"], False)
+                emit(j, r, j["submit_time"], False, True)
                 immediate += 1
             else:
                 Q[r].append(j)
@@ -335,7 +400,7 @@ def run_rolling(jobs, actual, pred24, capacity, regions,
 
             for j in S:
                 start = max(t, j["submit_time"])
-                emit(j, r, start, id(j) in F_ids)
+                emit(j, r, start, id(j) in F_ids, False)
 
         if not any(Q.values()) and not arrivals:
             break
@@ -346,12 +411,27 @@ def run_rolling(jobs, actual, pred24, capacity, regions,
     # 예전에는 어떤 카운터에도 안 잡혔다(146,000건 중 251건). zero_delay로 명시해
     # immediate + (zero_delay - immediate) + delayed = n 이 항상 맞아떨어지게 한다.
     zero_delay = sum(1 for v in out.values() if v["delay"] <= 1e-9)
+    # B1 재정정(2026-09-20, be): §6.4 서술("상한 위반 배정")과 정리.txt [26]의 662건은
+    # episode(극대 연속 구간) 수가 아니라 **admission 단위 개수**였다 — "같은 리전의
+    # 다른 작업 i 중 τ_i ≤ τ_j < τ_i+d_i 인 개수 n 이 cap 이상인 j 의 admission".
+    # admission 시점에 진행 순서(emit 호출 순서)로 근사하면 틀린다 — 같은 tick에
+    # 동시에 시작하는 배치는 서로를 "이미 실행 중"으로 보는데, 코드상 먼저 emit된
+    # 것만 "이미"로 잡히기 때문이다(실측: 3,278 = 662의 5배, be가 준 정의로 검증해
+    # 틀렸음을 확인함). _over_cap_admissions()가 다 끝난 스케줄에서 사후로 다시
+    # 재구성하므로 이게 곧 독립 재계산이고, 662 = forced 411 + immediate 251 을
+    # 정확히 재현한다(2026-09-21 확인).
+    over_cap_forced, over_cap_immediate, over_cap_normal = _over_cap_admissions(out, regions, capacity)
+    over_cap_admissions = over_cap_forced + over_cap_immediate + over_cap_normal
     stats = dict(
         n=len(out),
         total_carbon_kg=sum(v["carbon_emitted"] for v in out.values()) / 1000.0,
         slo_violations=sum(1 for v in out.values() if not v["slo_satisfied"]),
         forced_admissions=forced,
-        capacity_violations=sum(led.violations(r) for r in regions),
+        capacity_violations=over_cap_admissions,
+        over_cap_forced=over_cap_forced,
+        over_cap_immediate=over_cap_immediate,
+        over_cap_normal=over_cap_normal,
+        capacity_violation_episodes=sum(led.violations(r) for r in regions),
         immediate=immediate,
         zero_delay=zero_delay,
         delayed=len(out) - zero_delay,
