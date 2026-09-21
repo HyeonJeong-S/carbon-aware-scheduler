@@ -504,6 +504,250 @@ def sensitivity(jobs=None, data=None):
     return scale_rows, noise_rows, horizon_rows
 
 
+# ─────────────────────────── §6.5 재구성 (표3~6 대체) ───────────────────────────
+# 정리.txt [46]. 처음엔 cap 절대값(8/16/32/64)을 새로 돌렸으나, 그림6이 이미
+# B4 그리드(6/9/12/18/24/∞ = 기준 12의 0.5x~2x·무제약)로 들어가 있어 표와
+# 그림이 어긋나는 문제가 있어 be 지시로 B4 그리드로 통일했다. B4의 per-job
+# CSV(scheduler/data/capacity_sweep/, 이미 커밋됨)를 그대로 읽어 계산하므로
+# run_rolling을 다시 돌리지 않는다 — 전부 "이미 있는 산출물에서 재계산"이다.
+SWEEP_DIR = os.path.join(_HERE, "data", "capacity_sweep")
+SWEEP_LEVELS_B4 = ["0.5x", "0.75x", "1x", "1.5x", "2x", "inf"]
+SWEEP_LEVEL_CAP = {"0.5x": 6, "0.75x": 9, "1x": 12, "1.5x": 18, "2x": 24, "inf": 100000}
+SPATIAL_ONLY_PCT = 56.85  # 표2 ②. 시간이동 기여(%p)의 기준선.
+
+
+def _load_sweep_level(level):
+    path = os.path.join(SWEEP_DIR, f"sweep_cap_{level}.csv.gz")
+    rows = []
+    with gzip.open(path, "rt", newline="") as f:
+        for row in csv.DictReader(f):
+            rows.append(dict(
+                job_id=row["job_id"], k=int(row["k"]), region=row["region"],
+                scheduled_start=float(row["scheduled_start"]), duration=float(row["duration"]),
+                delay=float(row["delay"]), carbon_emitted=float(row["carbon_emitted"]),
+                forced=(row["forced"] == "True"),
+            ))
+    return rows
+
+
+def _region_group(r):
+    if r == "FR":
+        return "France"
+    if r == "US-CAL-CISO":
+        return "California"
+    return "나머지 6개"
+
+
+def _over_cap_count(records, cap):
+    """662-규약(admission 단위) 위반 배정 개수 — capacity._over_cap_admissions와
+    동일한 이벤트 스윕이되, 이 CSV엔 immediate 플래그가 없어 forced/비-forced
+    두 갈래로만 집계한다(비-forced에는 정상 P경로와 즉시실행 우회가 섞여 있음)."""
+    by_region = {}
+    for v in records:
+        by_region.setdefault(v["region"], []).append(v)
+    forced_ct = other_ct = 0
+    for jobs_r in by_region.values():
+        ev = []
+        for idx, v in enumerate(jobs_r):
+            ev.append((v["scheduled_start"], 0, idx))
+            ev.append((v["scheduled_start"] + v["duration"], 1, idx))
+        ev.sort(key=lambda x: (x[0], -x[1]))
+        cur, i, n_ev = 0, 0, len(ev)
+        while i < n_ev:
+            t = ev[i][0]
+            j2 = i
+            while j2 < n_ev and ev[j2][0] == t and ev[j2][1] == 1:
+                cur -= 1; j2 += 1
+            before = cur
+            k2 = j2
+            while k2 < n_ev and ev[k2][0] == t and ev[k2][1] == 0:
+                cur += 1; k2 += 1
+            batch = k2 - j2
+            if before + (batch - 1) >= cap:
+                for _, _, idx in ev[j2:k2]:
+                    if jobs_r[idx]["forced"]:
+                        forced_ct += 1
+                    else:
+                        other_ct += 1
+            i = k2
+    return forced_ct + other_ct, forced_ct, other_ct
+
+
+def _region_sweep(records, region, cap):
+    """한 리전의 (peak, hours_over) — capacity.CapacityLedger._sweep과 동일 알고리즘."""
+    spans = [(v["scheduled_start"], v["scheduled_start"] + v["duration"])
+             for v in records if v["region"] == region]
+    ev = []
+    for s, e in spans:
+        if e > s:
+            ev.append((s, 1)); ev.append((e, -1))
+    ev.sort(key=lambda x: (x[0], -x[1]))
+    cur = mx = 0
+    spans_pts = []
+    for t, d in ev:
+        cur += d
+        mx = max(mx, cur)
+        spans_pts.append((t, cur))
+    over = 0.0
+    over_spans = []
+    for (t0, c0), (t1, _) in zip(spans_pts, spans_pts[1:]):
+        if c0 > cap and t1 > t0:
+            over += t1 - t0
+            over_spans.append((t0, t1))
+    return mx, over, over_spans
+
+
+def capacity_sweep_abs(jobs=None, data=None):
+    """§6.5 재구성 — 정리.txt [46]. B4 그리드(scheduler/data/capacity_sweep/)를
+    그대로 읽어 표3~6을 대체할 수치를 낸다 — run_rolling 재실행 없음.
+
+    표3~4 대체: 레벨별 총배출·절감률·시간이동 기여(%p, 표2②=56.85% 기준)·
+    강제편입·위반(662규약)·평균지연.
+    표5~6 대체: 레벨별 프랑스/캘리포니아/나머지 6개 리전 배정 작업 수·배출량 —
+    "부하가 저탄소 리전부터 순서대로 포화한다"는 서사가 롤링에서도 성립하는지
+    California 배정 수가 cap에 대해 단조증가(=cap이 클수록 더 많이 배정)하는지로
+    판정한다.
+    """
+    with open(os.path.join(SWEEP_DIR, "sweep_summary.csv")) as f:
+        summary_by_level = {r["level"]: r for r in csv.DictReader(f)}
+
+    main_rows, region_rows = [], []
+    ca_n_by_level = {}
+
+    print("\n[§6.5 재구성 — B4 그리드 표3~4 대체]")
+    for level in SWEEP_LEVELS_B4:
+        cap = SWEEP_LEVEL_CAP[level]
+        records = _load_sweep_level(level)
+        n = len(records)
+        total_kg = sum(v["carbon_emitted"] for v in records) / 1000.0
+        red_pct = 100 * (1 - total_kg / BASELINE_KG)
+        temporal_pp = red_pct - SPATIAL_ONLY_PCT
+        avg_delay = sum(v["delay"] for v in records) / n
+        forced_n = sum(1 for v in records if v["forced"])
+        viol_total, viol_forced, viol_other = _over_cap_count(records, cap)
+
+        row = dict(level=level, capacity=cap, total_carbon_kg=total_kg, reduction_pct=red_pct,
+                   temporal_contribution_pp=temporal_pp, forced_admissions=forced_n,
+                   capacity_violations_662=viol_total, avg_delay_h=avg_delay)
+        main_rows.append(row)
+        print(f"  {level:>5}(cap={cap:>6}) {total_kg:>10,.1f}kg  절감 {red_pct:6.2f}%  "
+              f"시간이동기여 {temporal_pp:+6.2f}%p  강제 {forced_n:>6,}  "
+              f"위반662 {viol_total:>6,}(강제{viol_forced:,}/기타{viol_other:,})  지연 {avg_delay:.3f}h")
+
+        grp_n = {"France": 0, "California": 0, "나머지 6개": 0}
+        grp_kg = {"France": 0.0, "California": 0.0, "나머지 6개": 0.0}
+        for v in records:
+            g = _region_group(v["region"])
+            grp_n[g] += 1
+            grp_kg[g] += v["carbon_emitted"] / 1000.0
+        for g in ("France", "California", "나머지 6개"):
+            region_rows.append(dict(level=level, capacity=cap, group=g,
+                                    n_jobs=grp_n[g], carbon_kg=grp_kg[g]))
+        ca_n_by_level[level] = grp_n["California"]
+        print(f"         France n={grp_n['France']:>6,} {grp_kg['France']:>9,.1f}kg | "
+              f"California n={grp_n['California']:>6,} {grp_kg['California']:>9,.1f}kg | "
+              f"나머지6개 n={grp_n['나머지 6개']:>6,} {grp_kg['나머지 6개']:>9,.1f}kg")
+
+    out_dir = os.path.join(_HERE, "data", "capacity_sweep_abs")
+    os.makedirs(out_dir, exist_ok=True)
+    with open(os.path.join(out_dir, "sweep_b4_recompute_summary.csv"), "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(main_rows[0].keys()))
+        w.writeheader()
+        for r in main_rows:
+            w.writerow(r)
+    with open(os.path.join(out_dir, "sweep_b4_region_breakdown.csv"), "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(region_rows[0].keys()))
+        w.writeheader()
+        for r in region_rows:
+            w.writerow(r)
+
+    # cap 오름차순(0.5x -> inf)으로 California 배정 수가 단조증가하는가
+    order = sorted(SWEEP_LEVELS_B4, key=lambda lv: SWEEP_LEVEL_CAP[lv])
+    ca_series = [ca_n_by_level[lv] for lv in order]
+    monotone = all(ca_series[i] <= ca_series[i + 1] for i in range(len(ca_series) - 1))
+    print(f"\n  포화 순서 서사 검증: cap 오름차순({order}) California 배정 수 = {ca_series}")
+    print(f"  단조증가(=용량이 늘수록 California로 더 몰림)? {monotone}")
+    print(f"  저장: {out_dir}/sweep_b4_recompute_summary.csv, sweep_b4_region_breakdown.csv")
+
+    return main_rows, region_rows
+
+
+def k1_savings_share(jobs=None, data=None):
+    """문단594 검증 — k=1 등급이 시간 이동이 만든 절감의 95.85%를 차지하는지.
+    savings_j = 공간이동만(비교군②, mode=carbon_lb_immediate) 배출 − 온라인(cap=12,
+    B4의 1x 레벨) 배출. job_id로 매칭해 k별로 합산한다."""
+    jobs = jobs or _load_jobs()
+    data = data or _load_carbon_2025()
+
+    horizon_hours = max(j["deadline"] for j in jobs) + 24
+    total_hours = int(horizon_hours) + 48
+    carbon_series, _ = carbon_forecast.load_actual_series(total_hours)
+
+    res_spatial = simulator.run_simulation(jobs, carbon_series, "carbon_lb_immediate")
+    spatial_by_id = {r["job_id"]: r["carbon_emitted"] for r in res_spatial}
+
+    records = _load_sweep_level("1x")
+    savings_by_k, total_savings = {}, 0.0
+    for v in records:
+        s = spatial_by_id[v["job_id"]] - v["carbon_emitted"]
+        savings_by_k[v["k"]] = savings_by_k.get(v["k"], 0.0) + s
+        total_savings += s
+
+    print("\n[문단594 검증] k별 절감 기여 (공간이동만 대비, cap=12/B4 1x)")
+    for k in sorted(savings_by_k):
+        pct = 100 * savings_by_k[k] / total_savings if total_savings else 0.0
+        print(f"  k={k}: {savings_by_k[k]/1000:>10,.1f} kg  ({pct:6.2f}%)")
+    k1_pct = 100 * savings_by_k.get(1, 0.0) / total_savings if total_savings else 0.0
+    print(f"  총 절감: {total_savings/1000:,.1f} kg")
+    print(f"  k=1 비중: {k1_pct:.2f}%  (문단594 주장: 95.85%) -> "
+          f"{'일치' if abs(k1_pct - 95.85) < 1 else '불일치'}")
+    return savings_by_k, total_savings
+
+
+def capacity_check_598_600(jobs=None, data=None):
+    """문단598·600 검증 — cap=12(B4 1x) 기준.
+    598: 프랑스·캘리포니아를 뺀 나머지 리전의 초과시간이 31시간 이하인지.
+    600: 캘리포니아 초과 구간(concurrency>cap인 연속시각 구간)의 시간을
+    hour-of-day(UTC, 0~23)로 쪼개, 19~21시대 비중이 77.7%에 맞는지."""
+    records = _load_sweep_level("1x")
+    regions = sorted(set(v["region"] for v in records))
+
+    print("\n[문단598 검증] 리전별 초과시간(hours_over), cap=12")
+    hours_over = {}
+    for r in regions:
+        peak, over, _ = _region_sweep(records, r, CAP)
+        hours_over[r] = over
+        flag = "  <- FR/CAL 제외 대상" if r not in ("FR", "US-CAL-CISO") else ""
+        print(f"  {r:15} peak={peak:>3}  초과 {over:>8.2f}h{flag}")
+    others = {r: h for r, h in hours_over.items() if r not in ("FR", "US-CAL-CISO")}
+    others_max = max(others.values()) if others else 0.0
+    print(f"  FR/CAL 제외 최댓값: {others_max:.2f}h  (문단598 주장: 31시간 이하) -> "
+          f"{'통과' if others_max <= 31 else '실패'}")
+
+    _, _, cal_over_spans = _region_sweep(records, "US-CAL-CISO", CAP)
+    hour_bins = {h: 0.0 for h in range(24)}
+    for t0, t1 in cal_over_spans:
+        t = t0
+        while t < t1:
+            h = int(t) % 24
+            seg_end = min(t1, int(t) + 1)
+            hour_bins[h] += seg_end - t
+            t = seg_end
+    total_over_h = sum(hour_bins.values())
+
+    print("\n[문단600 검증] 캘리포니아 초과시간 hour-of-day 분포 (UTC)")
+    for h in range(24):
+        if hour_bins[h] > 0.01:
+            print(f"  {h:>2}시: {hour_bins[h]:>7.2f}h")
+    for label, hs in [("19~20시(2시간)", (19, 20)), ("19~21시(3시간)", (19, 20, 21))]:
+        s = sum(hour_bins[h] for h in hs)
+        pct = 100 * s / total_over_h if total_over_h else 0.0
+        print(f"  {label} 비중: {pct:.2f}%  (문단600 주장: 77.7%) -> "
+              f"{'일치' if abs(pct - 77.7) < 2 else '불일치'}")
+
+    return hours_over, hour_bins
+
+
 # ─────────────────────────── 그림 4/5/6 데이터 ───────────────────────────
 def figures():
     """paper/diagram/의 생성 스크립트를 순서대로 실행한다 — 이 함수는 그 스크립트를
