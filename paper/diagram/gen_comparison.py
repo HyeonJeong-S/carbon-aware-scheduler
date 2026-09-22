@@ -48,7 +48,7 @@ ROWS = [
     ("② 탄소 인지\n공간 이동",       12609.8, -56.85, "hatch1"),
     ("③′ 용량\n사후 강제",          11873.0, -59.37, "hatch2"),
     ("④ 온라인 용량\n인지(본 연구)", 10805.0, -63.03, "ours"),
-    ("③ 무제약\n반사실 상한*",       9958.2,  -65.93, "infeasible"),
+    ("③ 무제약\n반사실 상한",        9958.2,  -65.93, "infeasible"),
 ]
 
 
@@ -141,7 +141,12 @@ def main():
 
     # 215pt = 단내(single-column) 폭. 세로로 (a)(b) 쌓음 — 가로로 놓으면
     # 막대 5개짜리 (a)가 너무 좁아져 라벨이 안 들어가서 세로를 택했다.
-    W_IN, H_IN = 215 / 72.0, 330 / 72.0
+    #
+    # be 3차 리뷰(2026-09-22): 그림 안 fig.text 각주가 5.0pt로, 9pt인 본문
+    # 캡션보다 훨씬 흐릿하게 인쇄됐다는 지적 — 각주를 통째로 지우고 그
+    # 내용은 캡션(9pt 실제 텍스트)으로 옮긴다. 여백을 차지하던 각주가
+    # 없어져 높이도 330pt에서 줄었다.
+    W_IN, H_IN = 215 / 72.0, 290 / 72.0
     fig, (axa, axb) = plt.subplots(
         2, 1, figsize=(W_IN, H_IN), dpi=300,
         gridspec_kw=dict(height_ratios=[5, 4.2]))
@@ -152,13 +157,7 @@ def main():
     axa.set_xlabel("")
     axb.set_xlabel("총 배출량 (kg)", fontsize=7.6)
 
-    fig.text(0.02, 0.012,
-              "* ③은 용량 제약을 전혀 적용하지 않은 반사실 상한 — 동시 실행이\n"
-              "상한의 3.4배까지 몰려 실현 불가하다(§6.4). ④가 두 경계(①의 손해,\n"
-              "③의 이상치) 사이에서 실제 달성한 값이다. (b)의 점선은 ④ 값이다.",
-              fontsize=5.0, ha="left", linespacing=1.35)
-
-    fig.tight_layout(rect=(0, 0.115, 1, 0.985), h_pad=1.8)
+    fig.tight_layout(rect=(0, 0.01, 1, 0.985), h_pad=1.8)
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fig7_comparison.png")
     fig.savefig(out)
     fig.savefig(out.replace(".png", ".pdf"))  # KCI 인쇄 대비 벡터판
