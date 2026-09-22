@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-"""그림 5(안) · 시간 이동 전후 CAL 리전 동시실행수 — 41 -> 19.
+"""그림 6(안) · 시간 이동 전후 CAL 리전 동시실행수 — 41 -> 19.
+
+(2026-09-22, be 알림: §6.3에 그림7 비교 그림이 신설되며 문서 등장 순서가
+1234-7-56으로 밀렸던 걸 be가 바로잡아 지금은 이 그림이 그림6, 용량
+스윕(옛 gen_capacity_sweep.py)이 그림7이다 — 파일명도 맞춰 갱신함.)
 
 데이터 출처: scheduler.simulator(mode="carbon_lb_timeshift", 무제약) 과
 scheduler.capacity.run_rolling(capacity=12, 온라인) 을 2025년 1년치 job
@@ -102,7 +106,7 @@ def main():
               fontsize=5.3, ha="left", linespacing=1.4)
 
     fig.tight_layout(rect=(0, 0.10, 1, 1), pad=0.5)
-    out = os.path.join(_HERE, "fig5_concurrency.png")
+    out = os.path.join(_HERE, "fig6_concurrency.png")
     fig.savefig(out)
     fig.savefig(out.replace(".png", ".pdf"))  # KCI 인쇄 대비 벡터판
     print("wrote", out)

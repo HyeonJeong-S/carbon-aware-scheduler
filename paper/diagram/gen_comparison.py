@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-"""그림 7(신설) · 5개 방식 총배출량 비교 — 표2를 막대로 옮긴 "money figure".
+"""그림 5(§6.3 신설) · 5개 방식 총배출량 비교 — 표2를 막대로 옮긴 "money figure".
+
+(2026-09-22, be 알림: §6.3에 새로 넣으면서 처음엔 "그림7"이라 불렀지만,
+문서 등장 순서상 실제로는 그림5다 — 뒤에 있던 옛 그림5·6이 그림6·7로
+밀렸다. 파일명도 맞춰 갱신함.)
 
 배경(paper/그림개선_브리프.txt): 참고 논문(CarbonFlex Fig.8/9, CASPER Fig.5)은
 전부 베이스라인 여러 개를 한 그래프에 놓고 비교하는데, 우리 그림 3~6은 전부
@@ -158,7 +162,7 @@ def main():
     axb.set_xlabel("총 배출량 (kg)", fontsize=7.6)
 
     fig.tight_layout(rect=(0, 0.01, 1, 0.985), h_pad=1.8)
-    out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fig7_comparison.png")
+    out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fig5_comparison.png")
     fig.savefig(out)
     fig.savefig(out.replace(".png", ".pdf"))  # KCI 인쇄 대비 벡터판
     print("wrote", out)

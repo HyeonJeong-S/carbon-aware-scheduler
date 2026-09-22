@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-"""그림 6(안) · 용량 스윕 — 리전 용량이 커질수록 총배출이 줄지만 수익이 줄어든다.
+"""그림 7(안) · 용량 스윕 — 리전 용량이 커질수록 총배출이 줄지만 수익이 줄어든다.
+
+(2026-09-22, be 알림: §6.3에 그림7 비교 그림이 신설되며 이 그림은 그림6에서
+그림7로 밀렸다 — 파일명도 맞춰 갱신함. 새로 생긴 "그림7"은 gen_comparison.py의
+다섯 방식 비교 그림이 아니라 이 용량 스윕 그림이니 혼동 주의.)
 
 데이터: scheduler/data/capacity_sweep/sweep_summary.csv (B4, 0c 실행·be 검증 완료,
 커밋 367b68d). 이 스크립트는 그 CSV를 그대로 읽어 그릴 뿐, 재계산하지 않는다.
@@ -104,7 +108,7 @@ def main():
               fontsize=5.3, ha="left", linespacing=1.4)
 
     fig.tight_layout(rect=(0, 0.10, 1, 1), pad=0.5)
-    out = os.path.join(_HERE, "fig6_capacity_sweep.png")
+    out = os.path.join(_HERE, "fig7_capacity_sweep.png")
     fig.savefig(out)
     fig.savefig(out.replace(".png", ".pdf"))  # KCI 인쇄 대비 벡터판
     print("wrote", out)
