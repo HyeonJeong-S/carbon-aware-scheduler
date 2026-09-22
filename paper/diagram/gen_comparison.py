@@ -79,44 +79,43 @@ def style_for(tag, bar):
         bar.set_linestyle((0, (3, 1.5)))
 
 
-def main():
-    labels = [r[0] for r in ROWS]
-    values = [r[1] for r in ROWS]
-    n = len(ROWS)
-    ys = list(range(n - 1, -1, -1))  # 맨 위(y=n-1)가 ①, 맨 아래가 ③
+def draw_panel(ax, rows, xlim, show_ylabels=True, panel_tag=""):
+    n = len(rows)
+    ys = list(range(n - 1, -1, -1))
+    ours_kg = next(kg for _, kg, _, tag in rows if tag == "ours")
 
-    # 215pt = 단내(single-column) 폭 — gen_pareto.py/gen_concurrency.py와 동일.
-    W_IN, H_IN = 215 / 72.0, 200 / 72.0
-    fig, ax = plt.subplots(figsize=(W_IN, H_IN), dpi=300)
-
-    bars = ax.barh(ys, values, height=0.62, zorder=3)
-    for (label, kg, pct, tag), bar in zip(ROWS, bars):
+    bars = ax.barh(ys, [r[1] for r in rows], height=0.62, zorder=3)
+    for (label, kg, pct, tag), bar in zip(rows, bars):
         style_for(tag, bar)
 
     # 막대 끝 값 라벨 — kg과 절감률을 함께. 전부 막대 밖 오른쪽에 둬서
     # 짧은 막대(④,③)에서 글씨가 막대 안으로 밀려 y축 라벨과 겹치는 걸 막는다
     # (첫 시도에서 ④를 막대 안쪽에 흰 글씨로 넣었더니 라벨과 충돌해 수정함).
-    for y, (label, kg, pct, tag) in zip(ys, ROWS):
+    # (b)에서는 ④ 기준선(점선)이 ③ 막대 라벨과 겹칠 만큼 가까워서, 라벨에
+    # 흰 배경 박스를 깔아 선이 글자를 가로질러도 가독성이 떨어지지 않게 한다
+    # (gen_concurrency.py의 "상한 12" 라벨과 같은 처리).
+    for y, (label, kg, pct, tag) in zip(ys, rows):
         txt = f"{kg:,.1f} kg" if pct is None else f"{kg:,.1f} kg ({pct:.2f}%)"
         weight = "bold" if tag == "ours" else "normal"
         ax.annotate(txt, (kg, y), xytext=(4, 0), textcoords="offset points",
-                    ha="left", va="center", fontsize=6.3, color=INK,
-                    fontweight=weight, zorder=4)
+                    ha="left", va="center", fontsize=6.1, color=INK,
+                    fontweight=weight, zorder=5,
+                    bbox=dict(facecolor="white", edgecolor="none", pad=0.6))
 
-    # ④(본 연구) 값에 세로 기준선을 그어, ①②③'이 이 선을 얼마나 넘어서는지와
-    # ③(상한)이 이 선에 얼마나 더 가까운지를 한눈에 비교하게 한다 — 막대
-    # 길이만으로는 잘 안 보이는 "④ 기준 초과분"을 시각적으로 강조하는 2차 개선.
-    ours_kg = ROWS[3][1]
+    # ④(본 연구) 값에 세로 기준선 — ①②③'이 이 선을 얼마나 넘어서는지,
+    # ③(상한)이 이 선에 얼마나 더 가까운지를 두 패널 모두에서 같은 기준으로 본다.
     ax.axvline(ours_kg, color="#999999", lw=0.7, ls=(0, (2, 2)), zorder=1)
-    ax.annotate("④ 기준", (ours_kg, n - 0.35), xytext=(3, 0),
-                textcoords="offset points", ha="left", va="top", fontsize=5.6,
-                color="#666666", rotation=90)
 
     ax.set_yticks(ys)
-    ax.set_yticklabels(labels, fontsize=6.8, linespacing=1.15)
-    ax.set_xlabel("총 배출량 (kg)", fontsize=7.8)
-    ax.set_xlim(0, BASELINE_KG * 1.34)
-    ax.tick_params(axis="x", labelsize=6.8)
+    if show_ylabels:
+        ax.set_yticklabels([r[0] for r in rows], fontsize=6.6, linespacing=1.1)
+        for tick, (label, kg, pct, tag) in zip(ax.get_yticklabels(), rows):
+            if tag == "ours":
+                tick.set_fontweight("bold")
+    else:
+        ax.set_yticklabels([])
+    ax.set_xlim(*xlim)
+    ax.tick_params(axis="x", labelsize=6.4)
     ax.tick_params(axis="y", length=0)
 
     for spine in ("top", "right", "left"):
@@ -125,18 +124,41 @@ def main():
     ax.grid(axis="x", color="#dddddd", lw=0.4, zorder=0)
     ax.set_axisbelow(True)
 
-    # ④(본 연구)를 y축 라벨에서도 한 번 더 강조 — 굵게.
-    for tick, (label, kg, pct, tag) in zip(ax.get_yticklabels(), ROWS):
-        if tag == "ours":
-            tick.set_fontweight("bold")
+    if panel_tag:
+        ax.text(0.0, 1.06, panel_tag, transform=ax.transAxes, fontsize=7.5,
+                 fontweight="bold", ha="left", va="bottom")
+
+
+def main():
+    # be 2차 리뷰(2026-09-22) 반영: ①이 축을 지배해 ②③'④③(9,958~12,609)의
+    # 차이가 안 보인다는 지적 — (a)전체 5개 (b)①을 뺀 나머지 4개를 x축
+    # 확대해서 아래에 붙인다(CASPER Fig.5/CarbonFlex Fig.9의 서브패널 방식).
+    zoom_rows = ROWS[1:]  # ②③'④③
+    zoom_vals = [r[1] for r in zoom_rows]
+    zoom_lo, zoom_hi = min(zoom_vals), max(zoom_vals)
+    zoom_pad = (zoom_hi - zoom_lo) * 0.28
+    zoom_xlim = (zoom_lo - zoom_pad, zoom_hi + zoom_pad * 2.1)
+
+    # 215pt = 단내(single-column) 폭. 세로로 (a)(b) 쌓음 — 가로로 놓으면
+    # 막대 5개짜리 (a)가 너무 좁아져 라벨이 안 들어가서 세로를 택했다.
+    W_IN, H_IN = 215 / 72.0, 330 / 72.0
+    fig, (axa, axb) = plt.subplots(
+        2, 1, figsize=(W_IN, H_IN), dpi=300,
+        gridspec_kw=dict(height_ratios=[5, 4.2]))
+
+    draw_panel(axa, ROWS, xlim=(0, BASELINE_KG * 1.34), panel_tag="(a) 다섯 방식 전체")
+    draw_panel(axb, zoom_rows, xlim=zoom_xlim, panel_tag="(b) ① 제외, x축 확대")
+
+    axa.set_xlabel("")
+    axb.set_xlabel("총 배출량 (kg)", fontsize=7.6)
 
     fig.text(0.02, 0.012,
-              "* ③은 배치 뒤 용량을 사후적으로만 강제하는 조건의 반사실 상한 —\n"
-              "실제로는 동시 실행이 상한의 3.4배까지 몰려 실현 불가하다(§6.4).\n"
-              "④가 두 경계(①의 손해, ③의 이상치) 사이에서 실제 달성한 값이다.",
-              fontsize=5.1, ha="left", linespacing=1.35)
+              "* ③은 용량 제약을 전혀 적용하지 않은 반사실 상한 — 동시 실행이\n"
+              "상한의 3.4배까지 몰려 실현 불가하다(§6.4). ④가 두 경계(①의 손해,\n"
+              "③의 이상치) 사이에서 실제 달성한 값이다. (b)의 점선은 ④ 값이다.",
+              fontsize=5.0, ha="left", linespacing=1.35)
 
-    fig.tight_layout(rect=(0, 0.135, 1, 1), pad=0.5)
+    fig.tight_layout(rect=(0, 0.115, 1, 0.985), h_pad=1.8)
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fig7_comparison.png")
     fig.savefig(out)
     fig.savefig(out.replace(".png", ".pdf"))  # KCI 인쇄 대비 벡터판
