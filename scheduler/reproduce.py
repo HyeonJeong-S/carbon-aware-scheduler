@@ -671,7 +671,7 @@ def capacity_sweep_abs(jobs=None, data=None):
 
 
 def k1_savings_share(jobs=None, data=None):
-    """문단594 검증 — k=1 등급이 시간 이동이 만든 절감의 95.85%를 차지하는지.
+    """문단594 검증 — k=1 등급이 시간 이동이 만든 절감의 93.79%를 차지하는지.
     savings_j = 공간이동만(비교군②, mode=carbon_lb_immediate) 배출 − 온라인(cap=12,
     B4의 1x 레벨) 배출. job_id로 매칭해 k별로 합산한다."""
     jobs = jobs or _load_jobs()
@@ -697,16 +697,17 @@ def k1_savings_share(jobs=None, data=None):
         print(f"  k={k}: {savings_by_k[k]/1000:>10,.1f} kg  ({pct:6.2f}%)")
     k1_pct = 100 * savings_by_k.get(1, 0.0) / total_savings if total_savings else 0.0
     print(f"  총 절감: {total_savings/1000:,.1f} kg")
-    print(f"  k=1 비중: {k1_pct:.2f}%  (문단594 주장: 95.85%) -> "
-          f"{'일치' if abs(k1_pct - 95.85) < 1 else '불일치'}")
+    print(f"  k=1 비중: {k1_pct:.2f}%  (문단594 주장: 93.79%) -> "
+          f"{'일치' if abs(k1_pct - 93.79) < 1 else '불일치'}")
     return savings_by_k, total_savings
 
 
 def capacity_check_598_600(jobs=None, data=None):
     """문단598·600 검증 — cap=12(B4 1x) 기준.
-    598: 프랑스·캘리포니아를 뺀 나머지 리전의 초과시간이 31시간 이하인지.
+    598: 프랑스·캘리포니아를 뺀 나머지 리전의 초과시간이 0.00시간(초과 없음)인지.
     600: 캘리포니아 초과 구간(concurrency>cap인 연속시각 구간)의 시간을
-    hour-of-day(UTC, 0~23)로 쪼개, 19~21시대 비중이 77.7%에 맞는지."""
+    hour-of-day(UTC, 0~23)로 쪼개, 19~20시 비중이 82.15%, 19~21시대 비중이
+    91.38%에 맞는지."""
     records = _load_sweep_level("1x")
     regions = sorted({v["region"] for v in records})
 
@@ -719,8 +720,8 @@ def capacity_check_598_600(jobs=None, data=None):
         print(f"  {r:15} peak={peak:>3}  초과 {over:>8.2f}h{flag}")
     others = {r: h for r, h in hours_over.items() if r not in ("FR", "US-CAL-CISO")}
     others_max = max(others.values()) if others else 0.0
-    print(f"  FR/CAL 제외 최댓값: {others_max:.2f}h  (문단598 주장: 31시간 이하) -> "
-          f"{'통과' if others_max <= 31 else '실패'}")
+    print(f"  FR/CAL 제외 최댓값: {others_max:.2f}h  (문단598 주장: 0.00시간) -> "
+          f"{'통과' if others_max <= 0.01 else '실패'}")
 
     _, _, cal_over_spans = _region_sweep(records, "US-CAL-CISO", CAP)
     hour_bins = dict.fromkeys(range(24), 0.0)
@@ -737,11 +738,13 @@ def capacity_check_598_600(jobs=None, data=None):
     for h in range(24):
         if hour_bins[h] > 0.01:
             print(f"  {h:>2}시: {hour_bins[h]:>7.2f}h")
+    targets = {"19~20시(2시간)": 82.15, "19~21시(3시간)": 91.38}
     for label, hs in [("19~20시(2시간)", (19, 20)), ("19~21시(3시간)", (19, 20, 21))]:
         s = sum(hour_bins[h] for h in hs)
         pct = 100 * s / total_over_h if total_over_h else 0.0
-        print(f"  {label} 비중: {pct:.2f}%  (문단600 주장: 77.7%) -> "
-              f"{'일치' if abs(pct - 77.7) < 2 else '불일치'}")
+        target = targets[label]
+        print(f"  {label} 비중: {pct:.2f}%  (문단600 주장: {target}%) -> "
+              f"{'일치' if abs(pct - target) < 2 else '불일치'}")
 
     return hours_over, hour_bins
 
