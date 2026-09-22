@@ -236,14 +236,16 @@ paraId -> [n] 매핑표 (두 서식 공통 — 번호 체계 자체는 안 바�
 [2]  EU 지침:         2F43EAB0
 [3]  Google 24/7 CFE: 0DA352BD
 [4]  CASPER(Souza):   1723533F, 6A8EDD47, 09501CBC, 60A73402, 5DDF83ED,
-                      42D56BFE, 531C9255, 73E3091B, 49FF4468
+                      42D56BFE, 531C9255, 73E3091B, 49FF4468, 109CCEA9
 [5]  Asadov 리뷰:      090A32B4
-[6]  CICS(Radovanović):63476282, 6AB0E5A2, 79BF0F29, 73E3091B, 49FF4468
+[6]  CICS(Radovanović):63476282, 6AB0E5A2, 79BF0F29, 73E3091B, 49FF4468,
+                      449AFA4E, 08815D74, 65EAD9D2, 1F66798E
 [7]  VMware GSLB(Maji):1F32A7F3, 0A26A8D0
 [8]  Sukprasert:       19DD6BAF, 5A9AC782, 4E0F0C7A, 4BF9A4BC, 61887BA9,
                       5B08F28A, 3257F518, 6ADC7654, 18035CCD, 7BA127A4,
                       6EC881B0, 753F8FA9, 3097625F, 2823D0FA
-[9]  CarbonFlex(Hanafy):2E9DDB18, 06F60250, 3F8EE1C1, 1EE0A586
+[9]  CarbonFlex(Hanafy):2E9DDB18, 06F60250, 3F8EE1C1, 1EE0A586, 78EAE90E,
+                      66FBA6E9
 [10] EMaps data-portal: 655E17C0
 [11] DACF(Maji):       033A0CB4, 1FE63D83
 [12] CarbonCast(Maji):  6505F60F
@@ -265,6 +267,14 @@ paraId -> [n] 매핑표 (두 서식 공통 — 번호 체계 자체는 안 바�
   아니라 보고서·법령·웹페이지라 KTCP·JKIICE 원문 예시에 정확히 맞는
   카테고리가 없다 — KTCP의 <단행본>/<Web Site> 패턴, JKIICE의
   Web 인용 패턴([Online] 표기)을 최대한 준용해 만들었다.
+주 4 (2026-09-22, 4d, be 지시로 갱신): 본문 인용 ↔ 이 표 전수 대조(rels의 하이퍼링크
+  URL 13종을 추출해 "원문:" 문단마다 직전 URL을 역추적하는 방식)를 처음으로
+  돌려봤더니, 저작물 집합(17건) 자체는 완전 일치했지만 이 표가 문단 7개를
+  누락하고 있었다 — [4]CASPER 1건(109CCEA9), [6]CICS 4건(449AFA4E, 08815D74,
+  65EAD9D2, 1F66798E), [9]CarbonFlex 2건(78EAE90E, 66FBA6E9). 위 목록에 이미
+  반영함([6]은 5→9건, [9]는 4→6건, [4]는 9→10건). [n] 전환 스크립트를 이 표
+  기준으로 짤 계획이라면 이 7곳이 그전엔 조용히 누락됐을 것 — be가 라이브
+  문서에서 재확인 후 커밋 예정.
 
 ==========================================================
 미해결/확인 필요
