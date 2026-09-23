@@ -163,6 +163,31 @@ def main():
         assert new_xml.count(old_frag) == 1, f"{pid}: 삭제 도중 앵커가 사라짐/중복됨"
         new_xml = new_xml.replace(old_frag, "", 1)
 
+    # ---- 2.5) 고아 <w:br/> 제거 ----
+    # 원본은 "본문.<w:br/><hyperlink>인용</hyperlink>" 구조라 br이 본문과 인용을
+    # 갈라주는 의미가 있다. 그런데 위에서 인용 장치만 지우면 br이 문단 끝에 남고,
+    # Word는 "이 줄 뒤에 아직 줄이 하나 더 있다"고 보아 마지막 줄을 양쪽정렬로
+    # 쭉 늘여버린다(사용자가 "그친다고 ……… 분석했다"처럼 발견한 현상).
+    # 문단 마지막이면서 뒤에 아무 텍스트도 없는 br 런만 제거한다.
+    ORPHAN_BR = re.compile(r'<w:r>(?:(?!</w:r>).)*?<w:br\s*/>(?:(?!</w:r>).)*?</w:r>\s*(?=</w:p>)',
+                           re.DOTALL)
+    def _strip_orphan_br(xml_str):
+        out, removed = [], 0
+        pos = 0
+        for m in re.finditer(r'<w:p\b[^>]*?/>|<w:p\b[^>]*?(?<!/)>.*?</w:p>', xml_str, re.DOTALL):
+            frag = m.group(0)
+            fixed, n = ORPHAN_BR.subn("", frag)
+            # 안전장치: 텍스트가 바뀌면 되돌린다
+            if n and re.sub(r"<[^>]+>", "", fixed) != re.sub(r"<[^>]+>", "", frag):
+                fixed, n = frag, 0
+            out.append(xml_str[pos:m.start()]); out.append(fixed)
+            pos = m.end(); removed += n
+        out.append(xml_str[pos:])
+        return "".join(out), removed
+
+    new_xml, n_br = _strip_orphan_br(new_xml)
+    print(f"고아 <w:br/> 제거: {n_br}개 (문단 끝 양쪽정렬 늘어짐 방지)")
+
     # ---- 3) 전수 문단 diff 감사 ----
     old_map = para_map(orig_xml)
     new_map = para_map(new_xml)
