@@ -76,7 +76,13 @@ def main():
     ax1.set_xticks(xs)
     ax1.set_xticklabels([LABELS[k] for k in ORDER], fontsize=7)
     ax1.set_xlabel("리전 용량 (η·cap_r, 기준=12 대비 배수)", fontsize=7.8)
-    ax1.set_ylabel("총배출 (t)", fontsize=8)
+    # rotation=90(기본) 세로 라벨은 "총"(U+CD1D) 글자가 이 폰트/matplotlib
+    # 조합에서 회전 시 문자 간격이 0에 가깝게 계산돼 겹쳐 보이는 버그가 있음
+    # (2026-09-22, be가 격리 테스트로 확인 — 문자 단위 최소재현: "총총총"도
+    # 겹침, "강제 편입 건수"는 문제 없음, x축 라벨(rotation=0)은 문제 없음).
+    # 줄바꿈 + rotation=0으로 우회 — 문자 폭이 아니라 줄간격을 쓰므로 안전하다.
+    ax1.set_ylabel("총\n배\n출\n(t)", fontsize=8, rotation=0, labelpad=14,
+                    linespacing=1.3)
     ax1.tick_params(axis="y", labelsize=7)
     ax1.set_ylim(min(carbon) * 0.9, max(carbon) * 1.12)
 
