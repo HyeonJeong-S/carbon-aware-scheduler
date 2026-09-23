@@ -25,3 +25,4 @@ job.zip
 .pytest_cache/
 .ruff_cache/
 .coverage
+paper/_pages/
