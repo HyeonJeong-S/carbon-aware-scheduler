@@ -232,13 +232,20 @@ def fig_scheduler():
     a1.tick_params(labelsize=TICK)
 
     # ── 가운데: 작업별 간트 — 막대 왼쪽 끝이 tau_j(실행 시작), 길이가 d_j(실행시간) ──
-    # 흑백이라 빗금 대신 회색 농담으로 구분한다(occ 패널과 같은 규약: 흰색=정상,
-    # 회색=상한과 관련된 예외). 하루 경계 밖으로 이어지는 막대는 삼각 화살촉으로 표시.
+    # 흑백이라 빗금 대신 회색 농담으로 구분한다. 2026-09-24 b6 재검토에서 확인한 것:
+    # 이 패널의 회색(개별 작업의 강제 편입)과 아래 occ 패널의 회색(그 시각 동시
+    # 실행 수가 상한에 닿음)은 서로 다른 사실이다 — 직접 세어 보면 occ가 상한에
+    # 닿은 15개 시간대 중 9개(0~5·21~23시)는 강제 편입 작업이 하나도 없이 정상
+    # 편입만으로 찼고, 반대로 14시는 강제 편입이 3건 있는데도 occ는 5로 상한에
+    # 한참 못 미친다 — 둘을 같은 회색으로 그리면 "이 막대가 저 칸을 채웠다"는
+    # 착각을 준다. 그래서 이 패널만 더 짙은 회색을 쓴다(같은 결의 "예외" 표시를
+    # 유지하되 occ 패널의 회색과 눈으로 구별되게).
     x_lo, x_hi = -0.8, 23.8
-    forced_end = forced_row = None
+    FORCED_GRAY = "#595959"   # occ 패널의 "#8c8c8c"(상한 도달)과 의도적으로 다른 농도
+    forced_end = forced_row = forced_x0 = None
     for j, ri in zip(gjobs, rows):
         forced = j["forced"]
-        fc = "#8c8c8c" if forced else "white"
+        fc = FORCED_GRAY if forced else "white"
         x0, x1 = j["tau"], j["tau"] + j["dur"]
         a3.barh(ri, min(x1, x_hi) - max(x0, x_lo), left=max(x0, x_lo), height=0.62,
                 facecolor=fc, edgecolor=INK, lw=0.6, zorder=3)
@@ -249,15 +256,18 @@ def fig_scheduler():
         # 20시(occ가 14로 상한을 넘는 자리)까지 걸치는 강제 편입 막대를 짚는다 —
         # 아래 occ 패널의 "마감 강제" 주석과 같은 사건을 가리킨다.
         if forced and x0 < 20 < x1 and (forced_end is None or x1 > forced_end):
-            forced_end, forced_row = x1, ri
+            forced_end, forced_row, forced_x0 = x1, ri, x0
     a3.set_ylim(n_rows - 0.15, -0.85)
     a3.set_yticks([])
-    a3.set_ylabel(f"작업\n({len(gjobs)}건)", fontsize=LAB, linespacing=1.2, labelpad=1)
+    a3.set_ylabel("작업", fontsize=LAB, labelpad=1)   # 건수는 캡션 소관(y축 라벨 정렬 문제도 같이 없어짐)
     a3.tick_params(labelsize=TICK, left=False)
     if forced_row is not None:
-        # 아래 occ 패널과 같은 문구("마감 강제")를 써서 같은 사건임을 알아보게 한다.
-        a3.annotate("마감 강제", (min(forced_end, x_hi), forced_row),
-                    textcoords="offset points", xytext=(4, 0), ha="left", va="center",
+        # 패널 오른쪽 밖으로 글자가 잘리던 문제(2026-09-24 b6 지적) — 막대 왼쪽의
+        # 빈 구간(6~15시, 이 행엔 그 사이 아무 막대도 없다)에 넣어 패널 안에 완전히
+        # 들어가게 한다. 아래 occ 패널과 같은 문구("마감 강제")를 써서 같은 사건임을
+        # 알아보게 한다.
+        a3.annotate("마감 강제", (forced_x0, forced_row),
+                    textcoords="offset points", xytext=(-4, 0), ha="right", va="center",
                     fontsize=NOTE)
 
     full = occ >= cap
