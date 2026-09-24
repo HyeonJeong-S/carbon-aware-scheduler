@@ -85,7 +85,9 @@ def fig_forecast(data):
     # 구간 이름은 아래쪽에, 오차는 위쪽 빈 곳에 따로 둔다. 발행 시각은 세로선과
     # 음영 경계가 이미 말하므로 따로 적지 않는다.
     ax.text(-86, 14, "입력 168 h", ha="center", fontsize=6.4)
-    ax.text(12, 14, "출력 24 h", ha="center", fontsize=6.4)
+    # 출력 구간이 24단위뿐이라 "출력 24 h"(8자)를 넣으면 구분선과 오른쪽
+    # 테두리를 둘 다 넘는다. 시간 길이는 x축 눈금(0, 24)이 이미 말한다.
+    ax.text(12, 14, "출력", ha="center", fontsize=6.4)
     ax.text(-166, 232, f"MAE {mae:.1f} gCO₂/kWh", ha="left", va="top", fontsize=6.4)
 
     ax.set_xlim(-172, 24)

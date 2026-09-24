@@ -90,7 +90,7 @@ def main():
     ax.set_xticklabels([f"{day0 + i // 24}" for i in xt], fontsize=7)
     ax.tick_params(axis="y", labelsize=7)
     ax.set_xlabel("연중 일수 (day)", fontsize=8)
-    ax.set_ylabel("CAL 리전 동시 실행 수", fontsize=8)
+    ax.set_ylabel("캘리포니아 동시 실행 수", fontsize=8)
 
     for spine in ("top", "right"):
         ax.spines[spine].set_visible(False)
@@ -102,7 +102,7 @@ def main():
 
     fig.text(0.02, 0.012,
               f"위 구간은 연중 한 주(day {day0}–{win_hi // 24})의 예시다.\n"
-              f"연중 전체 최대 동시실행: 무제약 {d['peak_a']}건 → 온라인 {d['peak_b']}건(다른 주, §6.4 정의).",
+              f"연중 전체 최대 동시실행: 무제약 {d['peak_a']}건 → 온라인 {d['peak_b']}건(다른 주, 4.3절 정의).",
               fontsize=5.3, ha="left", linespacing=1.4)
 
     fig.tight_layout(rect=(0, 0.10, 1, 1), pad=0.5)

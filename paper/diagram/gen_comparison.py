@@ -56,8 +56,11 @@ def main():
         ax.barh(y, kg, height=0.62, facecolor=fc, edgecolor=INK,
                 linewidth=0.9, zorder=3)
         txt = f"{kg:,.0f}" + (f"  ({pct:.2f}%)" if pct else "")
+        # 본 연구 값을 가리키는 세로 점선이 ③행 라벨의 첫 글자를 가로지른다.
+        # 글자 뒤에 흰 바탕을 깔아 어느 막대에서든 선이 글자를 뚫지 않게 한다.
         ax.text(kg * 1.06, y, txt, va="center", fontsize=6.0,
-                fontweight="bold" if ours else "normal")
+                fontweight="bold" if ours else "normal", zorder=4,
+                bbox=dict(facecolor="white", edgecolor="none", pad=0.8))
 
     ax.axvline(10805.0, color=INK, lw=0.7, ls=(0, (1, 1.6)), zorder=2)
     ax.set_yticks(list(ys))
