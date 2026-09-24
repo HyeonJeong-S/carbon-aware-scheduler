@@ -355,12 +355,18 @@ def fig_scheduler():
     # 그나마 하나뿐인 범례가 맨 위에 있어 세 패널 전부에 적용되는 것처럼 읽혔다.
     # 세로 높이를 더 늘리지 말라는 지시(11→10쪽 목표)에 따라 줄을 하나 더 만드는
     # 대신, 한 줄에 세 항목을 다 넣고 각 라벨에 소속 패널을 괄호로 밝힌다.
+    # 2026-09-24 4c 배분(세 번째 개정): "(동시실행)"·"(간트)"가 패널 이름이라
+    # 낯설다는 지적 — "그 시각"(occ 패널, 시간대의 성질) 대 "그 작업"(간트 패널,
+    # 개별 작업의 성질)로 바꿔 무엇을 두고 하는 말인지 패널 이름 없이도 읽히게
+    # 한다. 또한 이번 9건 표본엔 forced 작업이 없어 CRITICAL_GRAY가 실제로는
+    # 안 쓰인다 — 쓰이지 않는 색의 범례 항목을 보여주면 안 되므로 조건부로 뺀다.
     handles = [
         Patch(facecolor="white", edgecolor=INK, lw=0.7, label="여유 있음"),
-        Patch(facecolor=EXCEPT_GRAY, edgecolor=INK, lw=0.7, label="상한 도달(동시실행)"),
-        Patch(facecolor=FORCED_GRAY, edgecolor=INK, lw=0.6, label="마감 강제(간트)"),
+        Patch(facecolor=EXCEPT_GRAY, edgecolor=INK, lw=0.7, label="상한 도달(그 시각)"),
     ]
-    fig.legend(handles=handles, fontsize=NOTE, frameon=False, ncol=3, loc="upper left",
+    if any(j["forced"] for j in gjobs):
+        handles.append(Patch(facecolor=FORCED_GRAY, edgecolor=INK, lw=0.6, label="마감 강제(그 작업)"))
+    fig.legend(handles=handles, fontsize=NOTE, frameon=False, ncol=len(handles), loc="upper left",
                bbox_to_anchor=(0.02, 1.005), handlelength=1.3, columnspacing=0.9,
                handletextpad=0.35)
 
