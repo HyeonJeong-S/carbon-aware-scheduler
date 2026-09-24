@@ -195,23 +195,42 @@ def fig_scheduler():
     """용량이 왜 시간 이동을 막는지를 실제 하루로 보인다.
 
     캘리포니아의 한 날(101일차) 실측이다. 위는 시각별 탄소집약도, 가운데는 그날 그 리전
-    에서 실행된 개별 작업(간트 막대, tau_j~tau_j+d_j), 아래는 시각별 동시 실행 수다.
+    에서 실행된 개별 작업(간트, 아래 참고), 아래는 시각별 동시 실행 수다.
     탄소가 가장 낮은 시간대(UTC 기준, 현지로는 한낮)가 정확히 상한 12 에 닿아 있다 —
     작업을 옮기고 싶은 곳이 이미 차 있다는 것이 §6.4 의 발견이고, 이 그림이 그 문장을
     대신한다. 개념도의 '자리 없음' 회색 상자와 달리 여기서는 왜 없는지가 보인다.
 
-    2026-09-24 b6 배분: 사용자 지적 — "실행시간을 고려해야하는데... 어느시간정도
-    차지한다는 느낌이 좀 들면 좋을 거 같음." 기존 동시 실행 수 막대는 '몇 개가
-    겹치는가'만 보이고 '작업 하나가 몇 시간을 무는가'가 안 보였다. 가운데 간트
-    띠를 추가해 그 점유 지속을 직접 그린다 — 회색 막대(마감 강제 편입) 하나가
-    가운데 띠와 아래 막대 양쪽에서 같은 x 위치(20시)에 걸쳐 있어, 아래 패널이
-    12를 넘는 이유(상한을 지키며 들어온 작업들의 꼬리가 늦게까지 남아 있는 데다
-    마감 임박 작업이 예외로 더해진다)를 가운데 패널이 직접 보여준다.
+    2026-09-24 b6 배분(1차): 기존 동시 실행 수 막대는 '몇 개가 겹치는가'만 보이고
+    '작업 하나가 몇 시간을 무는가'가 안 보였다. 가운데 간트 띠를 추가해 그 점유
+    지속을 직접 그렸다 — 실행 구간(tau_j~tau_j+d_j)만 막대로.
+
+    2026-09-24 4c 배분(2차, 사용자 재지적): "그림 이해가 잘 안 된다" — 실행
+    구간만 보여서는 "왜 하필 거기서 실행됐는가"가 안 보였다. 이번 판은 각 작업의
+    **레일**(s_j~D_j, 제출 시각부터 마감까지 — 가는 선, 실행 가능한 전체 구간)을
+    막대 뒤에 함께 그린다. 막대(굵은 채움)는 그 레일 위 어딘가([tau_j,
+    tau_j+d_j])에 놓인다. 레일이 넓은데도 막대가 저탄소 구간(그림 왼쪽, 이 날의
+    한낮)으로 못 간 작업(j_132777: 레일 22.1h인데 20시가 돼서야 실행)이 바로
+    "용량이 막았다"는 이 그림의 요지를 직접 보여준다 — 무제약으로 다시 돌리면
+    이 작업은 제출 즉시(21.0 gCO2/kWh)에 실행되지만, 용량 12 아래서는 16시
+    (27.2 gCO2/kWh)로 밀린다(scheduler.capacity.run_rolling을 capacity=100000으로
+    재실행해 대조 검산함). 레일 끝점(s_j·D_j)에 짧은 세로 눈금을 달아 경계를
+    표시하고, 하루 밖으로 이어지는 레일은 눈금 없이 액자 끝까지만 그어 "더
+    있다"를 암시한다(막대 자체가 하루 밖으로 이어질 때만 기존 ◀▶ 화살촉을 쓴다
+    — 레일은 대부분 하루 밖으로 나가므로 화살촉을 쓰면 거의 매 행에 찍혀 오히려
+    어지럽다).
+
+    표본: "그날 겹치는 캘리포니아 작업 중 실행시간 3.0시간 이상" 문턱 하나로만
+    거른다(문턱을 3.5→3.0h로 낮췄다 — 3.5h에서는 위 j_132777이 빠졌었다). 14건,
+    손으로 고르지 않음. 더 촘촘한 창을 가진 작업은 전부 실행시간이 1시간
+    미만이라 막대가 안 보일 만큼 작아 표본에서 자연히 빠진다.
 
     데이터 출처: gen_fig4_scheduler_data.py 가 scheduler.reproduce와 정확히 같은
     파이프라인(capacity.run_rolling, capacity=12, 표2 ④)을 다시 돌려
-    fig4_gantt_data.json을 만든다. 표본은 "그날 겹치는 캘리포니아 작업 중 실행
-    시간 3.5시간 이상" 문턱 하나로만 거른다(11건, 손으로 고르지 않음).
+    fig4_gantt_data.json을 만든다.
+
+    높이: 표본이 11→14건(6→7행)으로 늘었지만 4c 지시("높이를 늘리지 마라, 줄일
+    수 있으면 줄여라")에 따라 행당 pt(15.5→13.0)를 줄여 전체 높이는 오히려
+    259→257pt로 살짝 줄었다.
     """
     d = json.load(open(os.path.join(HERE, "fig4_slot_data.json")))
     car, occ, cap = np.array(d["carbon"]), np.array(d["occ"]), d["cap"]
@@ -234,10 +253,11 @@ def fig_scheduler():
             row_end.append(j["tau"] + j["dur"])
             rows.append(len(row_end) - 1)
     n_rows = len(row_end)
+    ROW_PT = 13.0  # 2026-09-24 4c 배분: 행이 6→7로 늘어도 높이가 안 늘게(15.5→13.0)
 
     fig, (a1, a3, a2) = plt.subplots(
-        3, 1, figsize=(COL, (166 + 15.5 * n_rows) / 72.0), dpi=300, sharex=True,
-        gridspec_kw=dict(height_ratios=[1, 0.155 * n_rows + 0.12, 1.15], hspace=0.12))
+        3, 1, figsize=(COL, (166 + ROW_PT * n_rows) / 72.0), dpi=300, sharex=True,
+        gridspec_kw=dict(height_ratios=[1, ROW_PT / 100 * n_rows + 0.12, 1.15], hspace=0.12))
 
     a1.plot(t, car, color=INK, lw=1.3)
     lo = int(np.argmin(car))
@@ -267,6 +287,17 @@ def fig_scheduler():
     for j, ri in zip(gjobs, rows):
         forced = j["forced"]
         fc = FORCED_GRAY if forced else "white"
+        # 2026-09-24 4c 배분: 레일(s_j~D_j) — 이 작업이 실행될 수 있었던 전체 구간.
+        # 막대(아래)보다 먼저, 더 낮은 zorder로 그려 막대가 겹치는 구간을 덮게 한다.
+        # 참끝(s_j·D_j)이 하루 안이면 짧은 세로 눈금으로 경계를 표시하고, 하루
+        # 밖이면 액자 끝까지만 긋는다(레일 대부분이 하루 밖으로 나가므로 화살촉을
+        # 매 행마다 찍으면 오히려 어지럽다 — 막대 쪽 ◀▶만 유지한다).
+        s0, D0 = j["s"], j["D"]
+        a3.plot([max(s0, x_lo), min(D0, x_hi)], [ri, ri], color=INK, lw=0.7, zorder=2)
+        if s0 >= x_lo:
+            a3.plot([s0, s0], [ri - 0.15, ri + 0.15], color=INK, lw=0.7, zorder=2)
+        if D0 <= x_hi:
+            a3.plot([D0, D0], [ri - 0.15, ri + 0.15], color=INK, lw=0.7, zorder=2)
         x0, x1 = j["tau"], j["tau"] + j["dur"]
         a3.barh(ri, min(x1, x_hi) - max(x0, x_lo), left=max(x0, x_lo), height=0.62,
                 facecolor=fc, edgecolor=INK, lw=0.6, zorder=3)
@@ -327,7 +358,7 @@ def fig_scheduler():
                bbox_to_anchor=(0.02, 1.005), handlelength=1.3, columnspacing=0.9,
                handletextpad=0.35)
 
-    top = 1 - 24 / (166 + 15.5 * n_rows)   # 범례 자리(고정 24pt)를 늘어난 전체 높이에 비례로 남긴다
+    top = 1 - 24 / (166 + ROW_PT * n_rows)   # 범례 자리(고정 24pt)를 늘어난 전체 높이에 비례로 남긴다
     fig.subplots_adjust(left=0.215, right=0.985, top=top, bottom=0.115, hspace=0.12)
     for e in (".png", ".pdf"):
         fig.savefig(os.path.join(HERE, "fig4_scheduler" + e))
