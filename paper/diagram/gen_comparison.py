@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""그림 6 — 다섯 방식의 총 배출량 (2026-09-24 재설계).
+"""그림 8 — 다섯 방식의 총 배출량 (2026-09-24 재설계, 그림 번호는 §4.3 순서 기준).
 
 사용자 지적: "위의 그림 너무 그 슬래시랑, 점점 되어있는 그래프가 너무 별로인데?"
 
@@ -79,10 +79,10 @@ def main():
     ax.tick_params(labelsize=6.5)
     ax.grid(axis="x", color=LIGHT, lw=0.45, zorder=0)
     ax.set_axisbelow(True)
-    fig.text(0.015, 0.012,
-             "회색(③)은 용량 제약을 전혀 두지 않은 반사실이라 달성 가능한 값이 아니다.",
-             fontsize=6.2)
-    fig.tight_layout(rect=(0, 0.075, 1, 1), pad=0.35)
+    # 2026-09-24 b6 배분(그림 10장 통합 점검): 이 각주 한 줄이 캡션("회색 막대(③)는
+    # 용량 제약을 전혀 두지 않은 반사실이라 달성 가능한 값이 아니다")과 토씨까지
+    # 같았다 — 뺀다. 이 그림엔 그 말고 다른 각주가 없어 그림 아래 여백이 그만큼 준다.
+    fig.tight_layout(rect=(0, 0.03, 1, 1), pad=0.35)
     for e in (".png", ".pdf"):
         fig.savefig(os.path.join(HERE, "fig5_comparison" + e))
     print("wrote fig5_comparison")

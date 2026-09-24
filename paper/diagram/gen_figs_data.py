@@ -52,7 +52,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 INK, GRAY, LIGHT = "#000000", "#7a7a7a", "#cccccc"
 COL = 215 / 72.0                 # 단내 폭
 FULL = 451 / 72.0                # 전단 폭(그림 1·2가 쓰는 구역)
-LAB, TICK, NOTE = 7.5, 6.5, 5.6  # 축 이름 / 눈금 / 주석
+LAB, TICK, NOTE = 7.5, 6.5, 6.0  # 축 이름 / 눈금 / 주석
+# 2026-09-24 b6 배분(그림 10장 통합 점검): NOTE가 5.6이라 그림 3·4·7의 범례·주석이
+# 6pt 아래였다. 6.0으로 올린다 — 렌더해서 겹침 없는지 확인 완료.
 
 
 def legend_above(ax, ncol, y=1.02, fs=NOTE):
@@ -154,9 +156,12 @@ def fig_loadbalancer(data):
     ax.annotate("", xy=(lat[i_auto], c[i_auto]), xytext=(lat[i_lat], c[i_lat]),
                 arrowprops=dict(arrowstyle="->", lw=0.9, color=INK,
                                 shrinkA=6, shrinkB=8))
+    # 2026-09-24 b6 배분(그림 10장 통합 점검): 이 글자가 바로 위 화살표 선 위에
+    # 놓여 "탄소" 글자를 선이 가로질렀다(확대해서 발견) — 흰 바탕을 깔아 뗀다.
     ax.text((lat[i_lat] + lat[i_auto]) / 2 - 4, (c[i_lat] + c[i_auto]) / 2 + 18,
             f"{lat[i_auto]-lat[i_lat]:.0f} ms 로\n탄소 {c[i_lat]-c[i_auto]:.0f} 감소",
-            ha="center", fontsize=NOTE, linespacing=1.35)
+            ha="center", fontsize=NOTE, linespacing=1.35, zorder=6,
+            bbox=dict(facecolor="white", edgecolor="none", pad=1.2))
 
     ax.set_xlim(-16, 262)
     ax.set_ylim(-42, 430)

@@ -92,7 +92,9 @@ def main():
     ax.set_xlim(-6, 122)
     ax.set_ylim(-4, 74)
     ax.set_xlabel("평균 지연 (ms)", fontsize=8)
-    ax.set_ylabel("탄소 절감률 (% vs baseline)", fontsize=8)
+    # 2026-09-24 b6 배분(그림 10장 통합 점검): "% vs baseline"이 그림 8·10의
+    # "탄소 절감률 (%)"과 표기가 달랐다(같은 ① 기준 비율인데). 맞춘다.
+    ax.set_ylabel("탄소 절감률 (%)", fontsize=8)
     ax.tick_params(labelsize=7)
 
     for spine in ("top", "right"):
@@ -101,12 +103,13 @@ def main():
         ax.spines[spine].set_linewidth(0.7)
     ax.grid(axis="y", color="#dddddd", lw=0.4, zorder=0)
 
+    # 2026-09-24 b6 배분(그림 10장 통합 점검): 둘째 줄("α=auto가 탄소 최저가
+    # 아니라...")이 캡션("auto는 탄소가 가장 낮은 지점이 아니라... 정점을 찍는
+    # 지점이다")과 그대로 겹쳤다 — 뺀다. 마커 범례(첫 줄)는 캡션에 없어 남기고,
+    # 캡션에도 없는 수치(α=0.75가 더 낮다는 사실)만 한 줄로 남긴다.
     fig.text(0.02, 0.012,
-              "◆ baseline(α=0) · ◎ α=auto(슬롯별 무릎점, 평균 0.508).\n"
-              # 2026-09-23: 한 줄로 두면 오른쪽 끝에서 잘려 닫는 괄호까지 사라진다
-              # (58이 렌더 이미지에서 발견, be가 원본 PNG에서 재확인). 줄을 나눈다.
-              "“α=auto가 탄소 최저”가 아니라 “한계수익이 정점을 찍는 지점”이다\n"
-              "(α=0.75가 10,396.5kg으로 더 낮음).",
+              "◆ baseline(α=0) · ◎ α=auto(슬롯별 무릎점, 평균 0.508)\n"
+              "참고: 배출량은 α=0.75(10,396.5kg)가 더 낮다 — 지연 62.6ms를 더 쓴 대가다.",
               fontsize=6.2, ha="left", linespacing=1.4)
 
     fig.tight_layout(rect=(0, 0.20, 1, 1), pad=0.5)   # 각주 3줄(6.2pt) 자리
