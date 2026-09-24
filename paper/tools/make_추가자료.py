@@ -384,8 +384,8 @@ def main():
     math(doc, "      feasible(j, t′)  ⟺  min a_{r(j)}(u) ≥ 1,   u ∈ [t′, t′+d_j)")
     body(doc, "시작 시점만이 아니라 실행이 끝날 때까지 매 순간 자리가 있어야 한다.")
     math(doc, "(13)  Q(t) = { j : s_j ≤ t,  τ_j 미정 },")
-    math(doc, "      P_r(t) = { j ∈ Q(t) : r(j)=r, argmin_{t′∈W_j(t)} score_j(t′) = max(t, s_j) }")
-    body(doc, "지금이 남은 탐색 구간 안에서 최선인 작업들. W_j(t) = [max(t, s_j), "
+    math(doc, "      P_r(t) = { j ∈ Q(t) : r(j)=r, argmin_{t′} score_j(t′) = max(t, s_j) }")
+    body(doc, "지금이 남은 탐색 구간 안에서 최선인 작업들. t′ 는 남은 실행 가능 윈도우 W_j(t) = [max(t, s_j), "
               "min(D_j − d_j, t + H)] 이고, 점수는 매 슬롯 새로 발행된 예측으로 다시 잰다.")
     math(doc, "(14)  u_j(t) = (D_j − d_j) − t,     F_r(t) = { j ∈ Q(t) : r(j)=r, u_j(t) < 1 },")
     math(doc, "      R_r(t) = P_r(t) ∖ F_r(t) 를 u_j(t) 오름차순 정렬,")
