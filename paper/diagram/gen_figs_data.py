@@ -95,9 +95,10 @@ def fig_forecast(data):
     # 출력 구간이 24단위뿐이라 "출력 24 h"(8자)를 넣으면 구분선과 오른쪽
     # 테두리를 둘 다 넘는다. 시간 길이는 x축 눈금(0, 24)이 이미 말한다.
     ax.text(12, 14, "출력", ha="center", fontsize=6.4)
-    # 이 값은 **이 구간**의 오차다. 전 구간 평균은 캘리포니아 21.6 · 8개 리전 24.9 로
-    # 두 배 가까이 크다 — 라벨에 "이 구간"을 밝히지 않으면 모델 성능으로 읽힌다.
-    ax.text(-166, 232, f"이 구간 MAE {mae:.1f} gCO₂/kWh", ha="left", va="top", fontsize=6.4)
+    # 2026-09-24 b6 배분(그림 10장 통합 점검): "이 구간 MAE ..."가 캡션("이 구간의
+    # 평균 절대 오차는 12.2 gCO₂/kWh다")과 겹쳤다 — 어디를 가리킬 필요도 없는 떠
+    # 있는 주석이라 캡션 쪽에 맡기고 그림에서는 뺀다(왼쪽 축선에 거의 붙던 문제도
+    # 같이 없어진다). mae 값 자체는 print 로그용으로 계속 계산한다.
 
     ax.set_xlim(-172, 24)
     ax.set_ylim(0, 245)
@@ -134,8 +135,15 @@ def fig_loadbalancer(data):
         if i in (i_auto, i_lat, i_car):
             continue
         nm = KO[r]
-        ax.annotate(nm, (lat[i], c[i]), textcoords="offset points",
-                    xytext=(4, 3), fontsize=NOTE, color=GRAY)
+        # 2026-09-24 b6 배분(그림 10장 통합 점검): 독일(lat=244)이 x축 오른쪽
+        # 끝(262)에 바짝 붙어 있어, 오른쪽으로 미는 기본 오프셋을 쓰면 라벨이
+        # 축선을 넘어간다(400% 확대로 발견) — 이 점만 왼쪽으로 뒤집는다.
+        if r == "DE":
+            ax.annotate(nm, (lat[i], c[i]), textcoords="offset points",
+                        xytext=(-4, 3), ha="right", fontsize=NOTE, color=GRAY)
+        else:
+            ax.annotate(nm, (lat[i], c[i]), textcoords="offset points",
+                        xytext=(4, 3), fontsize=NOTE, color=GRAY)
 
     # 2026-09-24: ★을 뺀다(사용자 지적 — 학술지 그림에서 별표는 거의 쓰지 않는다).
     # 세 선택은 네모·원·채운원으로 구분하고, 무릎점만 테두리를 한 겹 더 둘러 강조한다.
