@@ -26,3 +26,6 @@ job.zip
 .ruff_cache/
 .coverage
 paper/_pages/
+
+# 편집 전 스냅샷 — git 이력이 진짜 보관소다. 작업 중 안전망일 뿐 커밋하지 않는다.
+paper/versions/

@@ -14,6 +14,7 @@ w:r 이 아니라 살아남지만 참조가 사라져 **어디에도 안 달린 
 실행: ./.venv/bin/python paper/tools/mathify.py paper/CAST_압축본.docx [--dry]
 """
 import copy
+import os
 import re
 import shutil
 import sys
@@ -169,14 +170,39 @@ def _el(xml_frag):
     return docx.oxml.parse_xml(f"<w:body {NS}>{xml_frag}</w:body>")[0]
 
 
+
+def _snapshot(path, tag, keep=3):
+    """편집 직전 사본을 versions/ 에 둔다. 오래된 것은 keep 개만 남기고 지운다.
+
+    2026-09-24 두 가지를 고쳤다.
+      · 경로: snap.replace("/paper/", "/paper/versions/") 는 상대 경로
+        ("paper/CAST_압축본.docx")에서 아무것도 안 바꿔, 사본이 versions/ 가
+        아니라 paper/ 에 그대로 쌓이고 있었다(4개 발견).
+      · 개수: 편집할 때마다 5MB 짜리가 쌓여 versions/ 가 910MB 가 됐다.
+        **진짜 보관소는 git 이다.** 여기는 커밋 전 몇 분을 위한 안전망일 뿐이라
+        최근 몇 개만 남긴다. .gitignore 에도 넣어 커밋하지 않는다.
+    """
+    import glob
+    d = os.path.join(os.path.dirname(os.path.abspath(path)), "versions")
+    os.makedirs(d, exist_ok=True)
+    base = os.path.basename(path)[:-5]
+    snap = os.path.join(d, f"{base}_{datetime.now():%Y%m%d_%H%M%S}_{tag}.docx")
+    shutil.copy2(path, snap)
+    old = sorted(glob.glob(os.path.join(d, f"{base}_*_{tag}.docx")))[:-keep]
+    for f in old:
+        try:
+            os.remove(f)
+        except OSError:
+            pass
+    return snap
+
+
 def main():
     path = sys.argv[1]
     dry = "--dry" in sys.argv
     if not dry:
-        snap = path[:-5] + f"_{datetime.now():%Y%m%d_%H%M%S}_before_mathify.docx"
-        snap = snap.replace("/paper/", "/paper/versions/")
-        shutil.copy2(path, snap)
-        print("스냅샷:", snap.split("/")[-1])
+        snap = _snapshot(path, "before_mathify", keep=3)
+        print("스냅샷:", os.path.basename(snap))
     d = docx.Document(path)
     before = [p.text for p in d.paragraphs]
     n = sum(mathify_par(p) for p in d.paragraphs)

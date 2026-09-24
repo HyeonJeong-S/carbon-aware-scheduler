@@ -134,10 +134,18 @@ def main():
         if cid in {str(i) for i in a.drop}:
             print(f"  [{cid}] {txt}\n        자리: {tgt[:80]}")
 
-    snap = os.path.join(PAPER, "versions",
-                        f"{os.path.basename(path)[:-5]}_{datetime.now():%Y%m%d_%H%M%S}_before_drop.docx")
-    os.makedirs(os.path.dirname(snap), exist_ok=True)
+    # 메모는 사용자가 쓴 글이라 되살릴 길이 없다 — 다른 스냅샷보다 오래 남긴다.
+    import glob
+    d = os.path.normpath(os.path.join(PAPER, "versions"))
+    os.makedirs(d, exist_ok=True)
+    base = os.path.basename(path)[:-5]
+    snap = os.path.join(d, f"{base}_{datetime.now():%Y%m%d_%H%M%S}_before_drop.docx")
     shutil.copy2(path, snap)
+    for f in sorted(glob.glob(os.path.join(d, f"{base}_*_before_drop.docx")))[:-10]:
+        try:
+            os.remove(f)
+        except OSError:
+            pass
     print("스냅샷:", os.path.basename(snap))
 
     drop(path, a.drop)
