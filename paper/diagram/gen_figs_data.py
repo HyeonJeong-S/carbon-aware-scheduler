@@ -25,6 +25,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
+from matplotlib.patches import Patch
 
 sys.path.insert(0, "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler")
 from interface import carbon_2025
@@ -272,10 +273,10 @@ def fig_scheduler():
 
     full = occ >= cap
     # 빗금 대신 회색 농담 — 흑백 인쇄에서 더 깨끗하고 학술지에서 더 흔하다.
-    a2.bar(t[~full], occ[~full], width=0.74, facecolor="white",
-           edgecolor=INK, lw=0.7, label="여유 있음")
-    a2.bar(t[full], occ[full], width=0.74, facecolor="#8c8c8c", edgecolor=INK,
-           lw=0.7, label="상한 도달 · 배치 불가")
+    # 범례는 아래에서 Patch로 따로 만든다(세 채움을 한 줄에 다 넣으려고) — 여기
+    # label= 은 안 쓴다.
+    a2.bar(t[~full], occ[~full], width=0.74, facecolor="white", edgecolor=INK, lw=0.7)
+    a2.bar(t[full], occ[full], width=0.74, facecolor="#8c8c8c", edgecolor=INK, lw=0.7)
     a2.axhline(cap, color=INK, lw=1.0, ls=(0, (4, 1.6)))
     a2.text(13.2, cap + 0.6, f"유효 상한 {cap}", ha="left", fontsize=NOTE)
     a2.set_ylim(0, 17.5)
@@ -293,10 +294,18 @@ def fig_scheduler():
     if occ[over] > cap:
         a2.annotate("마감 강제", (over, occ[over]), textcoords="offset points",
                     xytext=(0, 3), ha="center", fontsize=NOTE)
-    h1, l1 = a2.get_legend_handles_labels()
-    fig.legend(h1, l1, fontsize=NOTE, frameon=False, ncol=2, loc="upper left",
-               bbox_to_anchor=(0.19, 1.005), handlelength=1.6, columnspacing=1.2,
-               handletextpad=0.5)
+    # 2026-09-24 b6 지적: 채움이 이제 셋(흰색·중간회색·짙은회색)인데 범례는 둘뿐이었고,
+    # 그나마 하나뿐인 범례가 맨 위에 있어 세 패널 전부에 적용되는 것처럼 읽혔다.
+    # 세로 높이를 더 늘리지 말라는 지시(11→10쪽 목표)에 따라 줄을 하나 더 만드는
+    # 대신, 한 줄에 세 항목을 다 넣고 각 라벨에 소속 패널을 괄호로 밝힌다.
+    handles = [
+        Patch(facecolor="white", edgecolor=INK, lw=0.7, label="여유 있음"),
+        Patch(facecolor="#8c8c8c", edgecolor=INK, lw=0.7, label="상한 도달(동시실행)"),
+        Patch(facecolor=FORCED_GRAY, edgecolor=INK, lw=0.6, label="마감 강제(간트)"),
+    ]
+    fig.legend(handles=handles, fontsize=NOTE, frameon=False, ncol=3, loc="upper left",
+               bbox_to_anchor=(0.02, 1.005), handlelength=1.3, columnspacing=0.9,
+               handletextpad=0.35)
 
     top = 1 - 24 / (166 + 15.5 * n_rows)   # 범례 자리(고정 24pt)를 늘어난 전체 높이에 비례로 남긴다
     fig.subplots_adjust(left=0.215, right=0.985, top=top, bottom=0.115, hspace=0.12)
