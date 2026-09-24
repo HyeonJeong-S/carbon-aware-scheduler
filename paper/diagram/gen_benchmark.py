@@ -87,15 +87,17 @@ def main():
         ax.spines[s].set_linewidth(0.7)
     ax.grid(axis="y", color="#dddddd", lw=0.4, zorder=0)
 
+    # 2026-09-24 b6 배분(그림 10장 통합 점검): 첫 구절("● 본 연구 · ○ 선행 정책
+    # 재현")이 캡션("● 본 연구, ○ 선행 정책")과 겹쳤다 — 뺀다. 나머지 읽는 법은
+    # 캡션에 없어 남긴다.
     fig.text(0.02, 0.012,
              # Caspian(3,745건·30.51%)이 들어오면서 "오른쪽일수록 비싸게 산 것"이
              # 더는 맞지 않는다 — 오른쪽인데 절감도 낮은 점이 생겼다. 왼쪽 위가
              # 좋은 자리라는 사실만 말한다.
-             "● 본 연구 · ○ 선행 정책 재현. 왼쪽 위가 좋은 자리다 —\n"
-             "적은 위반으로 많이 줄인 것이다.",
+             "왼쪽 위가 좋은 자리다 — 적은 위반으로 많이 줄인 것이다.",
              fontsize=6.2, ha="left", linespacing=1.4)
 
-    fig.tight_layout(rect=(0, 0.13, 1, 1), pad=0.4)
+    fig.tight_layout(rect=(0, 0.075, 1, 1), pad=0.4)  # 각주 두 줄→한 줄로 줄어 여백도 같이 줄인다
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fig7_benchmark.png")
     fig.savefig(out)
     fig.savefig(out.replace(".png", ".pdf"))

@@ -354,7 +354,7 @@ def fig_forecast():
                  f'fill="{fill}" stroke="{INK}" stroke-width="0.8"/>')
     L += [txt(100, 47, "공통 10", anchor="middle", size=5.8),
           txt(178, 47, "기상 +3", anchor="middle", size=5.8),
-          txt(178, 55, "(3개 리전만)", anchor="middle", size=5.2),
+          txt(178, 55, "(3개 리전만)", anchor="middle", size=5.8),
           ribbon(163, 26, "피처 13", angle=-11, size=5.8),
           fat_arrow(107, 58, 107, 70, w=6)]
 
@@ -367,8 +367,8 @@ def fig_forecast():
     L += [txt(78, 98, "은닉 64 · 2층", size=6.4)]
     # 기상 리전만 미래 24 h 날씨를 출력 직전에 합류시킨다.
     # 점선은 라벨 오른쪽 바깥(x=205)으로 돌려 글자를 관통하지 않게 한다.
-    L += [txt(189, 86, "+ 미래 24 h 날씨", anchor="end", size=5.6),
-          txt(189, 94, "기상 리전만 · 24×3 = 72", anchor="end", size=5.2),
+    L += [txt(189, 86, "+ 미래 24 h 날씨", anchor="end", size=5.8),
+          txt(189, 94, "기상 리전만 · 24×3 = 72", anchor="end", size=5.8),
           # 2026-09-24 b6 지적: 점선 시작이 "72" 글자 바로 뒤(x=188)에 붙어 글자·
           # 상자 테두리·점선이 한 점에 몰렸다. 시작을 2pt 물려(190) 글자와 띄운다.
           path("M190,94 L205,94 L205,127 L197,127", sw=0.8, dash="2.5 1.8")]
@@ -378,7 +378,7 @@ def fig_forecast():
     # ── 출력 ── "향후 24 h/1시간 간격"은 라벨 Ĉᵣ(t…t+24)와 같은 말이라 뺐다.
     L += [rbox(20, 119, 175, 26, r=10),
           txt(29, 131, "출력  Ĉ", size=FT, bold=True),
-          txt(50, 133, "r", size=5.4),
+          txt(50, 133, "r", size=5.8),
           txt(54, 131, "(t … t+24)", size=FT),
           spark(34, 135, 104, 8, n=24)]
 

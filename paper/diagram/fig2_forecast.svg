@@ -32,7 +32,7 @@
 <rect x="139.0" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#d9d9d9" stroke="#000000" stroke-width="0.8"/>
 <text x="100" y="47" text-anchor="middle" font-size="5.8">공통 10</text>
 <text x="178" y="47" text-anchor="middle" font-size="5.8">기상 +3</text>
-<text x="178" y="55" text-anchor="middle" font-size="5.2">(3개 리전만)</text>
+<text x="178" y="55" text-anchor="middle" font-size="5.8">(3개 리전만)</text>
 <g transform="translate(163,26) rotate(-11)"><rect x="0" y="-8" width="30.0" height="12" fill="#fff" stroke="#000000" stroke-width="1"/><text x="15.0" y="0.5" font-size="5.8" text-anchor="middle">피처 13</text></g>
 <path d="M104.0,58.0 L104.0,65.0 L101.0,65.0 L107.0,70.0 L113.0,65.0 L110.0,65.0 L110.0,58.0 Z" fill="#fff" stroke="#000000" stroke-width="1.2"/>
 <rect x="20" y="74" width="175" height="35" rx="10" fill="#fff" stroke="#000000" stroke-width="1.6"/>
@@ -75,13 +75,13 @@
 <line x1="17.4" y1="22.5" x2="23.6" y2="19"/>
 </g></g>
 <text x="78" y="98" font-size="6.4">은닉 64 · 2층</text>
-<text x="189" y="86" text-anchor="end" font-size="5.6">+ 미래 24 h 날씨</text>
-<text x="189" y="94" text-anchor="end" font-size="5.2">기상 리전만 · 24×3 = 72</text>
+<text x="189" y="86" text-anchor="end" font-size="5.8">+ 미래 24 h 날씨</text>
+<text x="189" y="94" text-anchor="end" font-size="5.8">기상 리전만 · 24×3 = 72</text>
 <path d="M190,94 L205,94 L205,127 L197,127" fill="none" stroke="#000000" stroke-width="0.8" stroke-dasharray="2.5 1.8" marker-end="url(#a)"/>
 <path d="M104.0,109.0 L104.0,114.2 L101.0,114.2 L107.0,118.0 L113.0,114.2 L110.0,114.2 L110.0,109.0 Z" fill="#fff" stroke="#000000" stroke-width="1.2"/>
 <rect x="20" y="119" width="175" height="26" rx="10" fill="#fff" stroke="#000000" stroke-width="1.6"/>
 <text x="29" y="131" font-size="8" font-weight="bold">출력  Ĉ</text>
-<text x="50" y="133" font-size="5.4">r</text>
+<text x="50" y="133" font-size="5.8">r</text>
 <text x="54" y="131" font-size="8">(t … t+24)</text>
 <polyline points="34.0,135.0 38.5,135.1 43.0,135.6 47.6,136.3 52.1,137.2 56.6,138.2 61.1,139.3 65.7,140.3 70.2,141.3 74.7,142.1 79.2,142.7 83.7,143.0 88.3,143.0 92.8,142.7 97.3,142.1 101.8,141.3 106.3,140.3 110.9,139.3 115.4,138.2 119.9,137.2 124.4,136.3 129.0,135.6 133.5,135.1 138.0,135.0" fill="none" stroke="#000000" stroke-width="0.9" stroke-linejoin="round"/>
 </svg>

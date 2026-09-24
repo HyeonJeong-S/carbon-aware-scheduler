@@ -112,7 +112,7 @@ def main():
               "참고: 배출량은 α=0.75(10,396.5kg)가 더 낮다 — 지연 62.6ms를 더 쓴 대가다.",
               fontsize=6.2, ha="left", linespacing=1.4)
 
-    fig.tight_layout(rect=(0, 0.20, 1, 1), pad=0.5)   # 각주 3줄(6.2pt) 자리
+    fig.tight_layout(rect=(0, 0.13, 1, 1), pad=0.5)   # 각주 3줄→2줄로 줄어 자리도 줄인다
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fig4_pareto.png")
     fig.savefig(out)
     fig.savefig(out.replace(".png", ".pdf"))  # KCI 인쇄 대비 벡터판
