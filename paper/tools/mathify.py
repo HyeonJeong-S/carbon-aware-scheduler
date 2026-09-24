@@ -181,7 +181,11 @@ def main():
     before = [p.text for p in d.paragraphs]
     n = sum(mathify_par(p) for p in d.paragraphs)
     after = [p.text for p in d.paragraphs]
-    assert before == after, "본문 글자가 바뀌었다 — 저장하지 않는다"
+    # "a_r" 을 첨자로 올리면 밑줄이 사라지므로 글자가 그대로일 수 없다(2026-09-24
+    # 이 검사가 잘못 걸려 저장을 막았다). 밑줄을 뺀 뒤 비교하면 진짜 글자 손실만
+    # 잡힌다 — 파일 이름의 밑줄은 양쪽에서 똑같이 빠지므로 영향이 없다.
+    assert [x.replace("_", "") for x in before] == [x.replace("_", "") for x in after], \
+        "본문 글자가 바뀌었다 — 저장하지 않는다"
     if dry:
         print(f"[시험] {n}곳을 바꿀 것이다")
         return

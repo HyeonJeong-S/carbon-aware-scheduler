@@ -114,12 +114,14 @@ def main():
     # 아니라...")이 캡션("auto는 탄소가 가장 낮은 지점이 아니라... 정점을 찍는
     # 지점이다")과 그대로 겹쳤다 — 뺀다. 마커 범례(첫 줄)는 캡션에 없어 남기고,
     # 캡션에도 없는 수치(α=0.75가 더 낮다는 사실)만 한 줄로 남긴다.
-    fig.text(0.02, 0.012,
-              "◆ baseline(α=0) · ◎ α=auto(슬롯별 무릎점, 평균 0.508)\n"
-              "참고: 배출량은 α=0.75(10,396.5kg)가 더 낮다 — 지연 62.6ms를 더 쓴 대가다.",
+    # 2026-09-24: 둘째 줄("참고: 배출량은 α=0.75가 더 낮다")을 캡션으로 옮겼다.
+    # 캡션이 이미 "auto는 탄소가 가장 낮은 지점이 아니다"를 말하고 있어 같은 말을
+    # 그림과 캡션이 두 번 했다. 그림에는 **범례만**, 해석은 캡션에 둔다.
+    fig.text(0.02, 0.018,
+              "◆ baseline(α=0) · ◎ α=auto(슬롯별 무릎점, 평균 0.508)",
               fontsize=6.2, ha="left", linespacing=1.4)
 
-    fig.tight_layout(rect=(0, 0.13, 1, 1), pad=0.5)   # 각주 3줄→2줄로 줄어 자리도 줄인다
+    fig.tight_layout(rect=(0, 0.08, 1, 1), pad=0.5)   # 각주 1줄 — 해석은 캡션으로 뺐다
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fig4_pareto.png")
     fig.savefig(out)
     fig.savefig(out.replace(".png", ".pdf"))  # KCI 인쇄 대비 벡터판
