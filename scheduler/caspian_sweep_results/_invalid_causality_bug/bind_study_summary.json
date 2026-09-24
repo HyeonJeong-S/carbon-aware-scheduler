@@ -1,0 +1,134 @@
+{
+  "ceiling": {
+    "wall_seconds": 2617.1693379879,
+    "run_stats": {
+      "boundary_forced": 4106,
+      "wall_seconds": 2617.1656517982483
+    },
+    "score": {
+      "label": "Caspian(ceiling,60d)",
+      "n": 24000,
+      "total_carbon_kg": 4356.992334563303,
+      "avg_latency_ms": 90.454875,
+      "deadline_misses": 4186,
+      "capacity_violations": 16101
+    },
+    "bind": {
+      "total_bind_hours": 1134,
+      "fake_bind_hours": 0,
+      "fake_ratio": 0.0,
+      "per_region": {
+        "DE": {
+          "bind": 59,
+          "fake_bind": 0,
+          "fake_ratio": 0.0
+        },
+        "FR": {
+          "bind": 1,
+          "fake_bind": 0,
+          "fake_ratio": 0.0
+        },
+        "IN": {
+          "bind": 0,
+          "fake_bind": 0,
+          "fake_ratio": 0.0
+        },
+        "JP": {
+          "bind": 2,
+          "fake_bind": 0,
+          "fake_ratio": 0.0
+        },
+        "KR": {
+          "bind": 2,
+          "fake_bind": 0,
+          "fake_ratio": 0.0
+        },
+        "US-CAL-CISO": {
+          "bind": 890,
+          "fake_bind": 0,
+          "fake_ratio": 0.0
+        },
+        "US-NY-NYIS": {
+          "bind": 135,
+          "fake_bind": 0,
+          "fake_ratio": 0.0
+        },
+        "US-TEX-ERCO": {
+          "bind": 45,
+          "fake_bind": 0,
+          "fake_ratio": 0.0
+        }
+      }
+    }
+  },
+  "fractional": {
+    "wall_seconds": 3141.271726131439,
+    "run_stats": {
+      "boundary_forced": 2482,
+      "wall_seconds": 3141.2655930519104
+    },
+    "score": {
+      "label": "Caspian(fractional,60d)",
+      "n": 24000,
+      "total_carbon_kg": 3588.035247436997,
+      "avg_latency_ms": 107.11720833333334,
+      "deadline_misses": 2552,
+      "capacity_violations": 14394
+    },
+    "bind": {
+      "total_bind_hours": 1136,
+      "fake_bind_hours": 0,
+      "fake_ratio": 0.0,
+      "per_region": {
+        "DE": {
+          "bind": 1,
+          "fake_bind": 0,
+          "fake_ratio": 0.0
+        },
+        "FR": {
+          "bind": 1051,
+          "fake_bind": 0,
+          "fake_ratio": 0.0
+        },
+        "IN": {
+          "bind": 0,
+          "fake_bind": 0,
+          "fake_ratio": 0.0
+        },
+        "JP": {
+          "bind": 0,
+          "fake_bind": 0,
+          "fake_ratio": 0.0
+        },
+        "KR": {
+          "bind": 0,
+          "fake_bind": 0,
+          "fake_ratio": 0.0
+        },
+        "US-CAL-CISO": {
+          "bind": 80,
+          "fake_bind": 0,
+          "fake_ratio": 0.0
+        },
+        "US-NY-NYIS": {
+          "bind": 2,
+          "fake_bind": 0,
+          "fake_ratio": 0.0
+        },
+        "US-TEX-ERCO": {
+          "bind": 2,
+          "fake_bind": 0,
+          "fake_ratio": 0.0
+        }
+      }
+    }
+  },
+  "inflation_ratio": {
+    "overall": 2.1421052725454244,
+    "k=1": 1.234037827922284,
+    "k=2": 1.823402510099027,
+    "k=3": 14.779600434033316,
+    "k=4": 92.90114128674688,
+    "k=5": 602.5185392472366
+  }
+}

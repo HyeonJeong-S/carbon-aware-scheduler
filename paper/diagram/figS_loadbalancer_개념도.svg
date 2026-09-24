@@ -1,0 +1,37 @@
+<!-- 그림 3 공간 이동 · 로드밸런서 · gen_figs.py 로 생성 (직접 편집 금지)
+     1단위 = 1pt, 폭 215pt. 100% 크기로 삽입할 것. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 215 232" width="215pt" height="232pt"
+     xml:space="preserve"
+     font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif"
+     font-size="9" fill="#000000">
+<defs>
+  <marker id="a" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#000000"/></marker>
+</defs>
+<rect width="215" height="232" fill="#fff"/>
+<text x="107" y="13" text-anchor="middle" font-size="10" font-weight="bold">공간 이동</text>
+<text x="107" y="25" text-anchor="middle" font-size="8">슬롯 단위 ILP 로드밸런서</text>
+<rect x="10" y="33" width="195" height="24" fill="#fff" stroke="#000000" stroke-width="0.9"/>
+<text x="107" y="43" text-anchor="middle" font-size="8" font-weight="bold">입력</text>
+<text x="107" y="53" text-anchor="middle" font-size="6.8">예측 Ĉᵣ(t) · 지연 ℓ · 잔여 용량</text>
+<line x1="107" y1="57" x2="107" y2="69" stroke="#000000" stroke-width="1.1" marker-end="url(#a)"/>
+<rect x="10" y="69" width="195" height="94" fill="#fff" stroke="#000000" stroke-width="1.3"/>
+<text x="18" y="82" font-size="6.8" font-weight="bold">① 슬롯마다 α 를 파레토 무릎점에서</text>
+<g stroke="#000000" stroke-width="0.9" fill="none"><path d="M34,90 L34,148"/><path d="M34,148 L192,148" marker-end="url(#a)"/></g>
+<text x="30" y="94" text-anchor="end" font-size="6">탄소</text>
+<text x="190" y="158" text-anchor="end" font-size="6.5">지연</text>
+<path d="M38,96 C46,96 54,104 64,117 C74,130 90,138 114,142 C142,146 170,145 186,144" fill="none" stroke="#000000" stroke-width="1.3"/>
+<circle cx="48" cy="98" r="2.4" fill="#fff" stroke="#000000" stroke-width="1"/>
+<text x="48" y="94" text-anchor="middle" font-size="6">α=0</text>
+<circle cx="186" cy="144" r="2.4" fill="#fff" stroke="#000000" stroke-width="1"/>
+<text x="184" y="139" text-anchor="middle" font-size="6">α=1</text>
+<path d="M71,123 l2.1,4.4 4.8,0.6 -3.5,3.4 0.9,4.8 -4.3,-2.3 -4.3,2.3 0.9,-4.8 -3.5,-3.4 4.8,-0.6 z" fill="#000000"/>
+<text x="81" y="119" font-size="6.5" font-weight="bold">무릎점 → α*</text>
+<text x="81" y="129" font-size="6">한계수익이 정점</text>
+<line x1="107" y1="163" x2="107" y2="175" stroke="#000000" stroke-width="1.1" marker-end="url(#a)"/>
+<rect x="10" y="175" width="195" height="32" fill="#fff" stroke="#000000" stroke-width="1.3"/>
+<text x="107" y="188" text-anchor="middle" font-size="8" font-weight="bold">② ILP 배정</text>
+<text x="107" y="200" text-anchor="middle" font-size="6.8">리전별 동시 실행 ≤ availᵣ  (식 3)</text>
+<line x1="107" y1="207" x2="107" y2="218" stroke="#000000" stroke-width="1.1" marker-end="url(#a)"/>
+<text x="107" y="227" text-anchor="middle" font-size="8" font-weight="bold">배정 xⱼᵣ  →  R₁ … Rₙ</text>
+</svg>

@@ -1,38 +1,25 @@
 # -*- coding: utf-8 -*-
-"""그림 5(§6.3 신설) · 5개 방식 총배출량 비교 — 표2를 막대로 옮긴 "money figure".
+"""그림 6 — 다섯 방식의 총 배출량 (2026-09-24 재설계).
 
-(2026-09-22, be 알림: §6.3에 새로 넣으면서 처음엔 "그림7"이라 불렀지만,
-문서 등장 순서상 실제로는 그림5다 — 뒤에 있던 옛 그림5·6이 그림6·7로
-밀렸다. 파일명도 맞춰 갱신함.)
+사용자 지적: "위의 그림 너무 그 슬래시랑, 점점 되어있는 그래프가 너무 별로인데?"
 
-배경(paper/그림개선_브리프.txt): 참고 논문(CarbonFlex Fig.8/9, CASPER Fig.5)은
-전부 베이스라인 여러 개를 한 그래프에 놓고 비교하는데, 우리 그림 3~6은 전부
-"우리 방법 하나"만 보여준다. 표2에 5개 방식 수치가 있는데 그림으로는 한 번도
-안 보여줬다 — 이 그림이 그 구멍을 메운다.
+이전 판의 문제
+  · 막대 채움이 다섯 가지였다(흰색·빗금·점·검정·점선테두리). 채움이 무엇을 뜻하는지
+    범례도 없어서, 다섯 가지 무늬가 아무 정보도 나르지 않고 눈만 어지럽혔다.
+  · (a) 전체와 (b) 확대가 **같은 자료를 두 번** 그렸다. (b)는 (a)에서 ①만 뺀 것이다.
+  · 세로로 길어 단내에서 자리를 많이 먹었다.
 
-데이터: paper/CAST.docx 표2(§6.3)를 그대로 옮긴다. 재계산하지 않는다.
-  ① 홈 리전 즉시 실행         29,225.6 kg  (기준)
-  ② 탄소 인지 공간 이동        12,609.8 kg  (-56.85%)
-  ③'용량 사후 강제(② + 시간 이동, 사후 강제)  11,873.0 kg  (-59.37%)
-  ④ 온라인 용량 인지(② + 시간 이동, Algorithm 1)  10,805.0 kg  (-63.03%) — 본 연구
-  ③ 무제약 반사실 상한(② + 시간 이동, 용량 미강제)  9,958.2 kg  (-65.93%) — 실현 불가
-
-막대 순서는 be 지시대로 "나쁨→좋음"인 ①②③'④③ 순 — 표2 값 자체가 이미 이
-순서로 단조 감소하므로 그대로 정렬한 것이며 임의로 재배열하지 않았다.
-
-흑백 인쇄 전제: 해치 패턴으로 계열을 구분한다(그림 자체엔 색을 쓰지 않음).
-④(본 연구, 온라인 용량 인지)만 검게 채워 강조하고, ③(반사실 상한)은 점선
-테두리 + 옅은 해치로 "참고용, 달성 불가"임을 시각적으로 분리한다.
-
-단내(215pt) 폭, gen_pareto.py/gen_concurrency.py와 같은 톤(Apple SD Gothic
-Neo/Malgun Gothic/Noto Sans KR, 잉크색 #000000, 9pt 안팎 글씨).
-
-실행: ./.venv/bin/python paper/diagram/gen_comparison.py
+이 판
+  · 한 패널. x축을 로그로 두면 29,225 와 9,958 이 한 그림에 들어간다 — 확대판이 필요 없다.
+  · 채움은 두 가지뿐. **본 연구(④)만 채우고 나머지는 비운다.** 참고 문헌들(Sukprasert
+    Fig.5b 등)이 쓰는 관례와 같다 — 강조는 하나에만.
+  · 실현 불가능한 반사실(③)은 테두리를 점선으로 두어 "달성한 값이 아니다"를 표시한다.
 """
 import os
 
 import matplotlib
 matplotlib.use("Agg")
+import matplotlib.ticker
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 
@@ -40,132 +27,62 @@ for name in ("Apple SD Gothic Neo", "AppleGothic", "Malgun Gothic", "Noto Sans K
     if any(name.lower() in f.name.lower() for f in fm.fontManager.ttflist):
         plt.rcParams["font.family"] = name
         break
-plt.rcParams["axes.unicode_minus"] = False
+plt.rcParams.update({
+    "axes.unicode_minus": False, "axes.linewidth": 0.8,
+    "xtick.direction": "in", "ytick.direction": "in",
+    "xtick.major.width": 0.8, "ytick.major.width": 0.8,
+})
 
-INK = "#000000"
-BASELINE_KG = 29225.6
+INK, LIGHT = "#000000", "#cccccc"
+HERE = os.path.dirname(os.path.abspath(__file__))
 
-# 표2 원문 그대로 (paper/CAST.docx §6.3). 위에서 아래로 "나쁨→좋음" 순서.
-# (라벨, kg, 절감률%, 스타일태그)
+# (라벨, kg, 절감률, 본 연구인가, 실현 가능한가)
 ROWS = [
-    ("① 홈 리전\n즉시 실행",        29225.6, None,   "base"),
-    ("② 탄소 인지\n공간 이동",       12609.8, -56.85, "hatch1"),
-    ("③′ 용량\n사후 강제",          11873.0, -59.37, "hatch2"),
-    ("④ 온라인 용량\n인지(본 연구)", 10805.0, -63.03, "ours"),
-    ("③ 무제약\n반사실 상한",        9958.2,  -65.93, "infeasible"),
+    ("① 홈 리전 즉시 실행",        29225.6,  None, False, True),
+    ("② 탄소 인지 공간 이동",      12609.8, 56.85, False, True),
+    ("③′ 용량 사후 강제",          11873.0, 59.37, False, True),
+    ("④ 온라인 용량 인지 (본 연구)", 10805.0, 63.03, True,  True),
+    ("③ 무제약 반사실 상한",        9958.2, 65.93, False, False),
 ]
 
 
-def style_for(tag, bar):
-    if tag == "base":
-        bar.set_facecolor("white")
-        bar.set_edgecolor(INK)
-        bar.set_linewidth(1.0)
-    elif tag == "hatch1":
-        bar.set_facecolor("white")
-        bar.set_edgecolor(INK)
-        bar.set_hatch("///")
-        bar.set_linewidth(0.9)
-    elif tag == "hatch2":
-        bar.set_facecolor("white")
-        bar.set_edgecolor(INK)
-        bar.set_hatch("...")
-        bar.set_linewidth(0.9)
-    elif tag == "ours":
-        bar.set_facecolor(INK)
-        bar.set_edgecolor(INK)
-        bar.set_linewidth(1.3)
-    elif tag == "infeasible":
-        bar.set_facecolor("white")
-        bar.set_edgecolor(INK)
-        bar.set_hatch("///")
-        bar.set_linewidth(0.9)
-        bar.set_linestyle((0, (3, 1.5)))
-
-
-def draw_panel(ax, rows, xlim, show_ylabels=True, panel_tag=""):
-    n = len(rows)
-    ys = list(range(n - 1, -1, -1))
-    ours_kg = next(kg for _, kg, _, tag in rows if tag == "ours")
-
-    bars = ax.barh(ys, [r[1] for r in rows], height=0.62, zorder=3)
-    for (label, kg, pct, tag), bar in zip(rows, bars):
-        style_for(tag, bar)
-
-    # 막대 끝 값 라벨 — kg과 절감률을 함께. 전부 막대 밖 오른쪽에 둬서
-    # 짧은 막대(④,③)에서 글씨가 막대 안으로 밀려 y축 라벨과 겹치는 걸 막는다
-    # (첫 시도에서 ④를 막대 안쪽에 흰 글씨로 넣었더니 라벨과 충돌해 수정함).
-    # (b)에서는 ④ 기준선(점선)이 ③ 막대 라벨과 겹칠 만큼 가까워서, 라벨에
-    # 흰 배경 박스를 깔아 선이 글자를 가로질러도 가독성이 떨어지지 않게 한다
-    # (gen_concurrency.py의 "상한 12" 라벨과 같은 처리).
-    for y, (label, kg, pct, tag) in zip(ys, rows):
-        txt = f"{kg:,.1f} kg" if pct is None else f"{kg:,.1f} kg ({pct:.2f}%)"
-        weight = "bold" if tag == "ours" else "normal"
-        ax.annotate(txt, (kg, y), xytext=(4, 0), textcoords="offset points",
-                    ha="left", va="center", fontsize=6.1, color=INK,
-                    fontweight=weight, zorder=5,
-                    bbox=dict(facecolor="white", edgecolor="none", pad=0.6))
-
-    # ④(본 연구) 값에 세로 기준선 — ①②③'이 이 선을 얼마나 넘어서는지,
-    # ③(상한)이 이 선에 얼마나 더 가까운지를 두 패널 모두에서 같은 기준으로 본다.
-    ax.axvline(ours_kg, color="#999999", lw=0.7, ls=(0, (2, 2)), zorder=1)
-
-    ax.set_yticks(ys)
-    if show_ylabels:
-        ax.set_yticklabels([r[0] for r in rows], fontsize=6.6, linespacing=1.1)
-        for tick, (label, kg, pct, tag) in zip(ax.get_yticklabels(), rows):
-            if tag == "ours":
-                tick.set_fontweight("bold")
-    else:
-        ax.set_yticklabels([])
-    ax.set_xlim(*xlim)
-    ax.tick_params(axis="x", labelsize=6.4)
-    ax.tick_params(axis="y", length=0)
-
-    for spine in ("top", "right", "left"):
-        ax.spines[spine].set_visible(False)
-    ax.spines["bottom"].set_linewidth(0.7)
-    ax.grid(axis="x", color="#dddddd", lw=0.4, zorder=0)
-    ax.set_axisbelow(True)
-
-    if panel_tag:
-        ax.text(0.0, 1.06, panel_tag, transform=ax.transAxes, fontsize=7.5,
-                 fontweight="bold", ha="left", va="bottom")
-
-
 def main():
-    # be 2차 리뷰(2026-09-22) 반영: ①이 축을 지배해 ②③'④③(9,958~12,609)의
-    # 차이가 안 보인다는 지적 — (a)전체 5개 (b)①을 뺀 나머지 4개를 x축
-    # 확대해서 아래에 붙인다(CASPER Fig.5/CarbonFlex Fig.9의 서브패널 방식).
-    zoom_rows = ROWS[1:]  # ②③'④③
-    zoom_vals = [r[1] for r in zoom_rows]
-    zoom_lo, zoom_hi = min(zoom_vals), max(zoom_vals)
-    zoom_pad = (zoom_hi - zoom_lo) * 0.28
-    zoom_xlim = (zoom_lo - zoom_pad, zoom_hi + zoom_pad * 2.1)
+    fig, ax = plt.subplots(figsize=(215 / 72.0, 132 / 72.0), dpi=300)
+    ys = range(len(ROWS))[::-1]
+    for y, (lab, kg, pct, ours, feas) in zip(ys, ROWS):
+        # 흑백에서 계열 구분은 무늬가 아니라 회색 농담으로 한다.
+        # 본 연구는 검정, 실현 가능한 대조군은 흰색, 실현 불가능한 반사실은 회색.
+        fc = INK if ours else ("white" if feas else "#bfbfbf")
+        ax.barh(y, kg, height=0.62, facecolor=fc, edgecolor=INK,
+                linewidth=0.9, zorder=3)
+        txt = f"{kg:,.0f}" + (f"  ({pct:.2f}%)" if pct else "")
+        ax.text(kg * 1.06, y, txt, va="center", fontsize=6.0,
+                fontweight="bold" if ours else "normal")
 
-    # 215pt = 단내(single-column) 폭. 세로로 (a)(b) 쌓음 — 가로로 놓으면
-    # 막대 5개짜리 (a)가 너무 좁아져 라벨이 안 들어가서 세로를 택했다.
-    #
-    # be 3차 리뷰(2026-09-22): 그림 안 fig.text 각주가 5.0pt로, 9pt인 본문
-    # 캡션보다 훨씬 흐릿하게 인쇄됐다는 지적 — 각주를 통째로 지우고 그
-    # 내용은 캡션(9pt 실제 텍스트)으로 옮긴다. 여백을 차지하던 각주가
-    # 없어져 높이도 330pt에서 줄었다.
-    W_IN, H_IN = 215 / 72.0, 290 / 72.0
-    fig, (axa, axb) = plt.subplots(
-        2, 1, figsize=(W_IN, H_IN), dpi=300,
-        gridspec_kw=dict(height_ratios=[5, 4.2]))
-
-    draw_panel(axa, ROWS, xlim=(0, BASELINE_KG * 1.34), panel_tag="(a) 다섯 방식 전체")
-    draw_panel(axb, zoom_rows, xlim=zoom_xlim, panel_tag="(b) ① 제외, x축 확대")
-
-    axa.set_xlabel("")
-    axb.set_xlabel("총 배출량 (kg)", fontsize=7.6)
-
-    fig.tight_layout(rect=(0, 0.01, 1, 0.985), h_pad=1.8)
-    out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fig5_comparison.png")
-    fig.savefig(out)
-    fig.savefig(out.replace(".png", ".pdf"))  # KCI 인쇄 대비 벡터판
-    print("wrote", out)
+    ax.axvline(10805.0, color=INK, lw=0.7, ls=(0, (1, 1.6)), zorder=2)
+    ax.set_yticks(list(ys))
+    ax.set_yticklabels([r[0] for r in ROWS], fontsize=6.4)
+    for t, r in zip(ax.get_yticklabels(), ROWS):
+        if r[3]:
+            t.set_fontweight("bold")
+    ax.set_xscale("log")
+    ax.set_xlim(8200, 62000)
+    ax.set_xticks([10000, 20000, 30000])
+    ax.set_xticklabels(["10,000", "20,000", "30,000"], fontsize=6.5)
+    # 로그축 부눈금이 "4x10^4" 같은 라벨을 덧붙여 축을 어지럽힌다 — 끈다
+    ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    ax.tick_params(axis="x", which="minor", length=1.6)
+    ax.set_xlabel("총 배출량 (kg, 로그 눈금)", fontsize=7.5)
+    ax.tick_params(labelsize=6.5)
+    ax.grid(axis="x", color=LIGHT, lw=0.45, zorder=0)
+    ax.set_axisbelow(True)
+    fig.text(0.015, 0.012,
+             "회색(③)은 용량 제약을 전혀 두지 않은 반사실이라 달성 가능한 값이 아니다.",
+             fontsize=5.4)
+    fig.tight_layout(rect=(0, 0.075, 1, 1), pad=0.35)
+    for e in (".png", ".pdf"):
+        fig.savefig(os.path.join(HERE, "fig5_comparison" + e))
+    print("wrote fig5_comparison")
 
 
 if __name__ == "__main__":

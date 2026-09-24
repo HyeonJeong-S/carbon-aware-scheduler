@@ -1,6 +1,6 @@
-<!-- 그림 2 탄소집약도 예측 · gen_figs.py 로 생성 (직접 편집 금지)
-     1단위 = 1pt, 폭 451pt. 100% 크기로 삽입할 것. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 451 142" width="451pt" height="142pt"
+<!-- 그림 2 리전별 LSTM 구조 · gen_figs.py 로 생성 (직접 편집 금지)
+     1단위 = 1pt, 폭 215pt. 100% 크기로 삽입할 것. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 215 200" width="215pt" height="200pt"
      xml:space="preserve"
      font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif"
      font-size="9" fill="#000000">
@@ -8,27 +8,85 @@
   <marker id="a" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
     <path d="M0,0 L10,5 L0,10 z" fill="#000000"/></marker>
 </defs>
-<rect width="451" height="142" fill="#fff"/>
-<rect x="6" y="12" width="439" height="104" rx="7" fill="#fff" stroke="#000000" stroke-width="1.5"/>
-<text x="14" y="25" font-size="10" font-weight="bold">탄소집약도 예측 · 리전마다 독립된 LSTM</text>
-<rect x="18" y="38" width="104" height="44" fill="#fff" stroke="#000000" stroke-width="1"/>
-<text x="70" y="54" text-anchor="middle" font-weight="bold">입력 168 h</text>
-<text x="70" y="70" text-anchor="middle" font-size="8">10종 계통 · 시간 피처</text>
-<line x1="122" y1="60" x2="142" y2="60" stroke="#000000" stroke-width="1.3" marker-end="url(#a)"/>
-<rect x="144" y="38" width="100" height="44" fill="#fff" stroke="#000000" stroke-width="1"/>
-<text x="194" y="54" text-anchor="middle" font-weight="bold">LSTM 2층</text>
-<text x="194" y="70" text-anchor="middle" font-size="8">h = 64 · dropout 0.2</text>
-<line x1="244" y1="60" x2="272" y2="60" stroke="#000000" stroke-width="1.3" marker-end="url(#a)"/>
-<text x="258" y="54" text-anchor="middle" font-size="8">hidden 64</text>
-<rect x="274" y="38" width="92" height="44" fill="#fff" stroke="#000000" stroke-width="1"/>
-<text x="320" y="54" text-anchor="middle" font-weight="bold">Linear</text>
-<text x="320" y="70" text-anchor="middle" font-size="8">64 → 24</text>
-<line x1="366" y1="60" x2="386" y2="60" stroke="#000000" stroke-width="1.3" marker-end="url(#a)"/>
-<text x="392" y="54" font-size="10" font-style="italic">Ĉ<tspan font-size="6.5" dy="1.5">r</tspan><tspan dy="-1.5"></tspan>(t)</text>
-<text x="392" y="70" font-size="8">향후 24 h</text>
-<rect x="144" y="90" width="222" height="20" fill="#fff" stroke="#000000" stroke-width="0.9" stroke-dasharray="3 2"/>
-<text x="255" y="104" text-anchor="middle" font-size="8">기상 3 리전 : 미래 기상 24 × 3 을 별도 헤드로 결합</text>
-<path d="M194,82 L194,88" fill="none" stroke="#000000" stroke-width="0.9" stroke-dasharray="2.5 2" marker-end="url(#a)"/>
-<path d="M366,100 L378,100 L378,72" fill="none" stroke="#000000" stroke-width="0.9" stroke-dasharray="2.5 2" marker-end="url(#a)"/>
-<text x="6" y="134" font-size="8">리전마다 독립된 모델 N개 · 출력은 gCO₂/kWh 단위의 예측 원값</text>
+<rect width="215" height="200" fill="#fff"/>
+<rect x="6" y="8" width="203" height="50" rx="8" fill="#fff" stroke="#000000" stroke-width="1.0"/>
+<g transform="translate(14,14) scale(0.52)">
+<path d="M12,14 a7,7 0 0,1 13,-4 a6,6 0 0,1 10,5 a5.5,5.5 0 0,1 -1,11 L10,26 a6,6 0 0,1 2,-12 z" fill="#000000"/>
+<circle cx="8" cy="9" r="5" fill="#000000"/>
+<text x="21" y="24" font-size="7" fill="#fff" text-anchor="middle" font-weight="bold">CO₂</text>
+</g>
+<polyline points="13.0,36.0 14.1,36.1 15.3,36.3 16.4,36.6 17.5,37.1 18.6,37.7 19.8,38.4 20.9,39.1 22.0,40.0 23.2,40.8 24.3,41.7 25.4,42.6 26.5,43.5 27.7,44.2 28.8,45.0 29.9,45.6 31.1,46.1 32.2,46.6 33.3,46.8 34.4,47.0 35.6,47.0 36.7,46.8 37.8,46.6 38.9,46.1 40.1,45.6 41.2,45.0 42.3,44.2 43.5,43.5 44.6,42.6 45.7,41.7 46.8,40.8 48.0,40.0 49.1,39.1 50.2,38.4 51.4,37.7 52.5,37.1 53.6,36.6 54.7,36.3 55.9,36.1 57.0,36.0" fill="none" stroke="#000000" stroke-width="0.9" stroke-linejoin="round"/>
+<text x="35" y="55" text-anchor="middle" font-size="5.8">탄소집약도 과거 168 h</text>
+<rect x="76.0" y="16.0" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="87.2" y="16.0" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="98.4" y="16.0" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="109.6" y="16.0" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="120.8" y="16.0" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="132.0" y="16.0" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="143.2" y="16.0" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="76.0" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="87.2" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="98.4" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="116.6" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#d9d9d9" stroke="#000000" stroke-width="0.8"/>
+<rect x="127.8" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#d9d9d9" stroke="#000000" stroke-width="0.8"/>
+<rect x="139.0" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#d9d9d9" stroke="#000000" stroke-width="0.8"/>
+<text x="100" y="47" text-anchor="middle" font-size="5.8">공통 10</text>
+<text x="178" y="47" text-anchor="middle" font-size="5.8">기상 +3</text>
+<text x="178" y="55" text-anchor="middle" font-size="5.2">(3개 리전만)</text>
+<g transform="translate(163,26) rotate(-11)"><rect x="0" y="-8" width="30.0" height="12" fill="#fff" stroke="#000000" stroke-width="1"/><text x="15.0" y="0.5" font-size="5.8" text-anchor="middle">피처 13</text></g>
+<path d="M104.0,58.0 L104.0,65.0 L101.0,65.0 L107.0,70.0 L113.0,65.0 L110.0,65.0 L110.0,58.0 Z" fill="#fff" stroke="#000000" stroke-width="1.2"/>
+<rect x="20" y="74" width="175" height="56" rx="10" fill="#fff" stroke="#000000" stroke-width="1.6"/>
+<text x="29" y="88" font-size="10" font-weight="bold">LSTM</text>
+<g transform="translate(30,94) scale(1.0)">
+<circle cx="4" cy="5" r="2.4" fill="#000000" stroke="#000000" stroke-width="1"/>
+<circle cx="4" cy="12" r="2.4" fill="#000000" stroke="#000000" stroke-width="1"/>
+<circle cx="4" cy="19" r="2.4" fill="#000000" stroke="#000000" stroke-width="1"/>
+<circle cx="15" cy="1.5" r="2.4" fill="#fff" stroke="#000000" stroke-width="1"/>
+<circle cx="15" cy="8.5" r="2.4" fill="#fff" stroke="#000000" stroke-width="1"/>
+<circle cx="15" cy="15.5" r="2.4" fill="#fff" stroke="#000000" stroke-width="1"/>
+<circle cx="15" cy="22.5" r="2.4" fill="#fff" stroke="#000000" stroke-width="1"/>
+<circle cx="26" cy="5" r="2.4" fill="#fff" stroke="#000000" stroke-width="1"/>
+<circle cx="26" cy="12" r="2.4" fill="#fff" stroke="#000000" stroke-width="1"/>
+<circle cx="26" cy="19" r="2.4" fill="#fff" stroke="#000000" stroke-width="1"/>
+<g stroke="#000000" stroke-width="0.45" opacity="0.75">
+<line x1="6.4" y1="5" x2="12.6" y2="1.5"/>
+<line x1="6.4" y1="5" x2="12.6" y2="8.5"/>
+<line x1="6.4" y1="5" x2="12.6" y2="15.5"/>
+<line x1="6.4" y1="5" x2="12.6" y2="22.5"/>
+<line x1="6.4" y1="12" x2="12.6" y2="1.5"/>
+<line x1="6.4" y1="12" x2="12.6" y2="8.5"/>
+<line x1="6.4" y1="12" x2="12.6" y2="15.5"/>
+<line x1="6.4" y1="12" x2="12.6" y2="22.5"/>
+<line x1="6.4" y1="19" x2="12.6" y2="1.5"/>
+<line x1="6.4" y1="19" x2="12.6" y2="8.5"/>
+<line x1="6.4" y1="19" x2="12.6" y2="15.5"/>
+<line x1="6.4" y1="19" x2="12.6" y2="22.5"/>
+<line x1="17.4" y1="1.5" x2="23.6" y2="5"/>
+<line x1="17.4" y1="1.5" x2="23.6" y2="12"/>
+<line x1="17.4" y1="1.5" x2="23.6" y2="19"/>
+<line x1="17.4" y1="8.5" x2="23.6" y2="5"/>
+<line x1="17.4" y1="8.5" x2="23.6" y2="12"/>
+<line x1="17.4" y1="8.5" x2="23.6" y2="19"/>
+<line x1="17.4" y1="15.5" x2="23.6" y2="5"/>
+<line x1="17.4" y1="15.5" x2="23.6" y2="12"/>
+<line x1="17.4" y1="15.5" x2="23.6" y2="19"/>
+<line x1="17.4" y1="22.5" x2="23.6" y2="5"/>
+<line x1="17.4" y1="22.5" x2="23.6" y2="12"/>
+<line x1="17.4" y1="22.5" x2="23.6" y2="19"/>
+</g></g>
+<text x="76" y="98" font-size="6.4">은닉 64 · 2층</text>
+<text x="76" y="109" font-size="6.0">dropout 0.2</text>
+<text x="76" y="122" font-size="6.0">마지막 은닉 상태 64</text>
+<text x="189" y="88" text-anchor="end" font-size="5.6">+ 미래 24 h 날씨</text>
+<text x="189" y="96" text-anchor="end" font-size="5.2">기상 리전만 · 24×3 = 72</text>
+<path d="M188,104 L205,104 L205,150 L197,150" fill="none" stroke="#000000" stroke-width="0.8" stroke-dasharray="2.5 1.8" marker-end="url(#a)"/>
+<path d="M104.0,130.0 L104.0,135.8 L101.0,135.8 L107.0,140.0 L113.0,135.8 L110.0,135.8 L110.0,130.0 Z" fill="#fff" stroke="#000000" stroke-width="1.2"/>
+<rect x="20" y="142" width="175" height="38" rx="10" fill="#fff" stroke="#000000" stroke-width="1.6"/>
+<text x="29" y="155" font-size="8" font-weight="bold">출력  Ĉ</text>
+<text x="50" y="157" font-size="5.4">r</text>
+<text x="54" y="155" font-size="8">(t … t+24)</text>
+<polyline points="34.0,160.0 38.5,160.3 43.0,161.1 47.6,162.4 52.1,164.0 56.6,166.0 61.1,168.0 65.7,170.0 70.2,171.8 74.7,173.3 79.2,174.4 83.7,174.9 88.3,174.9 92.8,174.4 97.3,173.3 101.8,171.8 106.3,170.0 110.9,168.0 115.4,166.0 119.9,164.0 124.4,162.4 129.0,161.1 133.5,160.3 138.0,160.0" fill="none" stroke="#000000" stroke-width="0.9" stroke-linejoin="round"/>
+<text x="150" y="166" font-size="5.8">향후 24 h</text>
+<text x="150" y="175" font-size="5.4">1시간 간격</text>
+<text x="6" y="193" font-size="5.6">리전마다 독립된 모델 8개 · 배치 결정에만 쓰고 배출량 산정은 실측값으로 한다</text>
 </svg>

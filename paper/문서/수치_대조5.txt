@@ -1,0 +1,136 @@
+수치 대조 5차 — ②③④ 독립 재채점 + 4.4절 네 행 회계 일치 + 식(9) 동점 방향
+(carbon-aware-scheduler-a8, 2026-09-24)
+docx는 안 건드렸음(읽기만, Word 앱 안 씀).
+
+==========================================================
+1. ②③④ 재채점 — 2d의 acct.py를 보지 않고 처음부터 다시 짬
+==========================================================
+스크립트: /private/tmp/.../5c6ee128-.../scratchpad/my_acct.py (2d 스크립트
+경로는 작성 끝날 때까지 열지 않았고, 다 짠 뒤 결과만 비교했다).
+
+방식은 2d와 독립적으로 다음 두 회계를 각각 처음부터 구현:
+  A. 슬롯평균 근사 — floor(start)부터 ceil(duration)개 정수시간 슬롯의
+     산술평균 × duration (timeshift.mean_carbon / capacity._Windows
+     .actual_mean과 같은 로직을 내가 다시 짰다).
+  B. 정밀 겹침 적분 — 초 단위로 겹치는 구간만큼만 그 시간의 값을 가중
+     합산 (load_balancer.framework.simulator.integrate_gco2와 같은
+     방식을 다시 짰다).
+
+②③은 scheduler.simulator.run_simulation(...)의 실제 출력 기록을,
+④는 capacity.run_rolling(...)의 실제 출력 기록을 그대로 가져와 A·B
+둘로 재합산했다(원본 코드는 손대지 않았다 — 바깥에서 다시 합만 셌다).
+
+결과(내 스크립트, 146,000건 전체):
+  기준①      : 29,225.6 kg (상수, 재계산 안 함)
+  ② 공간만   : 슬롯평균 12,609.8 kg  정밀적분 12,592.4 kg  차 +0.138%
+               절감률 56.85%/56.91%
+  ③ 시간무제약: 슬롯평균  9,958.2 kg  정밀적분  9,989.7 kg  차 −0.315%
+               절감률 65.93%/65.82%
+  ④ 용량인지  : 슬롯평균 10,805.0 kg  정밀적분 10,805.1 kg  차 −0.001%
+               절감률 63.03%/63.03%
+
+→ 2d가 보고한 수치(②+0.138%/56.85→56.91, ③−0.315%/65.93→65.82,
+④−0.001%/63.03→63.03)와 ** 소수 첫째자리까지 완전히 일치. ** 완전히
+별개로 짠 스크립트가 같은 결론에 도달했으므로 이 재계산은 교차 확인됨.
+
+④의 −0.001%가 "진짜 상쇄"인지 "같은 함수를 두 번 불러서 착시가 생긴
+건 아닌지" — 이건 세 개의 독립적으로 얻은 숫자를 나란히 놓아 확인했다:
+  (a) capacity.run_rolling이 알고리즘 내부에서 자체 집계한 공식 값
+      stats['total_carbon_kg'] = 10,805.0 kg
+  (b) 내가 그 스케줄 기록(region, scheduled_start, duration)만 밖에서
+      가져와 슬롯평균으로 처음부터 다시 합산한 값 = 10,805.0 kg
+  (c) 같은 스케줄 기록을 정밀적분으로 다시 합산한 값 = 10,805.1 kg
+(a)=(b)는 소수 첫째자리까지 정확히 같다 — 이건 (a)가 자기 계산을
+"두 번 호출해서 우연히 같아진" 게 아니라, 서로 다른 두 코드 경로
+(run_rolling 내부 누적 vs 내 외부 재계산)가 같은 회계 규칙으로 같은
+스케줄을 셌을 때 반드시 같아야 하는 항등식이 실제로 성립한다는 뜻이다.
+그리고 (c)는 (a)/(b)와 다른 회계 규칙(정밀적분)으로 셌는데도 0.1kg
+(0.001%)밖에 안 벌어진다 — 이는 146,000건에 걸쳐 슬롯평균 근사의
+개별 오차(작업 단위 최대 ±41%, 3차 보고서에서 이미 잰 값)가 양방향
+으로 거의 대칭적으로 상쇄된 결과지, 이중 계산 버그의 흔적이 아니다.
+결론: ④의 −0.001%는 진짜 상쇄, 버그 아님. ** 확인됨. **
+
+(참고: 스크립트 작성 중 버그 하나 — window가 numpy 배열이라 `if not
+window`가 `ValueError: truth value of an array...`로 죽었다. `if
+len(window) == 0`로 고쳐서 해결. 결과에는 영향 없음 — 실행 자체가
+안 되다가 고친 뒤 위 수치가 나온 것.)
+
+==========================================================
+2. 4.4절 표 5 — CASPER/Sukprasert/CICS/Caspian 네 행 전부 같은 함수 통과
+==========================================================
+prior_harness.py를 직접 읽었다. score() 본문(49~81행):
+  g = W.actual_mean(r, start, d) * d   # 주석: "논문 §5.7 식(16)과 같은 회계"
+  capacity_violations = _over_cap(recs, cap)
+_over_cap(84~99행)는 자체 정의를 새로 안 만들고 capacity
+._over_cap_admissions를 그대로 호출한다 — 주석에 이유가 명시돼
+있다: "같은 걸 다시 구현하면 두 번째 정의가 생기고... 실제로 자체
+스윕으로 세어보니 같은 스케줄에서 127 vs 227로 갈렸다." 즉 이 파일
+자체가 "정의를 두 개로 쪼개면 표가 갈라진다"는 걸 이미 알고 단일
+경로로 강제해 놓은 상태 — 질문하신 "capacity._over_cap_admissions와
+actual_mean을 쓰는 게 맞나"는 ** 맞다, 정확히 그렇게 쓰고 있다. **
+
+네 정책이 전부 이 score()를 통과하는지는 grep+실제 호출부 확인으로
+전수 조사:
+  - prior_casper.py, prior_cics.py, prior_sukprasert.py — 세 파일
+    모두 `from . import prior_harness as H`로 H.score(...)를 직접
+    호출 (prior_casper.py 자신의 docstring: "채점은 절대 여기서
+    하지 않는다 — scheduler.prior_harness.score()에 넘긴다").
+  - prior_caspian.py 자체에는 H.score 호출이 없다(grep 결과 0건) —
+    이 파일은 run_caspian(jobs, W, ...)이 decisions/run_stats만
+    반환하고 채점은 안 한다(docstring: "decisions ... harness
+    .score() 입력 그대로"). 대신 두 개의 별도 드라이버 스크립트가
+    호출한다:
+      scheduler/run_caspian_sweep.py:37
+        score = H.score(decisions, jobs, W, latency,
+                         label=f"Caspian(ω1={omega1},{mode})")
+      scheduler/run_caspian_bind_study.py:34
+        score = H.score(decisions, sub, W, latency,
+                         label=f"Caspian({label},60d)")
+  둘 다 prior_harness as H를 import해서 똑같이 H.score()를 부른다.
+
+결론: CASPER·Sukprasert·CICS·Caspian 네 정책 전부 ** 다른 우회로 없이
+prior_harness.score() 단일 함수 하나만 통과 ** 하고, 그 안에서
+actual_mean(탄소)·_over_cap_admissions(용량위반) 두 함수로 통일
+채점된다. 4.4절 표 5의 네 행은 회계가 어긋날 수 있는 경로 자체가
+코드에 없다 — Caspian만 "따로" 셀 위험이 있어 보였는데, 확인해보니
+별도 계산이 아니라 같은 score()를 부르는 별도 진입점(스윕용 CLI)일
+뿐이었다. ** 확인됨, 네 행 전부 일치. **
+
+==========================================================
+3. 식(9) 동점 처리 — "작은 α를 고른다"는 방향이 맞는지
+==========================================================
+지난 라운드(수치_대조4)에서 이미 ALPHA_GRID가 오름차순임을 확인했지만,
+이번엔 "작은 α 방향이 맞나" 질문에 맞춰 그 근거를 다시 짚는다.
+
+load_balancer/framework/config.py (혹은 simulator.py 상단)의 정의:
+  ALPHA_GRID = np.round(np.arange(0.0, 1.0001, 0.1), 2)
+np.arange(0.0, 1.0001, 0.1)은 0.0, 0.1, 0.2, ..., 1.0 순으로 ** 오름
+차순 ** 생성 — 내림차순이 아니다(재확인, 코드 자체가 그렇게 쓰여
+있어 실행 결과에 의존할 필요도 없이 명백).
+
+knee_slot_alpha()의 동작:
+  1) cand 리스트를 `for a in ALPHA_GRID` 순서 그대로(오름차순 보존)
+     구성.
+  2) min_drop(미배정 최소)으로 필터링.
+  3) `i = int(np.hypot(lat_n, carb_n).argmin())`로 최근접점 선택.
+numpy argmin은 동률일 때 배열의 ** 첫 번째 ** 인덱스를 반환한다(공식
+동작, numpy 문서에 명시). cand가 오름차순이므로 동률 시 첫 항목 =
+가장 작은 α.
+
+→ A.9의 "거리가 같으면 작은 α를 택한다"는 문구는 ** 그대로 둬도 된다,
+고칠 필요 없음. ** 만약 ALPHA_GRID가 내림차순이었다면 이 문구가
+거꾸로여서 고쳐야 했겠지만, 실제 코드는 오름차순 + argmin(첫 항목)
+조합이라 결과적으로 "작은 α"가 맞다.
+
+==========================================================
+요약
+==========================================================
+1. 재채점 — 완전 독립 스크립트로 재현, 2d 수치와 소수 첫째자리까지
+   일치. ④의 −0.001%는 (a)알고리즘 자체 집계=(b)외부 재계산 항등식
+   성립으로 이중계산 버그 아님을 확인, 진짜 상쇄.
+2. 4.4절 표 5 — CASPER/Sukprasert/CICS는 직접, Caspian은 별도 CLI
+   드라이버(run_caspian_sweep.py/run_caspian_bind_study.py)를 거쳐
+   전부 prior_harness.score() 하나로 수렴. actual_mean·
+   _over_cap_admissions 사용도 확인. 네 행 회계 일치.
+3. 식(9) 동점 처리 — ALPHA_GRID 오름차순 + argmin 첫 항목 = 작은 α.
+   A.9 문구 수정 불필요.

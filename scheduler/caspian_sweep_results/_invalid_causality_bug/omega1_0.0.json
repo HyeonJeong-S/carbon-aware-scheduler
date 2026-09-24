@@ -1,0 +1,16 @@
+{
+  "omega1": 0.0,
+  "wall_seconds": 2240.6682748794556,
+  "run_stats": {
+    "boundary_forced": 0,
+    "wall_seconds": 2240.648520231247
+  },
+  "score": {
+    "label": "Caspian(ω1=0.0)",
+    "n": 146000,
+    "total_carbon_kg": 24938.44979929667,
+    "avg_latency_ms": 105.81801369863014,
+    "deadline_misses": 0,
+    "capacity_violations": 89319
+  }
+}

@@ -53,8 +53,10 @@ def main():
     ax.scatter([0.0], [0.0], s=26, marker="D", facecolor="white", edgecolor=INK,
                lw=1.1, zorder=4)  # baseline
 
-    ax.scatter([xs[AUTO_IDX]], [ys[AUTO_IDX]], s=95, marker="*", facecolor=INK,
-               edgecolor=INK, lw=0.6, zorder=5)
+    # 2026-09-23: 별표를 뺀다. 사용자 지적 — 학술지 그림에서 ★은 거의 쓰지 않는다.
+    # 무릎점은 채운 원을 한 겹 키워 두르는 방식(동심원)으로 강조한다.
+    ax.scatter([xs[AUTO_IDX]], [ys[AUTO_IDX]], s=62, facecolor="none",
+               edgecolor=INK, lw=0.9, zorder=5)
 
     for i, (lab, x, y) in enumerate(POINTS):
         t = f"α={lab}" if lab != "auto" else "α=auto\n(무릎점)"
@@ -67,6 +69,10 @@ def main():
             ha = "right"
         elif i == len(POINTS) - 1:
             dx, dy, ha = -4, -14, "right"
+        elif lab == "0.5":       # 곡선 위로 겹쳐 무릎점 표식을 가렸다 — 왼쪽으로
+            dx, dy, ha = -5, 1, "right"
+        elif lab == "0.25":      # 같은 이유로 아래쪽 빈 자리로
+            dx, dy, ha = 7, -7, "left"
         ax.annotate(t, (x, y), textcoords="offset points", xytext=(dx, dy),
                     fontsize=6.5, ha=ha, linespacing=1.2)
 
@@ -77,11 +83,11 @@ def main():
                                  shrinkA=3, shrinkB=3, linestyle=(0, (1, 1.5))))
     mid_x = (xs[2] + xs[AUTO_IDX]) / 2
     mid_y = (ys[2] + ys[AUTO_IDX]) / 2
-    ax.annotate("+6.7 ms, -3,108.8 kg\n(464.9 kg/ms, 전 구간 최대)",
-                xy=(mid_x, mid_y), xytext=(70, 18), textcoords="data",
-                fontsize=5.3, ha="left", va="top", linespacing=1.3, color="#444444",
-                arrowprops=dict(arrowstyle="-", lw=0.4, color="#999999",
-                                 shrinkA=2, shrinkB=2))
+    # 2026-09-24: 지시선을 뺀다. 라벨을 곡선 아래 먼 곳에 두고 가는 회색 선으로
+    # 이으니, 그 선이 데이터 계열처럼 읽혔다(지면 렌더에서 확인). 글자를 강조
+    # 구간 바로 아래 빈 자리에 놓아 위치만으로 가리키게 한다.
+    ax.text(mid_x - 6, mid_y - 20, "+6.7 ms, -3,108.8 kg\n(464.9 kg/ms, 전 구간 최대)",
+            fontsize=5.3, ha="left", va="top", linespacing=1.3, color="#444444")
 
     ax.set_xlim(-6, 122)
     ax.set_ylim(-4, 74)
@@ -96,7 +102,7 @@ def main():
     ax.grid(axis="y", color="#dddddd", lw=0.4, zorder=0)
 
     fig.text(0.02, 0.012,
-              "◆ baseline(α=0) · ★ α=auto(슬롯별 무릎점, 평균 0.508).\n"
+              "◆ baseline(α=0) · ◎ α=auto(슬롯별 무릎점, 평균 0.508).\n"
               # 2026-09-23: 한 줄로 두면 오른쪽 끝에서 잘려 닫는 괄호까지 사라진다
               # (58이 렌더 이미지에서 발견, be가 원본 PNG에서 재확인). 줄을 나눈다.
               "“α=auto가 탄소 최저”가 아니라 “한계수익이 정점을 찍는 지점”이다\n"
