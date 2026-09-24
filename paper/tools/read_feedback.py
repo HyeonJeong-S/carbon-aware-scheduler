@@ -13,6 +13,7 @@
 실행: ./.venv/bin/python paper/tools/read_feedback.py [파일]
 """
 import re
+import os
 import sys
 import zipfile
 
@@ -122,7 +123,17 @@ def main(path):
     return found
 
 
+PAPER = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/"
+# 인자가 없으면 두 문서를 다 본다 — 한쪽만 보고 "피드백 없다"고 보고한 적이 있다.
+DEFAULT = [PAPER + "CAST_압축본.docx", PAPER + "CAST_추가자료.docx"]
+
 if __name__ == "__main__":
-    p = sys.argv[1] if len(sys.argv) > 1 else \
-        "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/CAST_압축본.docx"
-    main(p)
+    paths = sys.argv[1:] or DEFAULT
+    total = 0
+    for p in paths:
+        if not os.path.exists(p):
+            print(f"\n═══ {os.path.basename(p)} ═══\n  파일 없음: {p}")
+            continue
+        total += main(p) or 0
+    if len(paths) > 1:
+        print(f"\n합계 {total}건")
