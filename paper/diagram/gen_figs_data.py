@@ -212,7 +212,7 @@ def fig_scheduler():
     # 2026-09-24: x 축은 UTC 다(원자료가 UTC). day 101 은 4월이라 캘리포니아는
     # PDT(UTC−7) — UTC 14~23시가 현지 오전 7시~오후 4시, 곧 태양광 한낮이다.
     # 축에 UTC 를 명시하지 않으면 "저녁"으로 읽힌다(fd 가 원자료 대조로 발견).
-    a2.set_xlabel("하루 중 시각 (UTC · 현지는 −7 h)", fontsize=LAB)
+    a2.set_xlabel("하루 중 시각 (UTC · 현지는 7시간 이르다)", fontsize=LAB)
     a2.set_ylabel("동시 실행 수", fontsize=LAB, labelpad=1)
     a2.tick_params(labelsize=TICK)
     # 상한을 넘긴 슬롯 — 마감이 임박해 미룰 수 없는 작업이 들어간 자리

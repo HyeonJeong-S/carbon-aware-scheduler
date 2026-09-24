@@ -1,0 +1,17 @@
+{
+  "omega1": 1.0,
+  "mode": "fractional",
+  "wall_seconds": 39372.43136000633,
+  "run_stats": {
+    "boundary_forced": 16741,
+    "wall_seconds": 39372.41115808487
+  },
+  "score": {
+    "label": "Caspian(ω1=1.0,fractional)",
+    "n": 146000,
+    "total_carbon_kg": 20308.43122443637,
+    "avg_latency_ms": 105.91885616438356,
+    "deadline_misses": 17054,
+    "capacity_violations": 3745
+  }
+}
