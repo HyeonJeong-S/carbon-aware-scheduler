@@ -80,14 +80,32 @@ def main(path):
             i = j
 
     # ── 3. Word 메모 ──
+    # 메모는 본문과 따로 저장된다 — comments.xml 에 내용이, document.xml 에
+    # <w:commentRangeStart w:id="N"> … <w:commentRangeEnd w:id="N"> 로 어디에
+    # 달렸는지가 있다. 둘을 이어야 "무엇에 대한 메모인지"를 알 수 있다.
     if "word/comments.xml" in names:
         c = z.read("word/comments.xml").decode("utf-8")
-        for m in re.finditer(r'<w:comment\b[^>]*w:author="([^"]*)"[^>]*>(.*?)</w:comment>',
-                             c, re.DOTALL):
-            t = text_of(m.group(2))
-            if t:
-                found += 1
-                print(f"[Word 메모] {m.group(1)}\n    내용 : {t}\n")
+        # 메모가 걸린 범위의 본문을 id 별로 모은다
+        anchored = {}
+        for mm in re.finditer(
+                r'<w:commentRangeStart w:id="(\d+)"/>(.*?)<w:commentRangeEnd w:id="\1"/>',
+                xml, re.DOTALL):
+            anchored[mm.group(1)] = text_of(mm.group(2))
+        for m in re.finditer(
+                r'<w:comment\b([^>]*)>(.*?)</w:comment>', c, re.DOTALL):
+            attrs, body = m.group(1), m.group(2)
+            t = text_of(body)
+            if not t:
+                continue
+            found += 1
+            aid = re.search(r'w:id="(\d+)"', attrs)
+            who = re.search(r'w:author="([^"]*)"', attrs)
+            when = re.search(r'w:date="(\d{4}-\d{2}-\d{2})', attrs)
+            tgt = anchored.get(aid.group(1)) if aid else None
+            print(f"─── [Word 메모] {who.group(1) if who else '작성자 미상'}"
+                  f"{' · ' + when.group(1) if when else ''} ───")
+            print(f"  의견 : {t}")
+            print(f"  자리 : {tgt if tgt else '(문단 전체 또는 범위 정보 없음)'}\n")
 
     # ── 4. 변경 내용 추적 ──
     for tag, lab in (("w:ins", "추가"), ("w:del", "삭제")):

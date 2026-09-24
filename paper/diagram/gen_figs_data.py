@@ -176,17 +176,51 @@ def fig_loadbalancer(data):
 def fig_scheduler():
     """용량이 왜 시간 이동을 막는지를 실제 하루로 보인다.
 
-    캘리포니아의 한 날(101일차) 실측이다. 위는 시각별 탄소집약도, 아래는 그 시각 실제
-    동시 실행 수다. 탄소가 가장 낮은 시간대(UTC 기준, 현지로는 한낮)가 정확히 상한 12 에 닿아 있다 —
+    캘리포니아의 한 날(101일차) 실측이다. 위는 시각별 탄소집약도, 가운데는 그날 그 리전
+    에서 실행된 개별 작업(간트 막대, tau_j~tau_j+d_j), 아래는 시각별 동시 실행 수다.
+    탄소가 가장 낮은 시간대(UTC 기준, 현지로는 한낮)가 정확히 상한 12 에 닿아 있다 —
     작업을 옮기고 싶은 곳이 이미 차 있다는 것이 §6.4 의 발견이고, 이 그림이 그 문장을
-    대신한다. 개념도의 '자리 없음' 회색 상자와 달리 여기서는 왜 없는지가 보인다."""
+    대신한다. 개념도의 '자리 없음' 회색 상자와 달리 여기서는 왜 없는지가 보인다.
+
+    2026-09-24 b6 배분: 사용자 지적 — "실행시간을 고려해야하는데... 어느시간정도
+    차지한다는 느낌이 좀 들면 좋을 거 같음." 기존 동시 실행 수 막대는 '몇 개가
+    겹치는가'만 보이고 '작업 하나가 몇 시간을 무는가'가 안 보였다. 가운데 간트
+    띠를 추가해 그 점유 지속을 직접 그린다 — 회색 막대(마감 강제 편입) 하나가
+    가운데 띠와 아래 막대 양쪽에서 같은 x 위치(20시)에 걸쳐 있어, 아래 패널이
+    12를 넘는 이유(상한을 지키며 들어온 작업들의 꼬리가 늦게까지 남아 있는 데다
+    마감 임박 작업이 예외로 더해진다)를 가운데 패널이 직접 보여준다.
+
+    데이터 출처: gen_fig4_scheduler_data.py 가 scheduler.reproduce와 정확히 같은
+    파이프라인(capacity.run_rolling, capacity=12, 표2 ④)을 다시 돌려
+    fig4_gantt_data.json을 만든다. 표본은 "그날 겹치는 캘리포니아 작업 중 실행
+    시간 3.5시간 이상" 문턱 하나로만 거른다(11건, 손으로 고르지 않음).
+    """
     d = json.load(open(os.path.join(HERE, "fig4_slot_data.json")))
     car, occ, cap = np.array(d["carbon"]), np.array(d["occ"]), d["cap"]
     t = np.arange(24)
 
-    fig, (a1, a2) = plt.subplots(2, 1, figsize=(COL, 166 / 72.0), dpi=300,
-                                 sharex=True, gridspec_kw=dict(height_ratios=[1, 1.15],
-                                                               hspace=0.14))
+    g = json.load(open(os.path.join(HERE, "fig4_gantt_data.json")))
+    gjobs = sorted(g["jobs"], key=lambda j: j["tau"])
+    # 그리디 구간 배정: 서로 겹치는 작업만 다른 행에, 안 겹치면 같은 행을 같이 쓴다
+    # (구간 스케줄링의 표준 그리디 — 최소 행 수가 나온다).
+    row_end, rows = [], []
+    for j in gjobs:
+        placed = False
+        for ri, end in enumerate(row_end):
+            if j["tau"] >= end:
+                row_end[ri] = j["tau"] + j["dur"]
+                rows.append(ri)
+                placed = True
+                break
+        if not placed:
+            row_end.append(j["tau"] + j["dur"])
+            rows.append(len(row_end) - 1)
+    n_rows = len(row_end)
+
+    fig, (a1, a3, a2) = plt.subplots(
+        3, 1, figsize=(COL, (166 + 15.5 * n_rows) / 72.0), dpi=300, sharex=True,
+        gridspec_kw=dict(height_ratios=[1, 0.155 * n_rows + 0.12, 1.15], hspace=0.12))
+
     a1.plot(t, car, color=INK, lw=1.3)
     lo = int(np.argmin(car))
     a1.scatter([lo], [car[lo]], s=26, marker="v", color=INK, zorder=4)
@@ -196,6 +230,35 @@ def fig_scheduler():
     a1.set_yticks([0, 40, 80, 120])
     a1.set_ylabel("탄소집약도\n(gCO₂/kWh)", fontsize=LAB, linespacing=1.25, labelpad=1)
     a1.tick_params(labelsize=TICK)
+
+    # ── 가운데: 작업별 간트 — 막대 왼쪽 끝이 tau_j(실행 시작), 길이가 d_j(실행시간) ──
+    # 흑백이라 빗금 대신 회색 농담으로 구분한다(occ 패널과 같은 규약: 흰색=정상,
+    # 회색=상한과 관련된 예외). 하루 경계 밖으로 이어지는 막대는 삼각 화살촉으로 표시.
+    x_lo, x_hi = -0.8, 23.8
+    forced_end = forced_row = None
+    for j, ri in zip(gjobs, rows):
+        forced = j["forced"]
+        fc = "#8c8c8c" if forced else "white"
+        x0, x1 = j["tau"], j["tau"] + j["dur"]
+        a3.barh(ri, min(x1, x_hi) - max(x0, x_lo), left=max(x0, x_lo), height=0.62,
+                facecolor=fc, edgecolor=INK, lw=0.6, zorder=3)
+        if x0 < x_lo:
+            a3.plot(x_lo, ri, marker="<", color=INK, ms=3.2, zorder=4)
+        if x1 > x_hi:
+            a3.plot(x_hi, ri, marker=">", color=INK, ms=3.2, zorder=4)
+        # 20시(occ가 14로 상한을 넘는 자리)까지 걸치는 강제 편입 막대를 짚는다 —
+        # 아래 occ 패널의 "마감 강제" 주석과 같은 사건을 가리킨다.
+        if forced and x0 < 20 < x1 and (forced_end is None or x1 > forced_end):
+            forced_end, forced_row = x1, ri
+    a3.set_ylim(n_rows - 0.15, -0.85)
+    a3.set_yticks([])
+    a3.set_ylabel(f"작업\n({len(gjobs)}건)", fontsize=LAB, linespacing=1.2, labelpad=1)
+    a3.tick_params(labelsize=TICK, left=False)
+    if forced_row is not None:
+        # 아래 occ 패널과 같은 문구("마감 강제")를 써서 같은 사건임을 알아보게 한다.
+        a3.annotate("마감 강제", (min(forced_end, x_hi), forced_row),
+                    textcoords="offset points", xytext=(4, 0), ha="left", va="center",
+                    fontsize=NOTE)
 
     full = occ >= cap
     # 빗금 대신 회색 농담 — 흑백 인쇄에서 더 깨끗하고 학술지에서 더 흔하다.
@@ -207,7 +270,7 @@ def fig_scheduler():
     a2.text(13.2, cap + 0.6, f"유효 상한 {cap}", ha="left", fontsize=NOTE)
     a2.set_ylim(0, 17.5)
     a2.set_yticks([0, 6, 12])
-    a2.set_xlim(-0.8, 23.8)
+    a2.set_xlim(x_lo, x_hi)
     a2.set_xticks([0, 6, 12, 18, 23])
     # 2026-09-24: x 축은 UTC 다(원자료가 UTC). day 101 은 4월이라 캘리포니아는
     # PDT(UTC−7) — UTC 14~23시가 현지 오전 7시~오후 4시, 곧 태양광 한낮이다.
@@ -225,10 +288,11 @@ def fig_scheduler():
                bbox_to_anchor=(0.19, 1.005), handlelength=1.6, columnspacing=1.2,
                handletextpad=0.5)
 
-    fig.subplots_adjust(left=0.215, right=0.985, top=0.905, bottom=0.135, hspace=0.16)
+    top = 1 - 24 / (166 + 15.5 * n_rows)   # 범례 자리(고정 24pt)를 늘어난 전체 높이에 비례로 남긴다
+    fig.subplots_adjust(left=0.215, right=0.985, top=top, bottom=0.115, hspace=0.12)
     for e in (".png", ".pdf"):
         fig.savefig(os.path.join(HERE, "fig4_scheduler" + e))
-    print(f"wrote fig4_scheduler  (상한 도달 {int(full.sum())}/24 슬롯)")
+    print(f"wrote fig4_scheduler  (상한 도달 {int(full.sum())}/24 슬롯 · 간트 {len(gjobs)}건/{n_rows}행)")
 
 
 def main():

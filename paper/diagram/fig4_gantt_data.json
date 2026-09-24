@@ -1,0 +1,84 @@
+{
+ "day": 101,
+ "region": "US-CAL-CISO",
+ "threshold_h": 3.5,
+ "jobs": [
+  {
+   "id": "j_023297",
+   "tau": -2,
+   "dur": 5.1671,
+   "forced": false,
+   "k": 1
+  },
+  {
+   "id": "j_023262",
+   "tau": 0,
+   "dur": 6.0,
+   "forced": false,
+   "k": 1
+  },
+  {
+   "id": "j_005041",
+   "tau": 0,
+   "dur": 6.0,
+   "forced": false,
+   "k": 1
+  },
+  {
+   "id": "j_132780",
+   "tau": 1,
+   "dur": 3.9692,
+   "forced": false,
+   "k": 1
+  },
+  {
+   "id": "j_023265",
+   "tau": 1,
+   "dur": 4.4061,
+   "forced": false,
+   "k": 1
+  },
+  {
+   "id": "j_023250",
+   "tau": 3,
+   "dur": 4.568,
+   "forced": false,
+   "k": 1
+  },
+  {
+   "id": "j_114535",
+   "tau": 14,
+   "dur": 4.6119,
+   "forced": true,
+   "k": 1
+  },
+  {
+   "id": "j_132778",
+   "tau": 15,
+   "dur": 5.7931,
+   "forced": true,
+   "k": 1
+  },
+  {
+   "id": "j_005052",
+   "tau": 17,
+   "dur": 5.3917,
+   "forced": false,
+   "k": 1
+  },
+  {
+   "id": "j_096343",
+   "tau": 18,
+   "dur": 6.0,
+   "forced": false,
+   "k": 1
+  },
+  {
+   "id": "j_132846",
+   "tau": 22,
+   "dur": 4.5717,
+   "forced": false,
+   "k": 1
+  }
+ ]
+}

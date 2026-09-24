@@ -80,17 +80,16 @@
 <line x1="98" y1="88" x2="116" y2="88" stroke="#000000" stroke-width="1.2" marker-end="url(#a)"/>
 <text x="107" y="83" text-anchor="middle" font-size="5.6" font-style="italic">Ĉ(t)</text>
 <text x="107" y="97" text-anchor="middle" font-size="5.2">값 1개</text>
-<path d="M56.5,108.0 L56.5,128.0 L54.0,128.0 L59.0,139.0 L64.0,128.0 L61.5,128.0 L61.5,108.0 Z" fill="#fff" stroke="#000000" stroke-width="1.2"/>
-<path d="M62,139 L116,139" fill="none" stroke="#000000" stroke-width="1.3" marker-end="url(#a)"/>
-<rect x="20" y="142" width="52" height="20" fill="#fff"/>
-<rect x="21" y="143" width="36" height="15" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<polyline points="24.0,145.0 25.3,145.2 26.6,145.8 27.9,146.7 29.2,148.0 30.5,149.4 31.8,150.9 33.1,152.3 34.4,153.7 35.7,154.8 37.0,155.5 38.3,155.9 39.7,155.9 41.0,155.5 42.3,154.8 43.6,153.7 44.9,152.3 46.2,150.9 47.5,149.4 48.8,148.0 50.1,146.7 51.4,145.8 52.7,145.2 54.0,145.0" fill="none" stroke="#000000" stroke-width="0.9" stroke-linejoin="round"/>
-<text x="59" y="155" font-size="5.4">24 h 곡선</text>
+<path d="M56.5,108.0 L56.5,121.9 L54.0,121.9 L59.0,132.0 L64.0,121.9 L61.5,121.9 L61.5,108.0 Z" fill="#fff" stroke="#000000" stroke-width="1.2"/>
+<rect x="38" y="132" width="42" height="24" fill="#fff"/>
+<rect x="40" y="133" width="38" height="16" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<polyline points="43.0,135.0 44.4,135.2 45.8,135.9 47.2,136.9 48.6,138.2 50.0,139.8 51.3,141.4 52.7,143.0 54.1,144.5 55.5,145.7 56.9,146.5 58.3,146.9 59.7,146.9 61.1,146.5 62.5,145.7 63.9,144.5 65.3,143.0 66.7,141.4 68.0,139.8 69.4,138.2 70.8,136.9 72.2,135.9 73.6,135.2 75.0,135.0" fill="none" stroke="#000000" stroke-width="0.9" stroke-linejoin="round"/>
+<path d="M78,141 L116,141" fill="none" stroke="#000000" stroke-width="1.3" marker-end="url(#a)"/>
+<text x="59" y="154" text-anchor="middle" font-size="5.4">24 h 곡선</text>
 <line x1="157" y1="108" x2="157" y2="120" stroke="#000000" stroke-width="1.2" marker-end="url(#a)"/>
 <g transform="translate(120,112) rotate(0)"><rect x="0" y="-8" width="39.199999999999996" height="12" fill="#fff" stroke="#000000" stroke-width="1"/><text x="19.599999999999998" y="0.5" font-size="5.2" text-anchor="middle">리전 r(j)</text></g>
-<path d="M196,133 L203,133 L203,62 L162,62 L162,72" fill="none" stroke="#000000" stroke-width="0.9" stroke-dasharray="3.5 2" marker-end="url(#a)"/>
-<rect x="118" y="56" width="80" height="11" fill="#fff"/>
-<text x="158" y="65" text-anchor="middle" font-size="5.4" font-style="italic">availᵣ · 잔여 용량</text>
+<path d="M196,133 L202,133 L202,145 L196,145" fill="none" stroke="#000000" stroke-width="0.9" stroke-dasharray="3 1.8" marker-end="url(#a)"/>
+<text x="203" y="119" text-anchor="end" font-size="4.8" font-style="italic">availᵣ</text>
 <path d="M157,156 L157,176" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#a)"/>
 <g transform="translate(108,170) rotate(0)"><rect x="0" y="-8" width="57.599999999999994" height="12" fill="#fff" stroke="#000000" stroke-width="1"/><text x="28.799999999999997" y="0.5" font-size="5.2" text-anchor="middle">실행 (리전, 시각)</text></g>
 <g transform="translate(14,182) scale(0.6)">
@@ -104,7 +103,7 @@
 <rect x="4" y="26.5" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
 <circle cx="23" cy="29.0" r="1.0" fill="#000000"/>
 </g>
-<text x="23.0" y="211.4" text-anchor="middle" font-size="8" font-weight="bold">R₁</text>
+<text x="23.0" y="211.4" text-anchor="middle" font-size="8" font-weight="bold">R<tspan font-size="6.5" dy="1.5">1</tspan><tspan dy="-1.5"></tspan></text>
 <g transform="translate(62,182) scale(0.6)">
 <rect x="0" y="0" width="30" height="34" rx="2.5" fill="#fff" stroke="#000000" stroke-width="1.6"/>
 <rect x="4" y="4.0" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
@@ -116,7 +115,7 @@
 <rect x="4" y="26.5" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
 <circle cx="23" cy="29.0" r="1.0" fill="#000000"/>
 </g>
-<text x="71.0" y="211.4" text-anchor="middle" font-size="8" font-weight="bold">R₂</text>
+<text x="71.0" y="211.4" text-anchor="middle" font-size="8" font-weight="bold">R<tspan font-size="6.5" dy="1.5">2</tspan><tspan dy="-1.5"></tspan></text>
 <g transform="translate(110,182) scale(0.6)">
 <rect x="0" y="0" width="30" height="34" rx="2.5" fill="#fff" stroke="#000000" stroke-width="1.6"/>
 <rect x="4" y="4.0" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
@@ -128,7 +127,7 @@
 <rect x="4" y="26.5" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
 <circle cx="23" cy="29.0" r="1.0" fill="#000000"/>
 </g>
-<text x="119.0" y="211.4" text-anchor="middle" font-size="8" font-weight="bold">R₃</text>
+<text x="119.0" y="211.4" text-anchor="middle" font-size="8" font-weight="bold">R<tspan font-size="6.5" dy="1.5">3</tspan><tspan dy="-1.5"></tspan></text>
 <g transform="translate(158,182) scale(0.6)">
 <rect x="0" y="0" width="30" height="34" rx="2.5" fill="#fff" stroke="#000000" stroke-width="1.6"/>
 <rect x="4" y="4.0" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
@@ -140,6 +139,6 @@
 <rect x="4" y="26.5" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
 <circle cx="23" cy="29.0" r="1.0" fill="#000000"/>
 </g>
-<text x="167.0" y="211.4" text-anchor="middle" font-size="8" font-weight="bold">Rₙ</text>
+<text x="167.0" y="211.4" text-anchor="middle" font-size="8" font-weight="bold">R<tspan font-size="6.5" dy="1.5">n</tspan><tspan dy="-1.5"></tspan></text>
 <text x="107" y="232" text-anchor="middle" font-size="5.6" font-style="italic">동시 실행 수 ≤ availᵣ</text>
 </svg>

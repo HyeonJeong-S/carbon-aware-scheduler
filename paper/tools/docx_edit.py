@@ -46,7 +46,17 @@ def find_one(xml, head):
 
 
 def replace_text(xml, head, new_text):
-    """문단 하나의 본문 텍스트를 통째로 갈아끼운다. 첫 run 의 서식을 유지한다."""
+    """문단 하나의 본문 텍스트를 통째로 갈아끼운다. 첫 run 의 서식을 유지한다.
+
+    2026-09-24 사고: 이 함수는 run 을 전부 버리고 새로 하나 만든다. 그런데
+    사용자가 단 Word 메모의 표식(<w:commentRangeStart/End>, 그리고
+    <w:commentReference> 를 품은 run)이 바로 그 문단 안에 있다 — 그림 1 캡션을
+    고치면서 거기 달린 메모의 앵커를 통째로 날렸고, comments.xml 에 본문만 남아
+    어디에 달렸는지 모르는 떠돌이 메모가 됐다. 사용자가 적은 글을 소리 없이
+    잃는 건 가장 나쁜 실패다.
+    이제 메모 표식을 뽑아 두었다가 새 run 앞뒤로 도로 끼운다 — 메모는 문단
+    전체를 가리키게 되지만(원래는 문구 일부였을 수 있다) 사라지지는 않는다.
+    """
     s, e, frag, old = find_one(xml, head)
     for k in PROTECT:
         assert k not in frag, f"{head[:30]!r}: {k} 포함 — 편집 금지"
@@ -58,11 +68,21 @@ def replace_text(xml, head, new_text):
     rpr = rpr.group(0) if rpr else ""
     new_run = (f'<w:r>{rpr}<w:t xml:space="preserve">{_esc(new_text)}</w:t></w:r>')
 
+    # 메모 표식 보존 — 여는 것은 새 run 앞, 닫는 것과 참조 run 은 뒤에 둔다
+    starts = "".join(re.findall(r'<w:commentRangeStart\b[^>]*/>', frag))
+    ends = "".join(re.findall(r'<w:commentRangeEnd\b[^>]*/>', frag))
+    refs = "".join(re.findall(
+        r'<w:r\b(?:(?!</w:r>).)*?<w:commentReference\b[^>]*/>(?:(?!</w:r>).)*?</w:r>',
+        frag, re.DOTALL))
+
     # 문단 속성(<w:pPr>)은 그대로 두고 run 만 교체
     ppr = re.search(r'<w:pPr\b.*?</w:pPr>', frag, re.DOTALL)
     ppr = ppr.group(0) if ppr else ""
     open_tag = re.match(r'<w:p\b[^>]*?>', frag).group(0)
-    new_frag = f"{open_tag}{ppr}{new_run}</w:p>"
+    new_frag = f"{open_tag}{ppr}{starts}{new_run}{ends}{refs}</w:p>"
+    if starts:
+        ids = re.findall(r'w:id="(\d+)"', starts)
+        print(f"  · 메모 {ids} 가 달린 문단이다 — 표식을 문단 전체로 옮겨 보존했다")
     return xml[:s] + new_frag + xml[e:], len(old), len(new_text)
 
 
