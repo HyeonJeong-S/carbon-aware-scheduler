@@ -638,8 +638,11 @@ def main():
     mono(doc, "E_j  ≈  P · d_j · mean( C_r[ a … a+n-1 ] )")
     mono(doc, "      a = floor(τ_j),   n = max(1, ceil(d_j))")
     body(doc, "scheduler/timeshift.py 의 mean_carbon 과 scheduler/capacity.py 의 "
-              "_Windows.actual_mean 이 이 계산이며, 표 2의 네 행과 표 5의 선행 정책이 모두 "
-              "이 함수를 통과한다. 소비 전력 P 는 작업당 1kW 상수로 가정한다 — 실측값이 "
+              "_Windows.actual_mean 이 이 계산이며, 표 2의 다섯 행 전부와 표 5의 선행 정책이 "
+              "모두 "
+              "이 함수를 통과한다. 기준 ①도 예외가 아니다 — 29,225.6 kg 은 로드밸런서의 baseline "
+              "산출물(적분 회계로 29,182.6 kg)이 아니라 scheduler 의 simple_lb_immediate "
+              "실행에서 나온 값이다. 소비 전력 P 는 작업당 1kW 상수로 가정한다 — 실측값이 "
               "아니라 상대 비교를 위한 단순화이며, 그 결과 배출량 차이는 전적으로 실행 "
               "리전과 실행 시각에서 온다. 결정은 예측값으로 하되 이 회계는 언제나 "
               "실측값으로 한다.")
