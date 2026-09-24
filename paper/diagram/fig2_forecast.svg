@@ -30,51 +30,33 @@
 <rect x="116.6" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#d9d9d9" stroke="#000000" stroke-width="0.8"/>
 <rect x="127.8" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#d9d9d9" stroke="#000000" stroke-width="0.8"/>
 <rect x="139.0" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#d9d9d9" stroke="#000000" stroke-width="0.8"/>
-<text x="100" y="47" text-anchor="middle" font-size="5.8">공통 10</text>
-<text x="178" y="47" text-anchor="middle" font-size="5.8">기상 +3</text>
-<text x="178" y="55" text-anchor="middle" font-size="5.8">(3개 리전만)</text>
-<g transform="translate(163,26) rotate(-11)"><rect x="0" y="-8" width="30.0" height="12" fill="#fff" stroke="#000000" stroke-width="1"/><text x="15.0" y="0.5" font-size="5.8" text-anchor="middle">피처 13</text></g>
 <path d="M104.0,58.0 L104.0,65.0 L101.0,65.0 L107.0,70.0 L113.0,65.0 L110.0,65.0 L110.0,58.0 Z" fill="#fff" stroke="#000000" stroke-width="1.2"/>
 <rect x="20" y="74" width="175" height="35" rx="10" fill="#fff" stroke="#000000" stroke-width="1.6"/>
 <text x="29" y="86" font-size="10" font-weight="bold">LSTM</text>
-<g transform="translate(26,88) scale(0.66)">
-<circle cx="4" cy="5" r="2.4" fill="#000000" stroke="#000000" stroke-width="1"/>
-<circle cx="4" cy="12" r="2.4" fill="#000000" stroke="#000000" stroke-width="1"/>
-<circle cx="4" cy="19" r="2.4" fill="#000000" stroke="#000000" stroke-width="1"/>
-<circle cx="15" cy="1.5" r="2.4" fill="#fff" stroke="#000000" stroke-width="1"/>
-<circle cx="15" cy="8.5" r="2.4" fill="#fff" stroke="#000000" stroke-width="1"/>
-<circle cx="15" cy="15.5" r="2.4" fill="#fff" stroke="#000000" stroke-width="1"/>
-<circle cx="15" cy="22.5" r="2.4" fill="#fff" stroke="#000000" stroke-width="1"/>
-<circle cx="26" cy="5" r="2.4" fill="#fff" stroke="#000000" stroke-width="1"/>
-<circle cx="26" cy="12" r="2.4" fill="#fff" stroke="#000000" stroke-width="1"/>
-<circle cx="26" cy="19" r="2.4" fill="#fff" stroke="#000000" stroke-width="1"/>
-<g stroke="#000000" stroke-width="0.45" opacity="0.75">
-<line x1="6.4" y1="5" x2="12.6" y2="1.5"/>
-<line x1="6.4" y1="5" x2="12.6" y2="8.5"/>
-<line x1="6.4" y1="5" x2="12.6" y2="15.5"/>
-<line x1="6.4" y1="5" x2="12.6" y2="22.5"/>
-<line x1="6.4" y1="12" x2="12.6" y2="1.5"/>
-<line x1="6.4" y1="12" x2="12.6" y2="8.5"/>
-<line x1="6.4" y1="12" x2="12.6" y2="15.5"/>
-<line x1="6.4" y1="12" x2="12.6" y2="22.5"/>
-<line x1="6.4" y1="19" x2="12.6" y2="1.5"/>
-<line x1="6.4" y1="19" x2="12.6" y2="8.5"/>
-<line x1="6.4" y1="19" x2="12.6" y2="15.5"/>
-<line x1="6.4" y1="19" x2="12.6" y2="22.5"/>
-<line x1="17.4" y1="1.5" x2="23.6" y2="5"/>
-<line x1="17.4" y1="1.5" x2="23.6" y2="12"/>
-<line x1="17.4" y1="1.5" x2="23.6" y2="19"/>
-<line x1="17.4" y1="8.5" x2="23.6" y2="5"/>
-<line x1="17.4" y1="8.5" x2="23.6" y2="12"/>
-<line x1="17.4" y1="8.5" x2="23.6" y2="19"/>
-<line x1="17.4" y1="15.5" x2="23.6" y2="5"/>
-<line x1="17.4" y1="15.5" x2="23.6" y2="12"/>
-<line x1="17.4" y1="15.5" x2="23.6" y2="19"/>
-<line x1="17.4" y1="22.5" x2="23.6" y2="5"/>
-<line x1="17.4" y1="22.5" x2="23.6" y2="12"/>
-<line x1="17.4" y1="22.5" x2="23.6" y2="19"/>
-</g></g>
-<text x="78" y="98" font-size="6.4">은닉 64 · 2층</text>
+<text x="29" y="95" font-size="6.4">64</text>
+<rect x="60.0" y="97" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="68.4" y="97" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="76.8" y="97" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="85.2" y="97" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="93.6" y="97" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="102.0" y="97" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="110.4" y="97" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="118.8" y="97" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="127.2" y="97" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="135.6" y="97" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="60.0" y="103.4" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="68.4" y="103.4" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="76.8" y="103.4" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="85.2" y="103.4" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="93.6" y="103.4" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="102.0" y="103.4" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="110.4" y="103.4" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="118.8" y="103.4" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="127.2" y="103.4" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<rect x="135.6" y="103.4" width="7.2" height="4.6" rx="1" fill="#000000"/>
+<path d="M72.0,101.6 L72.0,103.4" fill="none" stroke="#000000" stroke-width="0.7"/>
+<path d="M97.2,101.6 L97.2,103.4" fill="none" stroke="#000000" stroke-width="0.7"/>
+<path d="M122.4,101.6 L122.4,103.4" fill="none" stroke="#000000" stroke-width="0.7"/>
 <text x="189" y="86" text-anchor="end" font-size="5.8">+ 미래 24 h 날씨</text>
 <text x="189" y="94" text-anchor="end" font-size="5.8">기상 리전만 · 24×3 = 72</text>
 <path d="M190,94 L205,94 L205,127 L197,127" fill="none" stroke="#000000" stroke-width="0.8" stroke-dasharray="2.5 1.8" marker-end="url(#a)"/>

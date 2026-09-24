@@ -55,8 +55,15 @@ def main():
 
     # 2026-09-23: 별표를 뺀다. 사용자 지적 — 학술지 그림에서 ★은 거의 쓰지 않는다.
     # 무릎점은 채운 원을 한 겹 키워 두르는 방식(동심원)으로 강조한다.
-    ax.scatter([xs[AUTO_IDX]], [ys[AUTO_IDX]], s=62, facecolor="none",
-               edgecolor=INK, lw=0.9, zorder=5)
+    # 2026-09-24 4c 배분: 사용자가 "무릎점 표식이 안 보인다"고 재지적 — 동심원이
+    # s=62/lw=0.9로는 옆 점(s=14)과 거의 구별이 안 됐다(400%에서도 희미했음).
+    # 별·땡땡이·빗금 없이 더 키운다: 가운데 채운 점 자체를 다른 점보다 크게
+    # 다시 그리고(s=14→34), 두른 원도 더 크고 굵게(62→150, 0.9→1.6) 해
+    # 과녁 모양의 대비를 뚜렷하게 낸다.
+    ax.scatter([xs[AUTO_IDX]], [ys[AUTO_IDX]], s=34, facecolor=INK,
+               edgecolor=INK, zorder=4)
+    ax.scatter([xs[AUTO_IDX]], [ys[AUTO_IDX]], s=150, facecolor="none",
+               edgecolor=INK, lw=1.6, zorder=5)
 
     for i, (lab, x, y) in enumerate(POINTS):
         t = f"α={lab}" if lab != "auto" else "α=auto\n(무릎점)"

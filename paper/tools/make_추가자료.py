@@ -66,6 +66,68 @@ def mono(doc, text):
     return p
 
 
+def math(doc, text):
+    """식 한 줄 — 본편과 같은 Cambria Math 로 찍고 _·^ 를 진짜 첨자로 올린다.
+
+    2026-09-24 사용자 메모(추가자료 식 (1)에 달림): "압축본에 있는 공식과 똑같은
+    글씨체로 하는 것이 좋을듯,, 둘이 달라보여."  본편 식은 OMML 이라 Cambria Math
+    로 조판되는데 여기는 Menlo 고정폭이어서 같은 식이 딴 글씨로 보였다.
+    OMML 을 여기서 다시 짜는 것은 과하므로, **같은 서체 + 진짜 첨자**까지만 맞춘다
+    (분수·적분 기호의 쌓임은 본편만 한다 — 여기 식은 전부 한 줄 형태다).
+    """
+    p = doc.add_paragraph()
+    p.paragraph_format.left_indent = Cm(0.6)
+    p.paragraph_format.space_before = Pt(5)
+    p.paragraph_format.space_after = Pt(5)
+
+    def emit(t, kind):
+        if not t:
+            return
+        r = p.add_run(t)
+        r.font.name = "Cambria Math"
+        r.font.size = Pt(9)
+        if kind == "sub":
+            r.font.subscript = True
+        elif kind == "sup":
+            r.font.superscript = True
+
+    i = 0
+    buf = ""
+    while i < len(text):
+        c = text[i]
+        if c in "_^" and i + 1 < len(text):
+            kind = "sub" if c == "_" else "sup"
+            j = i + 1
+            if text[j] == "{":
+                depth = 1
+                j += 1
+                start = j
+                while j < len(text) and depth:
+                    if text[j] == "{":
+                        depth += 1
+                    elif text[j] == "}":
+                        depth -= 1
+                    j += 1
+                chunk = text[start:j - 1]
+            else:
+                start = j
+                # 중괄호가 없으면 이어지는 영숫자·프라임까지가 첨자다
+                while j < len(text) and (text[j].isalnum() or text[j] == "′"):
+                    j += 1
+                chunk = text[start:j]
+            # 중괄호 안에 또 _ 가 있으면(∫_{τ_j}^{τ_j+d_j} 처럼) 워드는 첨자를
+            # 두 겹으로 못 올린다. 안쪽 _ 는 떼고 한 겹으로 찍는다.
+            chunk = chunk.replace("_", "")
+            emit(buf, "n"); buf = ""
+            emit(chunk, kind)
+            i = j
+            continue
+        buf += c
+        i += 1
+    emit(buf, "n")
+    return p
+
+
 def caption(doc, text):
     """표 설명. 본편과 섞이지 않도록 S 번호를 쓴다.
 
@@ -113,6 +175,72 @@ def table(doc, rows, widths=None):
                 p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
     doc.add_paragraph()
     return t
+
+
+
+# ── 마무리 손질: 본문·표의 X_y 를 진짜 첨자로 ───────────────────────────
+# 2026-09-24 사용자 메모: "압축본에 있는 공식과 똑같은 글씨체로… 둘이 달라보여."
+# 식 줄은 math() 가 처리하지만 본문과 표에는 a_r · K_r · P_slack 이 밑줄 그대로
+# 남아 있었다. 같은 규칙을 여기에도 건다.
+# 파일 이름(prior_casper.py, fig4_slot_data.json)은 건드리면 안 되므로,
+# **앞 글자가 하나뿐이고 앞뒤가 식별자 문자가 아닐 때만** 바꾼다.
+# 기호처럼 생겼지만 식이 아닌 것 — 열 이름·식별자. 첨자로 올리면 안 된다.
+SYM_KEEP = {"y_true", "y_pred", "t_now", "n_hours"}
+SYM_RE = re.compile(
+    r"(?<![A-Za-z0-9_./])([A-Za-zα-ωΑ-Ω])_(\{[^}]{1,14}\}|[A-Za-z0-9′]{1,6})(?![A-Za-z0-9_./])")
+
+
+def _mathify_par(p):
+    """문단 하나의 X_y 를 Cambria Math + 아래첨자 run 으로 다시 짠다."""
+    from docx.oxml.ns import qn
+    import copy as _copy
+    txt = p.text
+    ms = [m for m in SYM_RE.finditer(txt) if m.group(0) not in SYM_KEEP]
+    if not ms or not p.runs:
+        return 0
+    if any((r.font.name or "") == "Menlo" for r in p.runs):   # 코드·의사코드는 손대지 않는다
+        return 0
+    rpr = p.runs[0]._r.find(qn("w:rPr"))
+    pieces, last = [], 0
+    for m in ms:
+        pieces.append(("n", txt[last:m.start()]))
+        pieces.append(("m", m.group(1)))
+        pieces.append(("ms", m.group(2).strip("{}")))
+        last = m.end()
+    pieces.append(("n", txt[last:]))
+    for r in list(p._p.findall(qn("w:r"))):
+        p._p.remove(r)
+    for kind, frag in pieces:
+        if not frag:
+            continue
+        r = p._p.makeelement(qn("w:r"), {})
+        c = _copy.deepcopy(rpr) if rpr is not None else r.makeelement(qn("w:rPr"), {})
+        if kind in ("m", "ms"):
+            for e in c.findall(qn("w:rFonts")):
+                c.remove(e)
+            c.insert(0, c.makeelement(qn("w:rFonts"),
+                                      {qn("w:ascii"): "Cambria Math", qn("w:hAnsi"): "Cambria Math"}))
+            c.append(c.makeelement(qn("w:i"), {}))
+            if kind == "ms":
+                c.append(c.makeelement(qn("w:vertAlign"), {qn("w:val"): "subscript"}))
+        r.append(c)
+        t = r.makeelement(qn("w:t"), {qn("xml:space"): "preserve"})
+        t.text = frag
+        r.append(t)
+        p._p.append(r)
+    return len(ms)
+
+
+def mathify(doc):
+    n = 0
+    for p in doc.paragraphs:
+        n += _mathify_par(p)
+    for tb in doc.tables:
+        for row in tb.rows:
+            for cell in row.cells:
+                for p in cell.paragraphs:
+                    n += _mathify_par(p)
+    return n
 
 
 def main():
@@ -189,15 +317,15 @@ def main():
            ["P", "작업당 소비 전력", "1 kW 상수"]])
 
     h(doc, "A.1.2  문제 정식화 — 식 (1)~(5)", 2)
-    mono(doc, "(1)  min  Σ_{j∈J}  P · ∫_{τ_j}^{τ_j+d_j} C_{r(j)}(t) dt")
+    math(doc, "(1)  min  Σ_{j∈J}  P · ∫_{τ_j}^{τ_j+d_j} C_{r(j)}(t) dt")
     body(doc, "총 배출량 최소화. 결정 변수는 배정 x_jr 과 실행 시각 τ_j 다.")
-    mono(doc, "(2)  Σ_{r∈R} x_jr = 1,  ∀j ∈ J")
+    math(doc, "(2)  Σ_{r∈R} x_jr = 1,  ∀j ∈ J")
     body(doc, "모든 작업이 정확히 한 리전에 배정된다. 미배정은 허용하지 않는다.")
-    mono(doc, "(3)  |{ j : r(j)=r, τ_j ≤ t < τ_j+d_j }| ≤ ⌊η·cap_r⌋,  ∀r, ∀t")
+    math(doc, "(3)  |{ j : r(j)=r, τ_j ≤ t < τ_j+d_j }| ≤ ⌊η·cap_r⌋,  ∀r, ∀t")
     body(doc, "동시 실행 상한. 우변을 A.1.5 에서 K_r 로 줄여 쓴다.")
-    mono(doc, "(4)  s_j ≤ τ_j,   τ_j + d_j ≤ D_j,  ∀j")
+    math(doc, "(4)  s_j ≤ τ_j,   τ_j + d_j ≤ D_j,  ∀j")
     body(doc, "실행은 제출 이후에 시작하고 마감 이내에 끝난다.")
-    mono(doc, "(5)  (τ_j − s_j) + ℓ_{o_j r(j)} ≤ L_j,  ∀j")
+    math(doc, "(5)  (τ_j − s_j) + ℓ_{o_j r(j)} ≤ L_j,  ∀j")
     body(doc, "지연 예산. 구현에서는 강제하지 않는다 — 지연 행렬 최댓값 244 ms 가 가장 "
               "짧은 지연 예산보다도 작아 수치상 구속되지 않는다.")
     body(doc,
@@ -207,15 +335,15 @@ def main():
          "최적해라는 보장은 없다.")
 
     h(doc, "A.1.3  공간 이동 — 식 (6)~(9)", 2)
-    mono(doc, "(6)  C̃_r = Ĉ_r / max_r' Ĉ_r',    ℓ̃_or = ℓ_or / 244")
+    math(doc, "(6)  C̃_r = Ĉ_r / max_r' Ĉ_r',    ℓ̃_or = ℓ_or / 244")
     body(doc, "두 축의 정규화. 탄소만 슬롯별 최댓값으로 나눈다.")
-    mono(doc, "(7)  min Σ_j Σ_r ( α·C̃_r + (1−α)·ℓ̃_{o_j r} )·x_jr + P_slack·Σ_j z_j")
+    math(doc, "(7)  min Σ_j Σ_r ( α·C̃_r + (1−α)·ℓ̃_{o_j r} )·x_jr + P_slack·Σ_j z_j")
     body(doc, "슬롯 배정의 목적함수. P_slack = 1,000 은 어떤 배정 비용보다 커서 배정이 "
               "가능한 한 미배정이 선택되지 않는다.")
-    mono(doc, "(8)  Σ_r x_jr + z_j = 1  ∀j,    Σ_j x_jr ≤ a_r  ∀r")
+    math(doc, "(8)  Σ_r x_jr + z_j = 1  ∀j,    Σ_j x_jr ≤ a_r  ∀r")
     body(doc, "배정 유일성과 리전별 잔여 자리. 여기의 a_r 은 공간 이동 자신의 장부이며, "
               "시간 이동의 a_r(t) 와 이름만 같고 서로 인계되지 않는다.")
-    mono(doc, "(9)  α* = arg min_α √( λ̃(α)² + μ̃(α)² )")
+    math(doc, "(9)  α* = arg min_α √( λ̃(α)² + μ̃(α)² )")
     body(doc, "슬롯마다 α 를 정하는 규칙. 후보 11개(0~1, 0.1 간격)의 배정을 각각 풀어 "
               "정규화 평균 지연 λ̃ 와 정규화 예상 배출 μ̃ 를 얻고, 원점에 가장 가까운 점을 "
               "택한다. 풀이기는 PuLP · CBC.")
@@ -242,26 +370,26 @@ def main():
 
     h(doc, "A.1.4  시간 이동의 점수 — 식 (10)~(11)", 2)
     body(doc, "실행 가능 윈도우는 [s_j, D_j − d_j] 이고 후보는 그 안의 1시간 슬롯이다.")
-    mono(doc, "(10)  C̄(t) = (C(t) − C_min)/(C_max − C_min),   D̄(t) = (t − t_early)/(t_late − t_early)")
+    math(doc, "(10)  C̄(t) = (C(t) − C_min)/(C_max − C_min),   D̄(t) = (t − t_early)/(t_late − t_early)")
     body(doc, "탄소 비용과 지연 비용을 후보 집합 안에서 0–1 로 정규화한다. 분모가 0 이면 "
               "해당 항을 0 으로 둔다.")
-    mono(doc, "(11)  score(t) = α(k)·C̄(t) + (1−α(k))·D̄(t),   α(k) = (6 − k)/5")
+    math(doc, "(11)  score(t) = α(k)·C̄(t) + (1−α(k))·D̄(t),   α(k) = (6 − k)/5")
     body(doc, "가중합. 가중치는 작업이 신고한 지연 등급의 함수이며 k=1 에서 1.0, k=5 에서 "
               "0.2 다.")
 
     h(doc, "A.1.5  용량 인지 온라인 배치 — 식 (12)~(14)와 Algorithm 1", 2)
-    mono(doc, "(12)  n_r(t) = | { j : r(j)=r, τ_j ≤ t < τ_j + d_j } |,   a_r(t) = K_r − n_r(t)")
+    math(doc, "(12)  n_r(t) = | { j : r(j)=r, τ_j ≤ t < τ_j + d_j } |,   a_r(t) = K_r − n_r(t)")
     body(doc, "식 (3)을 남은 자리 형태로 다시 쓴 것. 장부는 이 단계가 시작할 때 비어 있고 "
               "이 단계가 확정한 τ_j 로만 채워진다.")
-    mono(doc, "      feasible(j, t′)  ⟺  min a_{r(j)}(u) ≥ 1,   u ∈ [t′, t′+d_j)")
+    math(doc, "      feasible(j, t′)  ⟺  min a_{r(j)}(u) ≥ 1,   u ∈ [t′, t′+d_j)")
     body(doc, "시작 시점만이 아니라 실행이 끝날 때까지 매 순간 자리가 있어야 한다.")
-    mono(doc, "(13)  Q(t) = { j : s_j ≤ t,  τ_j 미정 },")
-    mono(doc, "      P_r(t) = { j ∈ Q(t) : r(j)=r, argmin_{t′∈W_j(t)} score_j(t′) = max(t, s_j) }")
+    math(doc, "(13)  Q(t) = { j : s_j ≤ t,  τ_j 미정 },")
+    math(doc, "      P_r(t) = { j ∈ Q(t) : r(j)=r, argmin_{t′∈W_j(t)} score_j(t′) = max(t, s_j) }")
     body(doc, "지금이 남은 탐색 구간 안에서 최선인 작업들. W_j(t) = [max(t, s_j), "
               "min(D_j − d_j, t + H)] 이고, 점수는 매 슬롯 새로 발행된 예측으로 다시 잰다.")
-    mono(doc, "(14)  u_j(t) = (D_j − d_j) − t,     F_r(t) = { j ∈ Q(t) : r(j)=r, u_j(t) < 1 },")
-    mono(doc, "      R_r(t) = P_r(t) ∖ F_r(t) 를 u_j(t) 오름차순 정렬,")
-    mono(doc, "      S_r(t) = F_r(t) ∪ R_r(t)[ 1 … max(a_r(t) − |F_r(t)|, 0) ]")
+    math(doc, "(14)  u_j(t) = (D_j − d_j) − t,     F_r(t) = { j ∈ Q(t) : r(j)=r, u_j(t) < 1 },")
+    math(doc, "      R_r(t) = P_r(t) ∖ F_r(t) 를 u_j(t) 오름차순 정렬,")
+    math(doc, "      S_r(t) = F_r(t) ∪ R_r(t)[ 1 … max(a_r(t) − |F_r(t)|, 0) ]")
     body(doc, "남은 여유가 적은 순(EDF)으로 자리만큼만 채운다. F_r(t) 를 후보 P_r(t) 가 아니라 "
               "대기 집합 Q(t) 전체에서 고르는 것이 요점이다 — P 안에서 고르면 '지금이 최선이 "
               "아닌' 마감 임박 작업이 후보에서 빠져 무한정 밀린다.")
@@ -330,9 +458,9 @@ def main():
          "87,712건이다.")
 
     h(doc, "A.1.6  탄소 회계 — 식 (15)", 2)
-    mono(doc, "(15)  E_j = P · ∫_{τ_j}^{τ_j+d_j} C_{r(j)}(t) dt")
+    math(doc, "(15)  E_j = P · ∫_{τ_j}^{τ_j+d_j} C_{r(j)}(t) dt")
     body(doc, "실측 계열이 1시간 해상도이므로 슬롯 평균으로 근사한다.")
-    mono(doc, "      E_j ≈ P · d_j · mean( C_r[ a … a+n-1 ] ),   a = ⌊τ_j⌋,  n = max(1, ⌈d_j⌉)")
+    math(doc, "      E_j ≈ P · d_j · mean( C_r[ a … a+n-1 ] ),   a = ⌊τ_j⌋,  n = max(1, ⌈d_j⌉)")
     body(doc,
          "timeshift.mean_carbon 과 capacity._Windows.actual_mean 이 이 계산이며, 본편 표 2의 "
          "다섯 행과 표 4의 선행 정책이 모두 이 함수를 통과한다. 기준 ①도 예외가 아니다 — "
@@ -851,6 +979,8 @@ def main():
          "그대로 얻으려면 솔버 버전을 맞추는 편이 낫다. 전체 재현에 보통 컴퓨터로 수십 분이 "
          "걸리며, A.4 의 가중치 스윕과 A.6 의 Caspian 재현은 그보다 오래 걸린다.")
 
+    n = mathify(doc)
+    print(f"기호 {n}곳을 Cambria Math 첨자로")
     doc.save(OUT)
     print("생성:", OUT)
 

@@ -12,11 +12,20 @@ fig4_slot_data.json(시각별 탄소·동시 실행 수)은 이미 레포에 있
 
 간트 표본 선정
 --------------
-"그날 캘리포니아에서 겹치는 작업 중 실행시간 3.5시간 이상" 하나의 문턱값으로만
-거른다 — 손으로 고른 것 없음. 11건이 나오고(10~20건 권장 범위 안), 하루 전체에
-고르게 퍼져 있으며, 강제 편입(forced, 마감 임박이라 상한을 의도적으로 넘겨
-받아들인 작업) 2건이 포함돼 occ가 12를 넘는 20시(day-relative)의 원인을 그림
-안에서 직접 보여준다.
+2026-09-24(4c 배분, 두 번째 개정): 사용자가 "이해가 안 된다"고 지적 — 예전 판은
+실행 구간(tau_j~tau_j+d_j)만 막대로 그려 "왜 하필 거기서 실행됐는가"가 안
+보였다. 이번 판은 각 작업의 s_j(제출 시각)~D_j(마감)이라는 "레일"을 같이
+실어, 창이 넓은데도 저탄소 시각으로 못 간 작업(용량이 막은 경우)이 보이게 한다.
+
+문턱을 3.5h→3.0h로 낮췄다(여전히 단일 문턱, 손으로 고른 것 없음) — 3.5h에서는
+j_132777(실행시간 3.20h, 창 22.1h)이 문턱에 걸려 빠졌는데, 이 작업이 바로
+"창은 넓은데 용량 때문에 밀린" 사례다(무제약 재실행 대조: capacity=12일 때
+16시·27.2 gCO2/kWh로 실행되지만 capacity=100000이면 제출 즉시·21.0 gCO2/kWh로
+실행된다 — 용량이 없었다면 갔을 자리가 있었다는 뜻). 14건이 나온다(10~20건
+권장 범위 안), 강제 편입 2건 포함, 창/실행시간 비율이 2.3~6.9배로 다양하다.
+(더 촘촘한 창을 가진 작업은 전부 실행시간이 1시간 미만으로 막대가 안 보일
+만큼 작아 표본에서 자연히 빠진다 — 이 자체가 "60%는 구조적으로 시간 이동에
+못 낀다"는 §4.1 발견과 같은 결이다.)
 
 실행: ./.venv/bin/python paper/diagram/gen_fig4_scheduler_data.py
 """
@@ -40,7 +49,7 @@ YEAR_ASSIGN_CSV = LB_RESULTS_DIR / "assign_alpha_auto.csv"
 CAP = 12       # 유효 상한 — scheduler/reproduce.py의 CAP과 동일(표2 ④ 재현)
 DAY = 101      # fig4_slot_data.json이 이미 쓰고 있던 날
 REGION = "US-CAL-CISO"
-GANTT_THRESHOLD_H = 3.5   # 간트에 얹을 작업의 최소 실행시간(단일 문턱, 솎아내기 없음)
+GANTT_THRESHOLD_H = 3.0   # 간트에 얹을 작업의 최소 실행시간(단일 문턱, 솎아내기 없음)
 
 
 def main():
@@ -80,14 +89,27 @@ def main():
     print(f"wrote {slot_path}")
 
     # ── 간트 표본 ──
+    # 2026-09-24(4c): 레일(s_j~D_j)을 그리려면 제출 시각·마감이 필요하다.
+    # capacity.run_rolling()의 출력(out/cal_jobs)에는 submit_time은 있지만
+    # deadline은 없어 jobs 원본에서 id로 찾는다.
+    job_by_id = {j["id"]: j for j in jobs}
+
     overlapping = [v for v in cal_jobs
                    if v["scheduled_start"] < day_end and v["scheduled_start"] + v["duration"] > day_start]
     sel = sorted([v for v in overlapping if v["duration"] >= GANTT_THRESHOLD_H],
                  key=lambda v: v["scheduled_start"])
 
-    gantt = [{"id": v["job_id"], "tau": round(v["scheduled_start"] - day_start, 4),
-              "dur": round(v["duration"], 4), "forced": bool(v["forced"]), "k": v["k"]}
-             for v in sel]
+    gantt = []
+    for v in sel:
+        deadline = job_by_id[v["job_id"]]["deadline"]
+        gantt.append({
+            "id": v["job_id"],
+            "s": round(v["submit_time"] - day_start, 4),       # 제출 시각(레일 왼쪽 끝)
+            "tau": round(v["scheduled_start"] - day_start, 4), # 실제 실행 시작(블록 왼쪽 끝)
+            "dur": round(v["duration"], 4),                     # 실행 시간(블록 길이)
+            "D": round(deadline - day_start, 4),                # 마감(레일 오른쪽 끝)
+            "forced": bool(v["forced"]), "k": v["k"],
+        })
     gantt_path = os.path.join(_HERE, "fig4_gantt_data.json")
     json.dump({"day": DAY, "region": REGION, "threshold_h": GANTT_THRESHOLD_H, "jobs": gantt},
               open(gantt_path, "w"), ensure_ascii=False, indent=1)
