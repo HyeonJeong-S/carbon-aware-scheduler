@@ -40,9 +40,12 @@ DIAGRAM_DIR = os.path.join(_REPO_ROOT, "paper", "diagram")
 
 YEAR_ASSIGN_CSV = LB_RESULTS_DIR / "assign_alpha_auto.csv"
 
-BASELINE_KG = 29225.6  # 표2 ①: 단순 LB + 즉시실행. 정리.txt [26]. 이 스크립트는
-                        # 이 값을 재계산하지 않는다 — LB 쪽 산출물(run_experiments.py)
-                        # 소관이라 여기서 다시 구현하면 두 번째 정의가 생긴다.
+# 표2 ①: 단순 LB + 즉시실행. 2026-09-24 출처를 재확인했다 — 이 값의 출처는
+# LB 의 run_experiments.py baseline 런이 **아니다**(그쪽은 integrate_gco2 회계로
+# 29,182.6 kg 이 나온다). 아래 한 줄로 정확히 재현된다:
+#     simulator.run_simulation(jobs, carbon_series, "simple_lb_immediate")
+# 즉 ①도 ②③④와 같은 mean_carbon 회계를 쓴다 — 표2 다섯 행에 회계 혼용이 없다.
+BASELINE_KG = 29225.6
 
 CAP = 12  # 유효 상한 K_r = floor(0.8 * cap_r). 공식.txt §0, 정리.txt [26].
 
@@ -148,7 +151,7 @@ def table2(jobs=None, data=None):
     ① 기준(29,225.6, 상수, 위 BASELINE_KG)
     ② 공간 이동만(비교군2, simulator mode="carbon_lb_immediate")
     ③ +시간 무제약(비교군3=Algorithm 0, mode="carbon_lb_timeshift") — 9,958.2
-    ④ +시간 온라인(Algorithm 1, capacity.run_rolling(cap=12)) — 10,830.4 (62.94%)
+    ④ +시간 온라인(Algorithm 1, capacity.run_rolling(cap=12)) — 10,805.0 (63.03%)
     ③′ +시간 사후강제(posthoc_enforce, ③의 스케줄에 반복 되돌리기 적용) — 11,873.0
     """
     jobs = jobs or _load_jobs()

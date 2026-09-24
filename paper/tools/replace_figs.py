@@ -27,6 +27,7 @@ REPLACE = {
     # 들어가 있었다. Algorithm 1 이 바로 옆에 있어 개념도는 중복이기도 하다.
     "word/media/image7.png": DIA + "fig4_scheduler.png",       # 그림 7 하루 점유 (실측)
     "word/media/image5.png": DIA + "fig4_routing.png",         # 그림 5 라우팅 흐름 (라벨 정렬)
+    "word/media/image10.png": DIA + "fig7_benchmark.png",      # 그림 10 선행 정책 (음영 라벨)
 }
 
 

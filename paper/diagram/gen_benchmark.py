@@ -73,9 +73,11 @@ def main():
     ax.set_ylabel("탄소 절감률 (%)", fontsize=7)
     ax.tick_params(labelsize=6)
 
-    # 실현 가능 영역 표시 — 유효 상한을 지키는 쪽
+    # 2026-09-24: "상한을 지키는 영역"은 과장이었다 — 이 음영 안에 본 연구의
+    # 위반 227건이 들어 있다. 본문도 용량을 소프트 제약이라고 밝히므로
+    # 그림만 "지킨다"고 말하면 안 된다. 경계값을 그대로 적는다.
     ax.axvspan(-0.2, 300, color="#f0f0f0", zorder=0)
-    ax.annotate("상한을 지키는 영역", (0.9, 101), fontsize=5.4,
+    ax.annotate("위반 300건 이하", (0.9, 101), fontsize=5.4,
                 color="#666666", ha="left")
 
     for s in ("top", "right"):
