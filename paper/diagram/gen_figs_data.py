@@ -88,7 +88,9 @@ def fig_forecast(data):
     # 출력 구간이 24단위뿐이라 "출력 24 h"(8자)를 넣으면 구분선과 오른쪽
     # 테두리를 둘 다 넘는다. 시간 길이는 x축 눈금(0, 24)이 이미 말한다.
     ax.text(12, 14, "출력", ha="center", fontsize=6.4)
-    ax.text(-166, 232, f"MAE {mae:.1f} gCO₂/kWh", ha="left", va="top", fontsize=6.4)
+    # 이 값은 **이 구간**의 오차다. 전 구간 평균은 캘리포니아 21.6 · 8개 리전 24.9 로
+    # 두 배 가까이 크다 — 라벨에 "이 구간"을 밝히지 않으면 모델 성능으로 읽힌다.
+    ax.text(-166, 232, f"이 구간 MAE {mae:.1f} gCO₂/kWh", ha="left", va="top", fontsize=6.4)
 
     ax.set_xlim(-172, 24)
     ax.set_ylim(0, 245)
