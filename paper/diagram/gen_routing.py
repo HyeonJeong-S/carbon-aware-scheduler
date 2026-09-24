@@ -77,13 +77,13 @@ def main():
         # 상자 아래 테두리에 얹혔고, 검은 상자에서는 검은 글자가 묻혔다(지면 확인).
         # 가장 큰 상자보다 아래의 한 줄에 모두 맞춘다 — 열 위치가 상자를 가리킨다.
         ax.text(xs[j], yb - 0.255 - 0.05, f"{recv[j]/tot*100:.0f}%", ha="center",
-                va="top", fontsize=5.6,
+                va="top", fontsize=6.2,
                 fontweight="bold" if recv[j] > tot * 0.2 else "normal")
 
     for i in range(n):
         ax.add_patch(plt.Rectangle((xs[i] - 0.34, yt), 0.68, 0.055,
                                    facecolor="white", edgecolor=INK, lw=0.8, zorder=4))
-        ax.text(xs[i], yt + 0.11, SHORT[REGIONS[i]], ha="left", fontsize=5.2,
+        ax.text(xs[i], yt + 0.11, SHORT[REGIONS[i]], ha="left", fontsize=6.2,
                 rotation=32, rotation_mode="anchor")
 
     ax.text(-0.85, yt + 0.02, "출발", fontsize=6.2, ha="right", va="bottom")
@@ -92,10 +92,10 @@ def main():
     ax.set_ylim(-0.46, 1.62)
     ax.axis("off")
     fig.text(0.015, 0.012,
-             "선 굵기 = 옮긴 작업 수(400건 미만 생략) · 회색 세로선 = 홈에 남은 몫 · "
+             "선 굵기 = 옮긴 작업 수(400건 미만 생략) · 회색 세로선 = 홈에 남은 몫\n"
              "아래 사각형 = 리전이 받은 비율",
-             fontsize=5.0)
-    fig.tight_layout(rect=(0, 0.055, 1, 1), pad=0.3)
+             fontsize=6.2)
+    fig.tight_layout(rect=(0, 0.105, 1, 1), pad=0.3)
     for e in (".png", ".pdf"):
         fig.savefig(os.path.join(HERE, "fig4_routing" + e))
     print("wrote fig4_routing — 프랑스 %.1f%%, 캘리포니아 %.1f%%, 인도 %.1f%%"

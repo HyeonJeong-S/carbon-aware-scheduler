@@ -71,7 +71,7 @@ def main():
 
     for x, c, s in zip(xs, carbon, savings):
         ax1.annotate(f"-{s:.1f}%", (x, c), textcoords="offset points",
-                     xytext=(0, 7), fontsize=5.8, ha="center", color="#444444")
+                     xytext=(0, 7), fontsize=6.2, ha="center", color="#444444")
 
     ax1.set_xticks(xs)
     ax1.set_xticklabels([LABELS[k] for k in ORDER], fontsize=7)
@@ -111,7 +111,7 @@ def main():
               f"용량을 6→∞로 늘리면 총배출은 {carbon[0]:.2f}→{carbon[-1]:.2f} t"
               f"({savings[0]:.1f}→{savings[-1]:.1f}%)로,\n"
               f"강제 편입은 {forced[0]:,}→{forced[-1]:,}건으로 함께 준다. 모든 구간 마감위반 0.",
-              fontsize=5.3, ha="left", linespacing=1.4)
+              fontsize=6.2, ha="left", linespacing=1.4)
 
     fig.tight_layout(rect=(0, 0.10, 1, 1), pad=0.5)
     out = os.path.join(_HERE, "fig7_capacity_sweep.png")

@@ -103,7 +103,7 @@ def main():
     fig.text(0.02, 0.012,
               f"위 구간은 연중 한 주(day {day0}–{win_hi // 24})의 예시다.\n"
               f"연중 전체 최대 동시실행: 무제약 {d['peak_a']}건 → 온라인 {d['peak_b']}건(다른 주, 4.3절 정의).",
-              fontsize=5.3, ha="left", linespacing=1.4)
+              fontsize=6.2, ha="left", linespacing=1.4)
 
     fig.tight_layout(rect=(0, 0.10, 1, 1), pad=0.5)
     out = os.path.join(_HERE, "fig6_concurrency.png")

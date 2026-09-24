@@ -57,7 +57,7 @@ def main():
 
     for lab, v, sav, is_ours, (dx, dy) in POINTS:
         ax.annotate(lab, (xpos(v), sav), textcoords="offset points",
-                    xytext=(dx, dy), fontsize=5.6,
+                    xytext=(dx, dy), fontsize=6.2,
                     ha="right" if dx < 0 else "left",
                     fontweight="bold" if is_ours else "normal", linespacing=1.25)
 
@@ -77,7 +77,7 @@ def main():
     # 위반 227건이 들어 있다. 본문도 용량을 소프트 제약이라고 밝히므로
     # 그림만 "지킨다"고 말하면 안 된다. 경계값을 그대로 적는다.
     ax.axvspan(-0.2, 300, color="#f0f0f0", zorder=0)
-    ax.annotate("위반 300건 이하", (0.9, 101), fontsize=5.4,
+    ax.annotate("위반 300건 이하", (0.9, 101), fontsize=6.2,
                 color="#666666", ha="left")
 
     for s in ("top", "right"):
@@ -89,7 +89,7 @@ def main():
     fig.text(0.02, 0.012,
              "● 본 연구 · ○ 선행 정책 재현. 오른쪽으로 갈수록\n"
              "같은 절감을 더 큰 과부하로 산 것이다.",
-             fontsize=5.2, ha="left", linespacing=1.4)
+             fontsize=6.2, ha="left", linespacing=1.4)
 
     fig.tight_layout(rect=(0, 0.13, 1, 1), pad=0.4)
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fig7_benchmark.png")

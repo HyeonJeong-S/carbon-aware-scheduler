@@ -75,7 +75,7 @@
 <g transform="translate(122,129) scale(0.62)"><circle cx="11" cy="11" r="10" fill="#fff" stroke="#000000" stroke-width="1.6"/><line x1="11" y1="11" x2="11" y2="4.5" stroke="#000000" stroke-width="1.5"/><line x1="11" y1="11" x2="15.5" y2="13" stroke="#000000" stroke-width="1.5"/><circle cx="11" cy="11" r="1.3" fill="#000000"/></g>
 <text x="162" y="136" text-anchor="middle" font-size="8" font-weight="bold">시간 이동</text>
 <text x="162" y="147" text-anchor="middle" font-size="5.8">마감 · 용량 인지</text>
-<path d="M31,44 L31,66 L48,66 L48,74" fill="none" stroke="#000000" stroke-width="1.3" marker-end="url(#a)"/>
+<path d="M31,44 L31,50 L48,50 L48,74" fill="none" stroke="#000000" stroke-width="1.3" marker-end="url(#a)"/>
 <path d="M160,38 L160,50 L186,50 L186,74" fill="none" stroke="#000000" stroke-width="1.3" marker-end="url(#a)"/>
 <line x1="98" y1="88" x2="116" y2="88" stroke="#000000" stroke-width="1.2" marker-end="url(#a)"/>
 <text x="107" y="83" text-anchor="middle" font-size="5.6" font-style="italic">Ĉ(t)</text>

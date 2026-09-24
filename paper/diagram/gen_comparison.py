@@ -81,7 +81,7 @@ def main():
     ax.set_axisbelow(True)
     fig.text(0.015, 0.012,
              "회색(③)은 용량 제약을 전혀 두지 않은 반사실이라 달성 가능한 값이 아니다.",
-             fontsize=5.4)
+             fontsize=6.2)
     fig.tight_layout(rect=(0, 0.075, 1, 1), pad=0.35)
     for e in (".png", ".pdf"):
         fig.savefig(os.path.join(HERE, "fig5_comparison" + e))

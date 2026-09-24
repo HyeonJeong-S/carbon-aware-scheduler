@@ -87,7 +87,7 @@ def main():
     # 이으니, 그 선이 데이터 계열처럼 읽혔다(지면 렌더에서 확인). 글자를 강조
     # 구간 바로 아래 빈 자리에 놓아 위치만으로 가리키게 한다.
     ax.text(mid_x - 6, mid_y - 20, "+6.7 ms, -3,108.8 kg\n(464.9 kg/ms, 전 구간 최대)",
-            fontsize=5.3, ha="left", va="top", linespacing=1.3, color="#444444")
+            fontsize=6.2, ha="left", va="top", linespacing=1.3, color="#444444")
 
     ax.set_xlim(-6, 122)
     ax.set_ylim(-4, 74)
@@ -107,9 +107,9 @@ def main():
               # (58이 렌더 이미지에서 발견, be가 원본 PNG에서 재확인). 줄을 나눈다.
               "“α=auto가 탄소 최저”가 아니라 “한계수익이 정점을 찍는 지점”이다\n"
               "(α=0.75가 10,396.5kg으로 더 낮음).",
-              fontsize=5.3, ha="left", linespacing=1.4)
+              fontsize=6.2, ha="left", linespacing=1.4)
 
-    fig.tight_layout(rect=(0, 0.10, 1, 1), pad=0.5)
+    fig.tight_layout(rect=(0, 0.20, 1, 1), pad=0.5)   # 각주 3줄(6.2pt) 자리
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fig4_pareto.png")
     fig.savefig(out)
     fig.savefig(out.replace(".png", ".pdf"))  # KCI 인쇄 대비 벡터판
