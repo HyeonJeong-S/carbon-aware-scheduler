@@ -228,9 +228,20 @@ def fig_scheduler():
     파이프라인(capacity.run_rolling, capacity=12, 표2 ④)을 다시 돌려
     fig4_gantt_data.json을 만든다.
 
-    높이: 표본이 11→14건(6→7행)으로 늘었지만 4c 지시("높이를 늘리지 마라, 줄일
-    수 있으면 줄여라")에 따라 행당 pt(15.5→13.0)를 줄여 전체 높이는 오히려
-    259→257pt로 살짝 줄었다.
+    2026-09-24 4c 배분(세 번째 개정): 레일을 넣고 보니 겹치지 않는 작업끼리 한
+    행을 같이 쓰던 그리디 배정이 더는 안 맞았다 — 레일 여러 개가 한 행에서
+    하나로 이어져 보여 "이 창이 어느 작업 것인지" 다시 모호해졌다(4c 재지적).
+    **한 행에 한 작업**으로 바꾸고, 표본을 "창(window) >= 22h" 단일 문턱으로
+    다시 골라(gen_fig4_scheduler_data.py 참고 — j_132777을 반드시 포함해야
+    해서 실행시간 문턱을 버렸다) 9건으로 줄였다. 회색 팔레트의 CRITICAL_GRAY
+    (마감 강제)는 이 표본엔 없다 — 강제 편입은 창이 좁아야 일어나는 일이라
+    창>=22h 조건과 거의 배타적이다(이 날 강제 편입 2건의 창은 16.97h·18.21h로
+    22h에 못 미친다). 범례에서도 이 항목은 표본에 실제로 쓰였을 때만 보인다.
+
+    높이: 한 행-한 작업으로 바꾸며 행 수는 6(1차)→9(이번)로 늘었지만, 4c 지시
+    ("높이를 늘리지 마라, 줄일 수 있으면 줄여라")에 따라 행당 pt를 13.0→10.0
+    으로 낮춰 전체 높이는 오히려 259→256pt로 줄었다(렌더해서 겹침 없는지
+    확인했다).
     """
     d = json.load(open(os.path.join(HERE, "fig4_slot_data.json")))
     car, occ, cap = np.array(d["carbon"]), np.array(d["occ"]), d["cap"]
@@ -238,22 +249,12 @@ def fig_scheduler():
 
     g = json.load(open(os.path.join(HERE, "fig4_gantt_data.json")))
     gjobs = sorted(g["jobs"], key=lambda j: j["tau"])
-    # 그리디 구간 배정: 서로 겹치는 작업만 다른 행에, 안 겹치면 같은 행을 같이 쓴다
-    # (구간 스케줄링의 표준 그리디 — 최소 행 수가 나온다).
-    row_end, rows = [], []
-    for j in gjobs:
-        placed = False
-        for ri, end in enumerate(row_end):
-            if j["tau"] >= end:
-                row_end[ri] = j["tau"] + j["dur"]
-                rows.append(ri)
-                placed = True
-                break
-        if not placed:
-            row_end.append(j["tau"] + j["dur"])
-            rows.append(len(row_end) - 1)
-    n_rows = len(row_end)
-    ROW_PT = 13.0  # 2026-09-24 4c 배분: 행이 6→7로 늘어도 높이가 안 늘게(15.5→13.0)
+    # 2026-09-24 4c 배분(세 번째 개정): 한 행에 한 작업 — 레일을 넣은 뒤로는
+    # 그리디 구간 배정(안 겹치면 행 공유)이 성립하지 않는다. rows[i]=i로
+    # 그대로 둔다.
+    rows = list(range(len(gjobs)))
+    n_rows = len(gjobs)
+    ROW_PT = 10.0  # 2026-09-24 4c 배분: 6행→9행이어도 높이가 오히려 줄게(13.0→10.0)
 
     fig, (a1, a3, a2) = plt.subplots(
         3, 1, figsize=(COL, (166 + ROW_PT * n_rows) / 72.0), dpi=300, sharex=True,
@@ -318,9 +319,14 @@ def fig_scheduler():
         # 빈 구간(6~15시, 이 행엔 그 사이 아무 막대도 없다)에 넣어 패널 안에 완전히
         # 들어가게 한다. 아래 occ 패널과 같은 문구("마감 강제")를 써서 같은 사건임을
         # 알아보게 한다.
+        # 2026-09-24 4c 배분(세 번째 개정): 레일 선이 생기면서 이 글자 자리를 선이
+        # 관통할 수 있다(확대해서 발견) — 흰 배경을 깔아 뗀다. 이번 9건 표본에는
+        # forced 작업이 없어 이 분기가 실제로는 안 그려지지만, forced가 다시
+        # 섞이는 문턱으로 바뀔 때를 위해 고쳐 둔다.
         a3.annotate("마감 강제", (forced_x0, forced_row),
                     textcoords="offset points", xytext=(-4, 0), ha="right", va="center",
-                    fontsize=NOTE)
+                    fontsize=NOTE, zorder=6,
+                    bbox=dict(facecolor="white", edgecolor="none", pad=1.0))
 
     full = occ >= cap
     # 빗금 대신 회색 농담 — 흑백 인쇄에서 더 깨끗하고 학술지에서 더 흔하다.

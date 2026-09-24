@@ -17,15 +17,27 @@ fig4_slot_data.json(시각별 탄소·동시 실행 수)은 이미 레포에 있
 보였다. 이번 판은 각 작업의 s_j(제출 시각)~D_j(마감)이라는 "레일"을 같이
 실어, 창이 넓은데도 저탄소 시각으로 못 간 작업(용량이 막은 경우)이 보이게 한다.
 
-문턱을 3.5h→3.0h로 낮췄다(여전히 단일 문턱, 손으로 고른 것 없음) — 3.5h에서는
-j_132777(실행시간 3.20h, 창 22.1h)이 문턱에 걸려 빠졌는데, 이 작업이 바로
-"창은 넓은데 용량 때문에 밀린" 사례다(무제약 재실행 대조: capacity=12일 때
-16시·27.2 gCO2/kWh로 실행되지만 capacity=100000이면 제출 즉시·21.0 gCO2/kWh로
-실행된다 — 용량이 없었다면 갔을 자리가 있었다는 뜻). 14건이 나온다(10~20건
-권장 범위 안), 강제 편입 2건 포함, 창/실행시간 비율이 2.3~6.9배로 다양하다.
-(더 촘촘한 창을 가진 작업은 전부 실행시간이 1시간 미만으로 막대가 안 보일
-만큼 작아 표본에서 자연히 빠진다 — 이 자체가 "60%는 구조적으로 시간 이동에
-못 낀다"는 §4.1 발견과 같은 결이다.)
+2026-09-24(4c 배분, 세 번째 개정): 레일을 넣으니 한 행에 작업을 여럿(그리디
+구간 배정) 같이 두는 예전 방식이 성립하지 않았다 — 레일 여러 개가 한 줄로
+붙어 보여 오히려 더 헷갈렸다. **한 행에 한 작업**으로 바꾸고(gen_figs_data.py
+쪽), 표본은 실행시간이 아니라 **창(window = (D_j-d_j)-s_j) >= 22시간** 문턱
+하나로 다시 골랐다(여전히 단일 문턱, 손으로 고른 것 없음) — j_132777(창
+22.1h, "창은 넓은데 용량 때문에 16시로 밀린" 이 그림의 핵심 사례, 무제약
+재실행 대조: capacity=12면 16시·27.2 gCO2/kWh, capacity=100000이면 제출
+즉시·21.0 gCO2/kWh)을 반드시 포함해야 했기 때문이다 — 실행시간 기준으로는
+어떤 문턱을 잡아도 "j_132777 포함"과 "~8건" 둘을 동시에 만족시킬 수 없었다
+(직접 스윕해 확인: 실행시간>=3.15h는 14건이라 이 건을 포함하지만 너무 많고,
+문턱을 조금만 올려도 이 건부터 먼저 빠진다 — 이 건의 실행시간 3.20h가 표본
+안에서 짧은 축에 속해서다).
+
+9건이 나온다. 창>=22h로 걸렀으므로 전부 "창이 넉넉한" 축에만 있다(창/실행시간
+비율 5.1~45.7배) — "창이 빡빡한데 눈에 보이는" 예는 이 표본엔 없다. 가능한 한
+낮은 문턱(실행시간 기준)으로 훑어봐도 창이 좁고 실행시간이 1시간 넘는 작업
+자체가 이 날 이 리전엔 없었다(전부 실행시간 1시간 미만) — 억지로 만들지
+않고 있는 그대로 report한다. 강제 편입(forced) 작업도 이 표본엔 없다 —
+강제 편입은 정의상 창이 좁아서(마감 임박) 생기는 일이라 창>=22h인 작업과는
+서로 배타적에 가깝다(이 날 강제 편입 2건의 창은 각각 16.97h·18.21h로 22h에
+못 미친다).
 
 실행: ./.venv/bin/python paper/diagram/gen_fig4_scheduler_data.py
 """
@@ -49,7 +61,9 @@ YEAR_ASSIGN_CSV = LB_RESULTS_DIR / "assign_alpha_auto.csv"
 CAP = 12       # 유효 상한 — scheduler/reproduce.py의 CAP과 동일(표2 ④ 재현)
 DAY = 101      # fig4_slot_data.json이 이미 쓰고 있던 날
 REGION = "US-CAL-CISO"
-GANTT_THRESHOLD_H = 3.0   # 간트에 얹을 작업의 최소 실행시간(단일 문턱, 솎아내기 없음)
+# 2026-09-24(4c, 세 번째 개정): 실행시간 문턱→창(window) 문턱으로 바꿨다.
+# 이유는 파일 docstring 참고 — j_132777을 반드시 포함해야 했다.
+GANTT_WINDOW_THRESHOLD_H = 22.0   # 간트에 얹을 작업의 최소 창 길이(단일 문턱, 솎아내기 없음)
 
 
 def main():
@@ -96,7 +110,12 @@ def main():
 
     overlapping = [v for v in cal_jobs
                    if v["scheduled_start"] < day_end and v["scheduled_start"] + v["duration"] > day_start]
-    sel = sorted([v for v in overlapping if v["duration"] >= GANTT_THRESHOLD_H],
+
+    def window_of(v):
+        deadline = job_by_id[v["job_id"]]["deadline"]
+        return (deadline - v["duration"]) - v["submit_time"]
+
+    sel = sorted([v for v in overlapping if window_of(v) >= GANTT_WINDOW_THRESHOLD_H],
                  key=lambda v: v["scheduled_start"])
 
     gantt = []
@@ -108,13 +127,17 @@ def main():
             "tau": round(v["scheduled_start"] - day_start, 4), # 실제 실행 시작(블록 왼쪽 끝)
             "dur": round(v["duration"], 4),                     # 실행 시간(블록 길이)
             "D": round(deadline - day_start, 4),                # 마감(레일 오른쪽 끝)
+            "window": round(window_of(v), 4),
             "forced": bool(v["forced"]), "k": v["k"],
         })
     gantt_path = os.path.join(_HERE, "fig4_gantt_data.json")
-    json.dump({"day": DAY, "region": REGION, "threshold_h": GANTT_THRESHOLD_H, "jobs": gantt},
+    json.dump({"day": DAY, "region": REGION, "window_threshold_h": GANTT_WINDOW_THRESHOLD_H,
+               "jobs": gantt},
               open(gantt_path, "w"), ensure_ascii=False, indent=1)
-    print(f"wrote {gantt_path}  ({len(gantt)}건, 문턱 {GANTT_THRESHOLD_H}h, "
-          f"forced {sum(g['forced'] for g in gantt)}건)")
+    has_132777 = any(g["id"] == "j_132777" for g in gantt)
+    print(f"wrote {gantt_path}  ({len(gantt)}건, 창 문턱 {GANTT_WINDOW_THRESHOLD_H}h, "
+          f"forced {sum(g['forced'] for g in gantt)}건, j_132777 포함={has_132777})")
+    assert has_132777, "j_132777이 표본에서 빠졌다 — 이 그림의 핵심 사례라 반드시 있어야 한다"
 
 
 if __name__ == "__main__":

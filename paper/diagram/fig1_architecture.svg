@@ -85,7 +85,8 @@
 <path d="M160,38 L160,50 L186,50 L186,74" fill="none" stroke="#000000" stroke-width="1.3" marker-end="url(#a)"/>
 <line x1="98" y1="88" x2="116" y2="88" stroke="#000000" stroke-width="1.2" marker-end="url(#a)"/>
 <text x="107" y="83" text-anchor="middle" font-size="6.0" font-style="italic">Ĉ(t)</text>
-<rect x="104" y="90" width="6" height="9" fill="#000000"/>
+<rect x="100" y="94" width="14" height="12" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="104" y="99" width="5" height="7" fill="#000000"/>
 <path d="M56.5,108.0 L56.5,121.9 L54.0,121.9 L59.0,132.0 L64.0,121.9 L61.5,121.9 L61.5,108.0 Z" fill="#fff" stroke="#000000" stroke-width="1.2"/>
 <rect x="38" y="132" width="42" height="24" fill="#fff"/>
 <rect x="40" y="133" width="38" height="16" fill="#fff" stroke="#000000" stroke-width="0.8"/>
@@ -95,7 +96,7 @@
 <text x="59" y="154" text-anchor="middle" font-size="6.0">24 h 곡선</text>
 <line x1="157" y1="108" x2="157" y2="120" stroke="#000000" stroke-width="1.2" marker-end="url(#a)"/>
 <g transform="translate(120,112) rotate(0)"><rect x="0" y="-8" width="39.199999999999996" height="12" fill="#fff" stroke="#000000" stroke-width="1"/><text x="19.599999999999998" y="0.5" font-size="6.0" text-anchor="middle">리전 r(j)</text></g>
-<path d="M196,133 L202,133 L202,145 L196,145" fill="none" stroke="#000000" stroke-width="0.9" stroke-dasharray="3 1.8" marker-end="url(#a)"/>
+<path d="M196,128 L202,128 L202,140 L196,140" fill="none" stroke="#000000" stroke-width="0.9" stroke-dasharray="3 1.8" marker-end="url(#a)"/>
 <text x="203" y="119" text-anchor="end" font-size="6.0" font-style="italic">availᵣ</text>
 <path d="M157,156 L157,176" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#a)"/>
 <g transform="translate(108,170) rotate(0)"><rect x="0" y="-8" width="57.599999999999994" height="12" fill="#fff" stroke="#000000" stroke-width="1"/><text x="28.799999999999997" y="0.5" font-size="6.0" text-anchor="middle">실행 (리전, 시각)</text></g>
