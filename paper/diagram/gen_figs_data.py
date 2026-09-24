@@ -177,7 +177,7 @@ def fig_scheduler():
     """용량이 왜 시간 이동을 막는지를 실제 하루로 보인다.
 
     캘리포니아의 한 날(101일차) 실측이다. 위는 시각별 탄소집약도, 아래는 그 시각 실제
-    동시 실행 수다. 탄소가 가장 낮은 저녁 시간대가 정확히 상한 12 에 닿아 있다 —
+    동시 실행 수다. 탄소가 가장 낮은 시간대(UTC 기준, 현지로는 한낮)가 정확히 상한 12 에 닿아 있다 —
     작업을 옮기고 싶은 곳이 이미 차 있다는 것이 §6.4 의 발견이고, 이 그림이 그 문장을
     대신한다. 개념도의 '자리 없음' 회색 상자와 달리 여기서는 왜 없는지가 보인다."""
     d = json.load(open(os.path.join(HERE, "fig4_slot_data.json")))
@@ -209,7 +209,10 @@ def fig_scheduler():
     a2.set_yticks([0, 6, 12])
     a2.set_xlim(-0.8, 23.8)
     a2.set_xticks([0, 6, 12, 18, 23])
-    a2.set_xlabel("하루 중 시각 (h)", fontsize=LAB)
+    # 2026-09-24: x 축은 UTC 다(원자료가 UTC). day 101 은 4월이라 캘리포니아는
+    # PDT(UTC−7) — UTC 14~23시가 현지 오전 7시~오후 4시, 곧 태양광 한낮이다.
+    # 축에 UTC 를 명시하지 않으면 "저녁"으로 읽힌다(fd 가 원자료 대조로 발견).
+    a2.set_xlabel("하루 중 시각 (UTC · 현지는 −7 h)", fontsize=LAB)
     a2.set_ylabel("동시 실행 수", fontsize=LAB, labelpad=1)
     a2.tick_params(labelsize=TICK)
     # 상한을 넘긴 슬롯 — 마감이 임박해 미룰 수 없는 작업이 들어간 자리
