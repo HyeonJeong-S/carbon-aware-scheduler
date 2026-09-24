@@ -157,7 +157,7 @@ def fig_loadbalancer(data):
     ax.set_ylim(-42, 430)
     ax.set_xticks([0, 50, 100, 150, 200, 250])
     ax.set_xlabel("출발지(한국)로부터의 네트워크 지연 (ms)", fontsize=LAB)
-    ax.set_ylabel("그 슬롯의 탄소집약도 (gCO₂/kWh)", fontsize=LAB)
+    ax.set_ylabel("탄소집약도 (gCO₂/kWh)", fontsize=LAB)   # "그 슬롯의"는 캡션이 이미 말한다
     ax.tick_params(labelsize=TICK)
     ax.grid(axis="y", color=LIGHT, lw=0.45, zorder=0)
     ax.set_axisbelow(True)
