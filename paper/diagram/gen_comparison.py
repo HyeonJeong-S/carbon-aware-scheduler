@@ -16,12 +16,17 @@
   · 실현 불가능한 반사실(③)은 테두리를 점선으로 두어 "달성한 값이 아니다"를 표시한다.
 """
 import os
+import sys
 
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.ticker
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from palette import INK, EXCEPT_GRAY  # 2026-09-24: 그림 전체 공용 회색 팔레트(palette.py)
 
 for name in ("Apple SD Gothic Neo", "AppleGothic", "Malgun Gothic", "Noto Sans KR"):
     if any(name.lower() in f.name.lower() for f in fm.fontManager.ttflist):
@@ -33,8 +38,7 @@ plt.rcParams.update({
     "xtick.major.width": 0.8, "ytick.major.width": 0.8,
 })
 
-INK, LIGHT = "#000000", "#cccccc"
-HERE = os.path.dirname(os.path.abspath(__file__))
+LIGHT = "#cccccc"  # 눈금선용 — 팔레트 대상 아님(정상/예외를 나타내는 회색이 아니다)
 
 # (라벨, kg, 절감률, 본 연구인가, 실현 가능한가)
 ROWS = [
@@ -51,8 +55,10 @@ def main():
     ys = range(len(ROWS))[::-1]
     for y, (lab, kg, pct, ours, feas) in zip(ys, ROWS):
         # 흑백에서 계열 구분은 무늬가 아니라 회색 농담으로 한다.
-        # 본 연구는 검정, 실현 가능한 대조군은 흰색, 실현 불가능한 반사실은 회색.
-        fc = INK if ours else ("white" if feas else "#bfbfbf")
+        # 본 연구는 검정, 실현 가능한 대조군은 흰색, 실현 불가능한 반사실은 회색
+        # (2026-09-24 b6 배분: "정상 대비 예외" 단계 EXCEPT_GRAY — 그림 7의 상한
+        # 도달과 같은 단계다. 예전엔 #bfbfbf였다).
+        fc = INK if ours else ("white" if feas else EXCEPT_GRAY)
         ax.barh(y, kg, height=0.62, facecolor=fc, edgecolor=INK,
                 linewidth=0.9, zorder=3)
         txt = f"{kg:,.0f}" + (f"  ({pct:.2f}%)" if pct else "")

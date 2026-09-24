@@ -229,7 +229,7 @@ def fig_architecture():
     # ── 입력: 탄소 이력(구름)과 작업(문서 묶음) ──
     L += [ic_cloud(16, 6, 0.70, "탄소집약도 이력"),
           ic_jobs(148, 8, 0.68, "작업 · 마감")]
-    L += [ribbon(62, 20, "N 리전 · 시간별", -10, 5.4)]
+    L += [ribbon(62, 20, "N 리전 · 시간별", -10, 6.0)]
 
     # ── CAST 본체 (둥근 컨테이너) ──
     L += [rbox(10, 54, 195, 116, 10, 1.7),
@@ -239,19 +239,19 @@ def fig_architecture():
     L += [rbox(20, 74, 78, 34, 6, 1.1),
           ic_brain(24, 79, 0.62),
           txt(64, 88, "LSTM 예측", anchor="middle", bold=True, size=FT),
-          txt(64, 99, "168 h → 24 h", anchor="middle", size=5.8)]
+          txt(64, 99, "168 h → 24 h", anchor="middle", size=6.0)]
 
     # 공간 이동 — 지구 아이콘
     L += [rbox(118, 74, 78, 34, 6, 1.1),
           ic_globe(122, 81, 0.62),
           txt(162, 88, "공간 이동", anchor="middle", bold=True, size=FT),
-          txt(162, 99, "ILP · 용량", anchor="middle", size=5.8)]
+          txt(162, 99, "ILP · 용량", anchor="middle", size=6.0)]
 
     # 시간 이동 — 시계 아이콘
     L += [rbox(118, 122, 78, 34, 6, 1.1),
           ic_clock(122, 129, 0.62),
           txt(162, 136, "시간 이동", anchor="middle", bold=True, size=FT),
-          txt(162, 147, "마감 · 용량 인지", anchor="middle", size=5.8)]
+          txt(162, 147, "마감 · 용량 인지", anchor="middle", size=6.0)]
 
     # 입력 → 본체
     # 2026-09-24: 가로 구간이 y=66 이라 "CAST" 글자를 관통했다(fd 가 400dpi 에서 발견).
@@ -262,8 +262,8 @@ def fig_architecture():
 
     # 값 하나(가는 화살표) vs 곡선 전체(굵은 화살표) — 이 대비가 요지
     L += [arr(98, 88, 116, 88, 1.2),
-          txt(107, 83, "Ĉ(t)", anchor="middle", it=True, size=5.6),
-          txt(107, 97, "값 1개", anchor="middle", size=5.2)]
+          txt(107, 83, "Ĉ(t)", anchor="middle", it=True, size=6.0),
+          txt(107, 97, "값 1개", anchor="middle", size=6.0)]
     # 2026-09-24(b6 지적, 4d 수정): 굵은 화살표의 끝(59,139)과 가로선의 시작
     # (62,139)이 겹쳐 "굵은 화살표가 상자를 가리키는지, 가로선이 그 자리에서
     # 그냥 시작하는지"가 모호했다. 상자를 화살표 축(x=59)에 맞춰 옮겨 굵은
@@ -272,11 +272,11 @@ def fig_architecture():
           f'<rect x="38" y="132" width="42" height="24" fill="#fff"/>',
           box(40, 133, 38, 16, sw=0.8), spark(43, 135, 32, 12),
           path("M78,141 L116,141", sw=1.3),
-          txt(59, 154, "24 h 곡선", anchor="middle", size=5.4)]
+          txt(59, 154, "24 h 곡선", anchor="middle", size=6.0)]
 
     # 공간 → 시간 (리전 확정)
     L += [arr(157, 108, 157, 120, 1.2),
-          ribbon(120, 112, "리전 r(j)", 0, 5.2)]
+          ribbon(120, 112, "리전 r(j)", 0, 6.0)]
 
     # 되먹임 — 2026-09-24(b6 지적, 4d 재확인): 이전 그림은 이 점선이 시간 이동
     # 상자에서 나와 공간 이동 상자 위로 들어가, 마치 "시간 이동 → 공간 이동"
@@ -288,18 +288,18 @@ def fig_architecture():
     # 없다. avail_r 은 시간 이동 상자 **자신**의 자기 되먹임이므로, 상자
     # 밖으로 나가는 화살표가 아니라 같은 상자로 돌아오는 짧은 고리로 바꾼다.
     L += [path("M196,133 L202,133 L202,145 L196,145", sw=0.9, dash="3 1.8"),
-          txt(203, 119, "availᵣ", anchor="end", it=True, size=4.8)]
+          txt(203, 119, "availᵣ", anchor="end", it=True, size=6.0)]
 
     # ── 출력: 리전 랙 ──
     L += [path("M157,156 L157,176", sw=1.4),
-          ribbon(108, 170, "실행 (리전, 시각)", 0, 5.2)]
+          ribbon(108, 170, "실행 (리전, 시각)", 0, 6.0)]
     # 2026-09-24(b6 지적): 유니코드 아래첨자 문자(₁₂₃)는 선언한 한글
     # 서체가 찍지만 Rₙ(U+2099)만 그 서체에 없어 시스템 서체(SFNS)로
     # 넘어가 넷 중 하나만 굵기·높이가 달라 보였다. sb() tspan 아래첨자로
     # 통일해 네 라벨 모두 같은 서체·크기로 찍히게 한다.
     for k, x in enumerate((14, 62, 110, 158)):
         L.append(ic_rack(x, 182, 0.60, "R" + sb(("1", "2", "3", "n")[k])))
-    L.append(txt(107, 232, "동시 실행 수 ≤ availᵣ", anchor="middle", it=True, size=5.6))
+    L.append(txt(107, 232, "동시 실행 수 ≤ availᵣ", anchor="middle", it=True, size=6.0))
     L.append("</svg>")
     return "\n".join(L)
 

@@ -49,6 +49,10 @@ plt.rcParams.update({
 })
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+# 2026-09-24: 그림 전체 공용 회색 팔레트(palette.py). GRAY(#7a7a7a)는 여기 대상이
+# 아니다 — "실측 대 예측" 두 계열을 가르는 색이지 정상/예외를 나타내는 색이 아니다.
+from palette import EXCEPT_GRAY, CRITICAL_GRAY
 INK, GRAY, LIGHT = "#000000", "#7a7a7a", "#cccccc"
 COL = 215 / 72.0                 # 단내 폭
 FULL = 451 / 72.0                # 전단 폭(그림 1·2가 쓰는 구역)
@@ -247,7 +251,10 @@ def fig_scheduler():
     # 착각을 준다. 그래서 이 패널만 더 짙은 회색을 쓴다(같은 결의 "예외" 표시를
     # 유지하되 occ 패널의 회색과 눈으로 구별되게).
     x_lo, x_hi = -0.8, 23.8
-    FORCED_GRAY = "#595959"   # occ 패널의 "#8c8c8c"(상한 도달)과 의도적으로 다른 농도
+    # 2026-09-24 b6 배분(회색 팔레트 통일): CRITICAL_GRAY(가장 예외적인 것)를 쓴다.
+    # occ 패널의 EXCEPT_GRAY(상한 도달, 한 단계 옅음)와 나란히 놓이는 유일한 자리라
+    # 인쇄 크기 그대로 렌더해 구별됨을 확인했다.
+    FORCED_GRAY = CRITICAL_GRAY
     forced_end = forced_row = forced_x0 = None
     for j, ri in zip(gjobs, rows):
         forced = j["forced"]
@@ -281,7 +288,7 @@ def fig_scheduler():
     # 범례는 아래에서 Patch로 따로 만든다(세 채움을 한 줄에 다 넣으려고) — 여기
     # label= 은 안 쓴다.
     a2.bar(t[~full], occ[~full], width=0.74, facecolor="white", edgecolor=INK, lw=0.7)
-    a2.bar(t[full], occ[full], width=0.74, facecolor="#8c8c8c", edgecolor=INK, lw=0.7)
+    a2.bar(t[full], occ[full], width=0.74, facecolor=EXCEPT_GRAY, edgecolor=INK, lw=0.7)
     a2.axhline(cap, color=INK, lw=1.0, ls=(0, (4, 1.6)))
     a2.text(13.2, cap + 0.6, f"유효 상한 {cap}", ha="left", fontsize=NOTE)
     a2.set_ylim(0, 17.5)
@@ -305,7 +312,7 @@ def fig_scheduler():
     # 대신, 한 줄에 세 항목을 다 넣고 각 라벨에 소속 패널을 괄호로 밝힌다.
     handles = [
         Patch(facecolor="white", edgecolor=INK, lw=0.7, label="여유 있음"),
-        Patch(facecolor="#8c8c8c", edgecolor=INK, lw=0.7, label="상한 도달(동시실행)"),
+        Patch(facecolor=EXCEPT_GRAY, edgecolor=INK, lw=0.7, label="상한 도달(동시실행)"),
         Patch(facecolor=FORCED_GRAY, edgecolor=INK, lw=0.6, label="마감 강제(간트)"),
     ]
     fig.legend(handles=handles, fontsize=NOTE, frameon=False, ncol=3, loc="upper left",

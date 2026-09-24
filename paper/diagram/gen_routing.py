@@ -26,15 +26,19 @@ import matplotlib.font_manager as fm
 sys.path.insert(0, "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler")
 from interface.regions import REGIONS, REGION_LABELS
 
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from palette import INK, AUX_GRAY  # 2026-09-24: 그림 전체 공용 회색 팔레트(palette.py)
+
 for name in ("Apple SD Gothic Neo", "AppleGothic", "Malgun Gothic", "Noto Sans KR"):
     if any(name.lower() in f.name.lower() for f in fm.fontManager.ttflist):
         plt.rcParams["font.family"] = name
         break
 plt.rcParams["axes.unicode_minus"] = False
 
-HERE = os.path.dirname(os.path.abspath(__file__))
 SUM = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/load_balancer/framework/results/summary.json"
-INK, GRAY = "#000000", "#999999"
+# 2026-09-24 b6 배분(회색 팔레트 통일): "홈 유지분"은 보조·부수 정보라 AUX_GRAY.
+GRAY = AUX_GRAY
 SHORT = {"US-CAL-CISO": "캘리포니아", "US-TEX-ERCO": "텍사스", "US-NY-NYIS": "뉴욕",
          "FR": "프랑스", "DE": "독일", "KR": "한국", "IN": "인도", "JP": "일본"}
 

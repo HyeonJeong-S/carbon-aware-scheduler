@@ -9,18 +9,22 @@
 (§5.7 식(16) 회계, 논문 표1을 전건 재현함을 확인).
 """
 import os
+import sys
 
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 
+_HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, _HERE)
+from palette import INK, BG_WASH  # 2026-09-24: 그림 전체 공용 회색 팔레트(palette.py)
+
 for name in ("Apple SD Gothic Neo", "AppleGothic", "Malgun Gothic", "Noto Sans KR"):
     if any(name.lower() in f.name.lower() for f in fm.fontManager.ttflist):
         plt.rcParams["font.family"] = name
         break
 plt.rcParams["axes.unicode_minus"] = False
-INK = "#000000"
 
 # (라벨, 용량위반, 절감률%, 우리 것인가, 라벨 위치)
 POINTS = [
@@ -77,7 +81,7 @@ def main():
     # 2026-09-24: "상한을 지키는 영역"은 과장이었다 — 이 음영 안에 본 연구의
     # 위반 227건이 들어 있다. 본문도 용량을 소프트 제약이라고 밝히므로
     # 그림만 "지킨다"고 말하면 안 된다. 경계값을 그대로 적는다.
-    ax.axvspan(-0.2, 300, color="#f0f0f0", zorder=0)
+    ax.axvspan(-0.2, 300, color=BG_WASH, zorder=0)  # 2026-09-24: 공용 팔레트의 배경 음영 단계
     ax.annotate("위반 300건 이하", (0.9, 101), fontsize=6.2,
                 color="#666666", ha="left")
 
