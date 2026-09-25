@@ -16,7 +16,7 @@
 <text x="21" y="24" font-size="7" fill="#fff" text-anchor="middle" font-weight="bold">CO₂</text>
 </g>
 <polyline points="13.0,36.0 14.1,36.1 15.3,36.3 16.4,36.6 17.5,37.1 18.6,37.7 19.8,38.4 20.9,39.1 22.0,40.0 23.2,40.8 24.3,41.7 25.4,42.6 26.5,43.5 27.7,44.2 28.8,45.0 29.9,45.6 31.1,46.1 32.2,46.6 33.3,46.8 34.4,47.0 35.6,47.0 36.7,46.8 37.8,46.6 38.9,46.1 40.1,45.6 41.2,45.0 42.3,44.2 43.5,43.5 44.6,42.6 45.7,41.7 46.8,40.8 48.0,40.0 49.1,39.1 50.2,38.4 51.4,37.7 52.5,37.1 53.6,36.6 54.7,36.3 55.9,36.1 57.0,36.0" fill="none" stroke="#000000" stroke-width="0.9" stroke-linejoin="round"/>
-<text x="35" y="55" text-anchor="middle" font-size="5.8">탄소집약도 과거 168 h</text>
+<text x="38" y="54" text-anchor="middle" font-size="5.3">탄소집약도 과거 168 h</text>
 <rect x="76.0" y="16.0" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
 <rect x="87.2" y="16.0" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
 <rect x="98.4" y="16.0" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
@@ -30,13 +30,15 @@
 <rect x="116.6" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#d9d9d9" stroke="#000000" stroke-width="0.8"/>
 <rect x="127.8" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#d9d9d9" stroke="#000000" stroke-width="0.8"/>
 <rect x="139.0" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#d9d9d9" stroke="#000000" stroke-width="0.8"/>
+<text x="91.7" y="47" text-anchor="middle" font-size="5.6">공통 10</text>
+<text x="132.3" y="47" text-anchor="middle" font-size="5.6">기상 +3</text>
 <path d="M104.0,58.0 L104.0,65.0 L101.0,65.0 L107.0,70.0 L113.0,65.0 L110.0,65.0 L110.0,58.0 Z" fill="#fff" stroke="#000000" stroke-width="1.2"/>
-<rect x="20" y="74" width="175" height="41" rx="10" fill="#fff" stroke="#000000" stroke-width="1.6"/>
+<rect x="20" y="74" width="175" height="41" rx="10" fill="#fff" stroke="#000000" stroke-width="1.0"/>
 <text x="29" y="87" font-size="10" font-weight="bold">LSTM</text>
 <text x="189" y="87" text-anchor="end" font-size="5.8">+ 미래 24 h 날씨</text>
 <text x="189" y="95" text-anchor="end" font-size="5.8">기상 리전만 · 24×3 = 72</text>
 <path d="M190,95 L205,95 L205,127 L197,127" fill="none" stroke="#000000" stroke-width="0.8" stroke-dasharray="2.5 1.8" marker-end="url(#a)"/>
-<text x="26" y="106.5" font-size="7">64</text>
+<text x="29" y="96" font-size="5.8">은닉 64 · 2층</text>
 <rect x="44.0" y="99" width="9.0" height="6.0" rx="1.3" fill="#fff" stroke="#000000" stroke-width="0.8"/>
 <rect x="54.5" y="99" width="9.0" height="6.0" rx="1.3" fill="#fff" stroke="#000000" stroke-width="0.8"/>
 <rect x="65.0" y="99" width="9.0" height="6.0" rx="1.3" fill="#fff" stroke="#000000" stroke-width="0.8"/>
@@ -55,9 +57,7 @@
 <path d="M80.0,105.0 L80.0,106.5" fill="none" stroke="#000000" stroke-width="0.8"/>
 <path d="M101.0,105.0 L101.0,106.5" fill="none" stroke="#000000" stroke-width="0.8"/>
 <path d="M104.0,115.0 L104.0,120.2 L101.0,120.2 L107.0,124.0 L113.0,120.2 L110.0,120.2 L110.0,115.0 Z" fill="#fff" stroke="#000000" stroke-width="1.2"/>
-<rect x="20" y="125" width="175" height="22" rx="10" fill="#fff" stroke="#000000" stroke-width="1.6"/>
-<text x="29" y="134" font-size="8" font-weight="bold">출력  Ĉ</text>
-<text x="50" y="136" font-size="5.8">r</text>
-<text x="54" y="134" font-size="8">(t … t+24)</text>
+<rect x="20" y="125" width="175" height="22" rx="10" fill="#fff" stroke="#000000" stroke-width="1.0"/>
+<text x="29" y="134" font-size="8"><tspan font-weight="bold">출력  Ĉ</tspan><tspan font-size="5.8" dy="1.5">r</tspan><tspan dy="-1.5"> (t … t+24)</tspan></text>
 <polyline points="34.0,137.0 38.5,137.1 43.0,137.6 47.6,138.3 52.1,139.2 56.6,140.2 61.1,141.3 65.7,142.3 70.2,143.3 74.7,144.1 79.2,144.7 83.7,145.0 88.3,145.0 92.8,144.7 97.3,144.1 101.8,143.3 106.3,142.3 110.9,141.3 115.4,140.2 119.9,139.2 124.4,138.3 129.0,137.6 133.5,137.1 138.0,137.0" fill="none" stroke="#000000" stroke-width="0.9" stroke-linejoin="round"/>
 </svg>

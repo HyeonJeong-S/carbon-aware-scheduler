@@ -27,7 +27,8 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 from matplotlib.patches import Patch
 
-sys.path.insert(0, "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler")
+# 2026-09-25: Mac 절대경로 → 스크립트 위치 기준(레포 루트 = paper/diagram 의 두 단계 위).
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from interface import carbon_2025
 from interface.regions import REGIONS, REGION_LABELS
 
@@ -81,17 +82,21 @@ def fig_forecast(data):
     hist, fut = act[t0 - 168:t0], act[t0:t0 + 24]
     mae = float(np.abs(fut - pred).mean())
 
+    # 2026-09-25: 입력 168 h 전부를 그리면 요점인 출력 24 h 가 가로축의 12% 로 눌렸다
+    # (그림 비판 검토). 입력은 최근 48 h 만 보이고, 168 h 라는 사실은 캡션·본문이 말한다.
+    SHOW = 48
+    hist = hist[-SHOW:]
     fig, ax = plt.subplots(figsize=(COL, 116 / 72.0), dpi=300)
-    ax.plot(np.arange(-168, 0), hist, color=GRAY, lw=0.7)
+    ax.plot(np.arange(-SHOW, 0), hist, color=GRAY, lw=0.9)
     ax.plot(np.arange(24), fut, color=GRAY, lw=1.7, label="실측")
     ax.plot(np.arange(24), pred, color=INK, lw=1.3, ls=(0, (3.5, 1.6)), label="LSTM 예측")
     ax.axvline(0, color=INK, lw=0.8)
 
-    ax.axvspan(-172, 0, color="#f2f2f2", zorder=0)
+    ax.axvspan(-SHOW - 2, 0, color="#f2f2f2", zorder=0)
     # 출력 구간이 전체 폭의 12%뿐이라 그 안에 글자를 넣으면 전부 겹친다.
     # 구간 이름은 아래쪽에, 오차는 위쪽 빈 곳에 따로 둔다. 발행 시각은 세로선과
     # 음영 경계가 이미 말하므로 따로 적지 않는다.
-    ax.text(-86, 14, "입력 168 h", ha="center", fontsize=6.4)
+    ax.text(-SHOW / 2, 14, "입력 (최근 48 h)", ha="center", fontsize=6.4)
     # 출력 구간이 24단위뿐이라 "출력 24 h"(8자)를 넣으면 구분선과 오른쪽
     # 테두리를 둘 다 넘는다. 시간 길이는 x축 눈금(0, 24)이 이미 말한다.
     ax.text(12, 14, "출력", ha="center", fontsize=6.4)
@@ -100,10 +105,10 @@ def fig_forecast(data):
     # 있는 주석이라 캡션 쪽에 맡기고 그림에서는 뺀다(왼쪽 축선에 거의 붙던 문제도
     # 같이 없어진다). mae 값 자체는 print 로그용으로 계속 계산한다.
 
-    ax.set_xlim(-172, 24)
+    ax.set_xlim(-SHOW - 2, 25)
     ax.set_ylim(0, 245)
     ax.set_yticks([0, 50, 100, 150, 200])
-    ax.set_xticks([-168, -96, -24, 0, 24])
+    ax.set_xticks([-48, -36, -24, -12, 0, 12, 24])
     ax.set_xlabel("발행 시각 기준 경과 시간 (h)", fontsize=LAB)
     ax.set_ylabel("탄소집약도 (gCO₂/kWh)", fontsize=LAB)
     ax.tick_params(labelsize=TICK)
@@ -130,7 +135,11 @@ def fig_loadbalancer(data):
     i_auto, i_lat, i_car = int(np.argmin(sc(0.508))), int(np.argmin(lat)), int(np.argmin(c))
 
     fig, ax = plt.subplots(figsize=(COL, 128 / 72.0), dpi=300)
-    ax.scatter(lat, c, s=16, facecolor="white", edgecolor=INK, lw=0.9, zorder=3)
+    # 2026-09-25: 나머지 리전을 빈 원으로 그리면 범례의 빈 원("α=1 · 프랑스")과 구별이
+    # 안 됐다(그림 비판 검토). 세 선택 밖의 리전은 작은 회색 점으로 낮춘다.
+    others = [i for i in range(len(REGIONS)) if i not in (i_auto, i_lat, i_car)]
+    ax.scatter(lat[others], c[others], s=10, facecolor=GRAY, edgecolor="none",
+               zorder=3, label="기타 리전")
     for i, r in enumerate(REGIONS):
         if i in (i_auto, i_lat, i_car):
             continue
@@ -264,7 +273,7 @@ def fig_scheduler():
     lo = int(np.argmin(car))
     a1.scatter([lo], [car[lo]], s=26, marker="v", color=INK, zorder=4)
     a1.annotate("탄소 최저", (lo, car[lo]), textcoords="offset points",
-                xytext=(0, 6), ha="center", fontsize=NOTE)
+                xytext=(5, 9), ha="left", fontsize=NOTE)   # 2026-09-25: 곡선이 없는 오른쪽 위로
     a1.set_ylim(0, 138)
     a1.set_yticks([0, 40, 80, 120])
     a1.set_ylabel("탄소집약도\n(gCO₂/kWh)", fontsize=LAB, linespacing=1.25, labelpad=1)
@@ -302,10 +311,9 @@ def fig_scheduler():
         x0, x1 = j["tau"], j["tau"] + j["dur"]
         a3.barh(ri, min(x1, x_hi) - max(x0, x_lo), left=max(x0, x_lo), height=0.62,
                 facecolor=fc, edgecolor=INK, lw=0.6, zorder=3)
-        if x0 < x_lo:
-            a3.plot(x_lo, ri, marker="<", color=INK, ms=3.2, zorder=4)
-        if x1 > x_hi:
-            a3.plot(x_hi, ri, marker=">", color=INK, ms=3.2, zorder=4)
+        # 2026-09-25(그림 비판 검토): 막대가 하루 밖으로 이어질 때 찍던 ◀▶ 표식이 액자
+        # 끝에서 반쯤 잘려 설명 없는 작은 검은 사각형으로 보였다. 레일과 같은 관례로
+        # 액자 끝까지 긋는 것만으로 "이어진다"를 나타내고 표식은 뺀다.
         # 20시(occ가 14로 상한을 넘는 자리)까지 걸치는 강제 편입 막대를 짚는다 —
         # 아래 occ 패널의 "마감 강제" 주석과 같은 사건을 가리킨다.
         if forced and x0 < 20 < x1 and (forced_end is None or x1 > forced_end):
@@ -339,7 +347,7 @@ def fig_scheduler():
     a2.set_ylim(0, 17.5)
     a2.set_yticks([0, 6, 12])
     a2.set_xlim(x_lo, x_hi)
-    a2.set_xticks([0, 6, 12, 18, 23])
+    a2.set_xticks([0, 6, 12, 18])   # 2026-09-25: 끝의 23 이 간격을 깨서 뺐다
     # 2026-09-24: x 축은 UTC 다(원자료가 UTC). day 101 은 4월이라 캘리포니아는
     # PDT(UTC−7) — UTC 14~23시가 현지 오전 7시~오후 4시, 곧 태양광 한낮이다.
     # 축에 UTC 를 명시하지 않으면 "저녁"으로 읽힌다(fd 가 원자료 대조로 발견).
@@ -360,18 +368,20 @@ def fig_scheduler():
     # 개별 작업의 성질)로 바꿔 무엇을 두고 하는 말인지 패널 이름 없이도 읽히게
     # 한다. 또한 이번 9건 표본엔 forced 작업이 없어 CRITICAL_GRAY가 실제로는
     # 안 쓰인다 — 쓰이지 않는 색의 범례 항목을 보여주면 안 되므로 조건부로 뺀다.
+    # 2026-09-25(그림 비판 검토): 범례가 그림 맨 위에 있어 세 패널 전부에 적용되는
+    # 것처럼 읽혔다. 채움 두 가지는 아래(동시 실행 수) 패널의 것이므로 그 패널 안
+    # 윗부분(상한 12 위 빈 띠)으로 옮기고, 패널 안이라 "(그 시각)"도 뺀다.
     handles = [
         Patch(facecolor="white", edgecolor=INK, lw=0.7, label="여유 있음"),
-        Patch(facecolor=EXCEPT_GRAY, edgecolor=INK, lw=0.7, label="상한 도달(그 시각)"),
+        Patch(facecolor=EXCEPT_GRAY, edgecolor=INK, lw=0.7, label="상한 도달"),
     ]
     if any(j["forced"] for j in gjobs):
         handles.append(Patch(facecolor=FORCED_GRAY, edgecolor=INK, lw=0.6, label="마감 강제(그 작업)"))
-    fig.legend(handles=handles, fontsize=NOTE, frameon=False, ncol=len(handles), loc="upper left",
-               bbox_to_anchor=(0.02, 1.005), handlelength=1.3, columnspacing=0.9,
-               handletextpad=0.35)
+    a2.legend(handles=handles, fontsize=NOTE, frameon=False, ncol=len(handles), loc="upper left",
+              bbox_to_anchor=(0.0, 1.02), handlelength=1.3, columnspacing=0.9,
+              handletextpad=0.35, borderaxespad=0.2)
 
-    top = 1 - 24 / (166 + ROW_PT * n_rows)   # 범례 자리(고정 24pt)를 늘어난 전체 높이에 비례로 남긴다
-    fig.subplots_adjust(left=0.215, right=0.985, top=top, bottom=0.115, hspace=0.12)
+    fig.subplots_adjust(left=0.215, right=0.985, top=0.985, bottom=0.115, hspace=0.12)
     for e in (".png", ".pdf"):
         fig.savefig(os.path.join(HERE, "fig4_scheduler" + e))
     print(f"wrote fig4_scheduler  (상한 도달 {int(full.sum())}/24 슬롯 · 간트 {len(gjobs)}건/{n_rows}행)")

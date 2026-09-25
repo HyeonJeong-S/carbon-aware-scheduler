@@ -72,7 +72,8 @@ def main():
     ax.set_xticks([0, 1, 10, 100, 1000, 10000, 100000])
     # 아라비아 숫자와 한글 단위("100"과 "1천")를 섞으면 읽는 사람이 눈금을
     # 두 번 환산해야 한다(fd 지적). 자릿수를 한 체계로 통일한다.
-    ax.set_xticklabels(["0", "1", "10", "$10^2$", "$10^3$", "$10^4$", "$10^5$"],
+    # 2026-09-25: "1, 10, 10²"처럼 두 표기가 섞여 있었다 — 거듭제곱 하나로 통일.
+    ax.set_xticklabels(["0", "$10^0$", "$10^1$", "$10^2$", "$10^3$", "$10^4$", "$10^5$"],
                        fontsize=6)
     ax.set_xlabel("용량 상한 위반 배정 (건)", fontsize=7)
     ax.set_ylabel("탄소 절감률 (%)", fontsize=7)
@@ -81,9 +82,14 @@ def main():
     # 2026-09-24: "상한을 지키는 영역"은 과장이었다 — 이 음영 안에 본 연구의
     # 위반 227건이 들어 있다. 본문도 용량을 소프트 제약이라고 밝히므로
     # 그림만 "지킨다"고 말하면 안 된다. 경계값을 그대로 적는다.
-    ax.axvspan(-0.2, 300, color=BG_WASH, zorder=0)  # 2026-09-24: 공용 팔레트의 배경 음영 단계
-    ax.annotate("위반 300건 이하", (0.9, 101), fontsize=6.2,
-                color="#666666", ha="left")
+    # 2026-09-25: "위반 300건 이하" 음영을 뺐다. 300 에 근거가 없고 본 연구(227)가
+    # 딱 들어가는 값이라 유리하게 고른 경계로 읽힐 수 있다(그림 비판 검토).
+    # 대신 본 연구 점을 지나는 점선 두 개로 "본 연구보다 위반이 적으면서 더 줄인
+    # 영역(왼쪽 위)"을 그대로 보인다 — 그 영역에 점이 없다는 것이 주장이다.
+    cast = next(p for p in POINTS if p[0] == "CAST (ours)")
+    ax.axvline(xpos(cast[1]), color="#888888", lw=0.6, ls=(0, (3, 2)), zorder=1)
+    ax.axhline(cast[2], color="#888888", lw=0.6, ls=(0, (3, 2)), zorder=1)
+    ax.fill_between([-0.2, xpos(cast[1])], cast[2], 108, color=BG_WASH, zorder=0, lw=0)
 
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
@@ -94,14 +100,8 @@ def main():
     # 2026-09-24 b6 배분(그림 10장 통합 점검): 첫 구절("● 본 연구 · ○ 선행 정책
     # 재현")이 캡션("● 본 연구, ○ 선행 정책")과 겹쳤다 — 뺀다. 나머지 읽는 법은
     # 캡션에 없어 남긴다.
-    fig.text(0.02, 0.012,
-             # Caspian(3,745건·30.51%)이 들어오면서 "오른쪽일수록 비싸게 산 것"이
-             # 더는 맞지 않는다 — 오른쪽인데 절감도 낮은 점이 생겼다. 왼쪽 위가
-             # 좋은 자리라는 사실만 말한다.
-             "왼쪽 위가 좋은 자리다 — 적은 위반으로 많이 줄인 것이다.",
-             fontsize=6.2, ha="left", linespacing=1.4)
-
-    fig.tight_layout(rect=(0, 0.075, 1, 1), pad=0.4)  # 각주 두 줄→한 줄로 줄어 여백도 같이 줄인다
+    # 2026-09-25: 그림 아래 각주("왼쪽 위가 좋은 자리다")는 캡션으로 옮겼다.
+    fig.tight_layout(pad=0.4)
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fig7_benchmark.png")
     fig.savefig(out)
     fig.savefig(out.replace(".png", ".pdf"))

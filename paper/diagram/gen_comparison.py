@@ -64,7 +64,7 @@ def main():
         txt = f"{kg:,.0f}" + (f"  ({pct:.2f}%)" if pct else "")
         # 본 연구 값을 가리키는 세로 점선이 ③행 라벨의 첫 글자를 가로지른다.
         # 글자 뒤에 흰 바탕을 깔아 어느 막대에서든 선이 글자를 뚫지 않게 한다.
-        ax.text(kg * 1.06, y, txt, va="center", fontsize=6.0,
+        ax.text(kg + 600, y, txt, va="center", fontsize=6.0,
                 fontweight="bold" if ours else "normal", zorder=4,
                 bbox=dict(facecolor="white", edgecolor="none", pad=0.8))
 
@@ -74,14 +74,13 @@ def main():
     for t, r in zip(ax.get_yticklabels(), ROWS):
         if r[3]:
             t.set_fontweight("bold")
-    ax.set_xscale("log")
-    ax.set_xlim(8200, 62000)
-    ax.set_xticks([10000, 20000, 30000])
-    ax.set_xticklabels(["10,000", "20,000", "30,000"], fontsize=6.5)
-    # 로그축 부눈금이 "4x10^4" 같은 라벨을 덧붙여 축을 어지럽힌다 — 끈다
-    ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
-    ax.tick_params(axis="x", which="minor", length=1.6)
-    ax.set_xlabel("총 배출량 (kg, 로그 눈금)", fontsize=7.5)
+    # 2026-09-25: 로그 눈금을 버리고 0 에서 시작하는 선형 눈금으로 바꿨다(그림 비판 검토).
+    # 막대는 길이로 크기를 비교하므로 축이 0 에서 시작하지 않거나 로그면 길이 비가 값의
+    # 비와 달라진다. 값의 범위도 9,958~29,226(3배)뿐이라 로그가 필요 없다.
+    ax.set_xlim(0, 37000)
+    ax.set_xticks([0, 10000, 20000, 30000])
+    ax.set_xticklabels(["0", "10,000", "20,000", "30,000"], fontsize=6.5)
+    ax.set_xlabel("총 배출량 (kg)", fontsize=7.5)
     ax.tick_params(labelsize=6.5)
     ax.grid(axis="x", color=LIGHT, lw=0.45, zorder=0)
     ax.set_axisbelow(True)

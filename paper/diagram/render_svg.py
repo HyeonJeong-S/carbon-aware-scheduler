@@ -17,11 +17,16 @@ viewBox 그대로 꽉 채워진다. 배율(SCALE)은 기존 PNG(fig1·fig2, 둘 
       인자 없으면 fig1_architecture·fig2_forecast 둘 다 굽는다.
 """
 import os
+import pathlib
 import re
 import subprocess
 import sys
 
-CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+# 2026-09-25: Mac 전용 경로였다 — Windows 에서도 굽도록 운영체제별로 고른다.
+CHROME = {
+    "darwin": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "win32": r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+}.get(sys.platform, "google-chrome")
 HERE = os.path.dirname(os.path.abspath(__file__))
 TARGET_WIDTH_PX = 1728  # 215pt 단내 기준 실측 역산값(그 외 폭은 비례로 낸다).
 
@@ -41,13 +46,13 @@ def render(svg_path: str) -> str:
         "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><style>"
         "html,body{margin:0;padding:0}"
         f"img{{display:block;width:{pw}px;height:{ph}px}}"
-        f"</style></head><body><img src=\"file://{svg_path}\"></body></html>")
+        f"</style></head><body><img src=\"{pathlib.Path(svg_path).resolve().as_uri()}\"></body></html>")
     try:
         subprocess.run(
             [CHROME, "--headless", "--disable-gpu", "--no-sandbox",
              f"--window-size={pw},{ph}", "--force-device-scale-factor=1",
              "--default-background-color=FFFFFFFF",
-             f"--screenshot={png_path}", f"file://{html_path}"],
+             f"--screenshot={png_path}", pathlib.Path(html_path).resolve().as_uri()],
             check=True, capture_output=True, timeout=60)
     finally:
         os.remove(html_path)

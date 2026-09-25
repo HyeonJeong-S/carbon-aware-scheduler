@@ -23,7 +23,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 
-sys.path.insert(0, "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler")
+# 2026-09-25: Mac 절대경로 → 스크립트 위치 기준(레포 루트 = paper/diagram 의 두 단계 위).
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, ROOT)
 from interface.regions import REGIONS, REGION_LABELS
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -36,7 +38,7 @@ for name in ("Apple SD Gothic Neo", "AppleGothic", "Malgun Gothic", "Noto Sans K
         break
 plt.rcParams["axes.unicode_minus"] = False
 
-SUM = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/load_balancer/framework/results/summary.json"
+SUM = os.path.join(ROOT, "load_balancer", "framework", "results", "summary.json")
 # 2026-09-24 b6 배분(회색 팔레트 통일): "홈 유지분"은 보조·부수 정보라 AUX_GRAY.
 GRAY = AUX_GRAY
 SHORT = {"US-CAL-CISO": "캘리포니아", "US-TEX-ERCO": "텍사스", "US-NY-NYIS": "뉴욕",
@@ -55,9 +57,19 @@ def main():
 
     # 이동한 몫만 곡선으로 — 홈에 남은 것(대각)은 따로 표시한다
     mx = M[~np.eye(n, dtype=bool)].max()
+    # 2026-09-25(그림 비판 검토): "400건 미만 생략"은 근거 없는 문턱이라 선이 뒤엉켰다.
+    # 옮긴 물량을 큰 흐름부터 쌓아 90% 에 이를 때까지만 그린다 — 문턱이 자료에서 나온다.
+    off = sorted(((M[i, j], i, j) for i in range(n) for j in range(n) if i != j and M[i, j] > 0),
+                 reverse=True)
+    moved, acc, keep_set = sum(v for v, _, _ in off), 0.0, set()
+    for v, i, j in off:
+        if acc >= 0.90 * moved:
+            break
+        keep_set.add((i, j)); acc += v
+    print(f"  흐름 {len(keep_set)}/{len(off)}개로 옮긴 물량의 {acc / moved * 100:.1f}% 표시")
     for i in range(n):
         for j in range(n):
-            if i == j or M[i, j] < 400:          # 400건 미만은 선이 보이지도 않는다
+            if (i, j) not in keep_set:
                 continue
             lw = 0.25 + 2.3 * (M[i, j] / mx)
             ax.plot([xs[i], xs[j]], [yt, yb], color=INK, lw=lw,
@@ -98,11 +110,8 @@ def main():
     # 2026-09-24 b6 배분(그림 10장 통합 점검): "선 굵기 = 옮긴 작업 수"는 캡션
     # ("선 굵기가 옮긴 작업 수다")과 그대로 겹쳤다 — 뺀다. 회색 세로선·아래
     # 사각형의 뜻은 캡션에 없어 남긴다.
-    fig.text(0.015, 0.012,
-             "400건 미만은 선을 생략함 · 회색 세로선 = 홈에 남은 몫\n"
-             "아래 사각형 = 리전이 받은 비율",
-             fontsize=6.2)
-    fig.tight_layout(rect=(0, 0.105, 1, 1), pad=0.3)
+    # 2026-09-25: 그림 아래 각주 두 줄(회색 세로선·아래 사각형의 뜻, 생략 기준)은 캡션으로 옮겼다.
+    fig.tight_layout(pad=0.3)
     for e in (".png", ".pdf"):
         fig.savefig(os.path.join(HERE, "fig4_routing" + e))
     print("wrote fig4_routing — 프랑스 %.1f%%, 캘리포니아 %.1f%%, 인도 %.1f%%"

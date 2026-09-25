@@ -67,8 +67,11 @@ def main():
     W_IN, H_IN = 215 / 72.0, 184 / 72.0
     fig, ax = plt.subplots(figsize=(W_IN, H_IN), dpi=300)
 
-    ax.plot(xa, ya, color=INK, lw=0.9, ls=(0, (3, 1.5)), label="무제약 (시간이동, 용량 미인지)")
-    ax.plot(xb, yb, color=INK, lw=1.3, label="온라인 (용량 인지, Algorithm 1)")
+    # 2026-09-25: 두 계열이 모두 검은 선이라 요동치는 실선이 점선을 가렸다(그림 비판
+    # 검토). 무제약은 연한 회색 채움, 온라인은 검은 선 — 흑백 인쇄에서도 갈린다.
+    ax.fill_between(xa, ya, step=None, color="#c8c8c8", lw=0, zorder=1,
+                    label="무제약 (시간이동, 용량 미인지)")
+    ax.plot(xb, yb, color=INK, lw=0.8, zorder=3, label="온라인 (용량 인지, Algorithm 1)")
     ax.axhline(cap, color=INK, lw=0.6, ls=(0, (1, 1)))
     ax.text(win_hi - win_lo, cap + 0.8, f"상한 {cap}", ha="right", va="bottom", fontsize=7,
             bbox=dict(facecolor="white", edgecolor="none", pad=1.0))
@@ -77,12 +80,10 @@ def main():
     # 서로 다른 주에서 나오므로 혼동을 막기 위해 아래 각주에 따로 밝힌다.
     pa = max(ya)
     ia = ya.index(pa)
-    ax.annotate(f"{pa}", (xa[ia], pa), textcoords="offset points", xytext=(2, 3),
-                fontsize=7.5, fontweight="bold")
-    pb = max(yb)
-    ib = yb.index(pb)
-    ax.annotate(f"{pb}", (xb[ib], pb), textcoords="offset points", xytext=(2, -9),
-                fontsize=7.5, fontweight="bold")
+    # 2026-09-25: 오른쪽 위 범례와 겹쳐 봉우리 왼쪽으로 옮겼다. 온라인 국소 최대 숫자는
+    # 요동치는 선 위에 겹쳐 읽히지 않아 뺐다 — 상한선과의 관계는 그림이 그대로 보인다.
+    ax.annotate(f"{pa}", (xa[ia], pa), textcoords="offset points", xytext=(-4, -2),
+                fontsize=7.5, fontweight="bold", ha="right", va="top")
 
     ax.set_xlim(0, win_hi - win_lo)
     ax.set_ylim(0, max(ya) * 1.12)
@@ -105,12 +106,8 @@ def main():
     # 겹쳤다 — 41은 이 주의 곡선 위 숫자(pa)와도 같은 값이라 그림 자체가 이미
     # 보여준다. 다만 "(다른 주)"라는 사실은 캡션에 없어 반드시 남겨야 한다 —
     # 없으면 독자가 이 그림 안에서 17을 찾다가 못 찾는다. 그 사실만 남긴다.
-    fig.text(0.02, 0.012,
-              f"위 구간은 연중 한 주(day {day0}–{win_hi // 24})의 예시다.\n"
-              f"온라인의 연중 최대 {d['peak_b']}건은 이 주가 아닌 다른 주에서 난다(4.3절 정의).",
-              fontsize=6.2, ha="left", linespacing=1.4)
-
-    fig.tight_layout(rect=(0, 0.10, 1, 1), pad=0.5)
+    # 2026-09-25: 각주 두 줄("한 주 예시", "연중 최대는 다른 주")은 캡션으로 옮겼다.
+    fig.tight_layout(pad=0.5)
     out = os.path.join(_HERE, "fig6_concurrency.png")
     fig.savefig(out)
     fig.savefig(out.replace(".png", ".pdf"))  # KCI 인쇄 대비 벡터판

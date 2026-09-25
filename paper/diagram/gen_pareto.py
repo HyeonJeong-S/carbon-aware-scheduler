@@ -48,8 +48,13 @@ def main():
     W_IN, H_IN = 215 / 72.0, 190 / 72.0
     fig, ax = plt.subplots(figsize=(W_IN, H_IN), dpi=300)
 
-    ax.plot(xs, ys, color=INK, lw=1.1, zorder=2)
-    ax.scatter(xs, ys, s=14, facecolor=INK, edgecolor=INK, zorder=3)
+    # 2026-09-25: 곡선은 고정 α 점만 잇는다. auto 는 슬롯마다 α 가 바뀌는 다른 정책이라
+    # 고정 α 곡선 위의 점이 아니다 — 한 선으로 이으면 "0.5 와 0.75 사이의 어떤 고정값"처럼
+    # 읽힌다(그림 비판 검토에서 지적). auto 는 아래에서 과녁 표식으로 따로 찍는다.
+    fx = [p[1] for i, p in enumerate(POINTS) if i != AUTO_IDX]
+    fy = [p[2] for i, p in enumerate(POINTS) if i != AUTO_IDX]
+    ax.plot(fx, fy, color=INK, lw=1.1, zorder=2)
+    ax.scatter(fx, fy, s=14, facecolor=INK, edgecolor=INK, zorder=3)
     ax.scatter([0.0], [0.0], s=26, marker="D", facecolor="white", edgecolor=INK,
                lw=1.1, zorder=4)  # baseline
 
@@ -83,18 +88,8 @@ def main():
         ax.annotate(t, (x, y), textcoords="offset points", xytext=(dx, dy),
                     fontsize=6.5, ha=ha, linespacing=1.2)
 
-    # 무릎점의 근거 — 인접 구간 한계수익(kg/ms)이 여기서 정점을 찍고 급락한다는
-    # 사실을 그림에도 한 줄로 남긴다(본문 서술과 동일 근거, 정리.txt [17]).
-    ax.annotate("", xy=(xs[AUTO_IDX], ys[AUTO_IDX]), xytext=(xs[2], ys[2]),
-                arrowprops=dict(arrowstyle="-", lw=0.5, color="#999999",
-                                 shrinkA=3, shrinkB=3, linestyle=(0, (1, 1.5))))
-    mid_x = (xs[2] + xs[AUTO_IDX]) / 2
-    mid_y = (ys[2] + ys[AUTO_IDX]) / 2
-    # 2026-09-24: 지시선을 뺀다. 라벨을 곡선 아래 먼 곳에 두고 가는 회색 선으로
-    # 이으니, 그 선이 데이터 계열처럼 읽혔다(지면 렌더에서 확인). 글자를 강조
-    # 구간 바로 아래 빈 자리에 놓아 위치만으로 가리키게 한다.
-    ax.text(mid_x - 6, mid_y - 20, "+6.7 ms, -3,108.8 kg\n(464.9 kg/ms, 전 구간 최대)",
-            fontsize=6.2, ha="left", va="top", linespacing=1.3, color="#444444")
+    # 2026-09-25: "+6.7 ms, -3,108.8 kg" 주석과 α=0.5→auto 점선을 뺐다. 같은 비교
+    # (지연 6.7 ms 로 10.64%p 더 줄임)를 본문 3.3절이 이미 말한다 — 그림은 곡선만 보인다.
 
     ax.set_xlim(-6, 122)
     ax.set_ylim(-4, 74)
@@ -117,11 +112,9 @@ def main():
     # 2026-09-24: 둘째 줄("참고: 배출량은 α=0.75가 더 낮다")을 캡션으로 옮겼다.
     # 캡션이 이미 "auto는 탄소가 가장 낮은 지점이 아니다"를 말하고 있어 같은 말을
     # 그림과 캡션이 두 번 했다. 그림에는 **범례만**, 해석은 캡션에 둔다.
-    fig.text(0.02, 0.018,
-              "◆ baseline(α=0) · ◎ α=auto(슬롯별 무릎점, 평균 0.508)",
-              fontsize=6.2, ha="left", linespacing=1.4)
-
-    fig.tight_layout(rect=(0, 0.08, 1, 1), pad=0.5)   # 각주 1줄 — 해석은 캡션으로 뺐다
+    # 2026-09-25: 마커 범례 각주도 뺐다 — 캡션이 "◆는 baseline(α=0), ◎는 무릎점"을
+    # 이미 말한다. 그림 안 설명은 캡션으로 모은다.
+    fig.tight_layout(pad=0.5)
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fig4_pareto.png")
     fig.savefig(out)
     fig.savefig(out.replace(".png", ".pdf"))  # KCI 인쇄 대비 벡터판
