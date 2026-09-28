@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/tools")
 import docx_edit as D
 
-P = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/CAST_압축본.docx"
+P = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/CAST_본문.docx"
 
 ABSTRACT = (
     "초록  데이터센터의 탄소 배출량은 같은 작업이라도 어느 리전에서 언제 실행하느냐에 "

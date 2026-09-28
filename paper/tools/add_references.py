@@ -19,7 +19,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.shared import Pt
 
-DOC = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/CAST_압축본.docx"
+DOC = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/CAST_본문.docx"
 
 # paper/문서/참고문헌_초안.txt A절(KTCP 서식) 그대로. 줄바꿈은 뺀다.
 # 번호는 **압축본에서의 첫 등장 순서**다 — paper/문서/인용위치_대조.txt(fd) 기준.

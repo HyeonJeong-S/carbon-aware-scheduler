@@ -25,7 +25,10 @@ import zipfile
 from datetime import datetime
 
 PAPER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-FILES = {"압축본": "CAST_압축본.docx", "추가자료": "CAST_추가자료.docx",
+# 2026-09-28: 파일 이름이 CAST_압축본 → CAST_본문 으로 바뀌었다(교수님께 보내는 이름).
+# 옛 별칭 "압축본"도 그대로 받는다 — 손가락이 기억하는 이름을 끊지 않는다.
+FILES = {"본문": "CAST_본문.docx", "압축본": "CAST_본문.docx",
+         "추가자료": "CAST_추가자료.docx",
          "인용포함": "CAST_인용포함.docx"}
 
 

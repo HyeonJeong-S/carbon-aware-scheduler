@@ -125,7 +125,7 @@ def main(path):
 
 PAPER = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/"
 # 인자가 없으면 두 문서를 다 본다 — 한쪽만 보고 "피드백 없다"고 보고한 적이 있다.
-DEFAULT = [PAPER + "CAST_압축본.docx", PAPER + "CAST_추가자료.docx"]
+DEFAULT = [PAPER + "CAST_본문.docx", PAPER + "CAST_추가자료.docx"]
 
 if __name__ == "__main__":
     paths = sys.argv[1:] or DEFAULT

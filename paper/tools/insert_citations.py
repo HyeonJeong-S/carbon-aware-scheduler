@@ -19,7 +19,7 @@ import sys
 
 import docx
 
-DOC = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/CAST_압축본.docx"
+DOC = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/CAST_본문.docx"
 
 # (앵커, 붙일 표시) — 앵커 바로 뒤에 삽입한다. 앵커는 문서에서 유일해야 한다.
 MARKS = [

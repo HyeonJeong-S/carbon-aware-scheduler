@@ -13,7 +13,7 @@ import xml.etree.ElementTree as ET
 from PIL import Image
 
 REPO = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/"
-DOC = REPO + "paper/CAST_압축본.docx"
+DOC = REPO + "paper/CAST_본문.docx"
 DIA = REPO + "paper/diagram/"
 
 # docx 안 이름 -> 새 파일
@@ -37,7 +37,7 @@ REPLACE = {
 
 
 def main():
-    shutil.copy2(DOC, REPO + "paper/versions/2026-09-24/CAST_압축본_그림교체전.docx")
+    shutil.copy2(DOC, REPO + "paper/versions/2026-09-24/CAST_본문_그림교체전.docx")
     z = zipfile.ZipFile(DOC)
     parts = {i.filename: z.read(i.filename) for i in z.infolist()}
     infos = z.infolist()

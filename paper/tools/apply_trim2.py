@@ -11,7 +11,7 @@ import sys
 sys.path.insert(0, "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/tools")
 import docx_edit as D
 
-P = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/CAST_압축본.docx"
+P = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/CAST_본문.docx"
 
 EDITS = [
     # ── §4 관련 연구 ──

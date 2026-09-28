@@ -11,7 +11,7 @@ w:r 이 아니라 살아남지만 참조가 사라져 **어디에도 안 달린 
 실제로 메모 둘을 그렇게 잃었다(내용은 문서/메모_받은것_*.txt 에 보존돼 있었다).
 그래서 여기서는 메모 표식을 먼저 뽑아 두었다가 새 run 앞뒤로 도로 끼운다.
 
-실행: ./.venv/bin/python paper/tools/mathify.py paper/CAST_압축본.docx [--dry]
+실행: ./.venv/bin/python paper/tools/mathify.py paper/CAST_본문.docx [--dry]
 """
 import copy
 import os
@@ -176,7 +176,7 @@ def _snapshot(path, tag, keep=3):
 
     2026-09-24 두 가지를 고쳤다.
       · 경로: snap.replace("/paper/", "/paper/versions/") 는 상대 경로
-        ("paper/CAST_압축본.docx")에서 아무것도 안 바꿔, 사본이 versions/ 가
+        ("paper/CAST_본문.docx")에서 아무것도 안 바꿔, 사본이 versions/ 가
         아니라 paper/ 에 그대로 쌓이고 있었다(4개 발견).
       · 개수: 편집할 때마다 5MB 짜리가 쌓여 versions/ 가 910MB 가 됐다.
         **진짜 보관소는 git 이다.** 여기는 커밋 전 몇 분을 위한 안전망일 뿐이라
