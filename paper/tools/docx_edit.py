@@ -63,10 +63,55 @@ def replace_text(xml, head, new_text):
 
     runs = RUN.findall(frag)
     assert runs, f"{head[:30]!r}: run 이 없음"
-    first = runs[0]
-    rpr = re.search(r'<w:rPr\b.*?</w:rPr>', first, re.DOTALL)
-    rpr = rpr.group(0) if rpr else ""
-    new_run = (f'<w:r>{rpr}<w:t xml:space="preserve">{_esc(new_text)}</w:t></w:r>')
+
+    def _rpr(r):
+        m = re.search(r'<w:rPr\b.*?</w:rPr>', r, re.DOTALL)
+        return m.group(0) if m else ""
+
+    def _txt(r):
+        return "".join(re.findall(r'<w:t\b[^>]*>(.*?)</w:t>', r, re.DOTALL))
+
+    # 2026-09-28 사고: 서식이 섞인 문단에서 첫 run 서식을 통째로 쓰면 문단 전체가
+    # 그 서식이 된다. 캡션은 "그림 3." 만 굵고 나머지는 보통인데, 첫 run 이 그
+    # 굵은 라벨이라 고칠 때마다 캡션 전체가 굵어졌다 — 그림 1·5·6·7·8·10 과
+    # 표 3·4 의 캡션 여덟이 그렇게 굵어져 있었다(본문 조판이 이랬다저랬다 한 원인).
+    # 앞쪽 run 들이 같은 서식이고 그 뒤가 다르면, 그 경계를 새 글에도 적용한다.
+    pre_rpr = _rpr(runs[0])
+    k = 0
+    while k < len(runs) and _rpr(runs[k]) == pre_rpr:
+        k += 1
+    pre_text = "".join(_txt(r) for r in runs[:k])
+    mixed = k < len(runs)
+
+    def _run(rpr, text):
+        return f'<w:r>{rpr}<w:t xml:space="preserve">{_esc(text)}</w:t></w:r>'
+
+    def _major(rs):
+        """글자 수가 가장 많은 서식 — 짧은 기호 run 이 문단을 물들이지 않게 한다.
+
+        2026-09-28 사고: 처음엔 앞머리 바로 뒤 run(runs[k])의 서식을 썼다. 그런데
+        "작업 집합을 J, 리전 집합을 R로…" 처럼 앞머리가 평문이고 그 다음이 기호 J
+        (Cambria Math 기울임)인 문단에서는 **문단 전체가 수식 서체로 찍혔다.**
+        본문 여덟 문단이 통째로 기울임이 됐다. 다수결이어야 맞다.
+        """
+        best, blen = "", -1
+        for r in rs:
+            t = len(_txt(r))
+            if t > blen:
+                best, blen = _rpr(r), t
+        return best
+
+    if mixed and pre_text and new_text.startswith(pre_text):
+        # 앞머리(예: "그림 3.")가 그대로면 경계를 지켜 두 run 으로 나눈다.
+        # 남은 글에는 뒤쪽에서 가장 널리 쓰인 서식을 준다(바로 다음 run 이 아니다).
+        new_run = _run(pre_rpr, pre_text) + _run(_major(runs[k:]), new_text[len(pre_text):])
+        print(f"  · 서식이 섞인 문단이다 — 앞머리 {pre_text.strip()[:20]!r} 서식을 지켜 나눴다")
+    elif mixed:
+        # 앞머리가 바뀌었다 — 다수결 서식을 문단 전체에 쓴다.
+        new_run = _run(_major(runs), new_text)
+        print(f"  · 서식이 섞인 문단인데 앞머리가 바뀌었다 — 가장 긴 run 의 서식을 썼다. 눈으로 확인할 것")
+    else:
+        new_run = _run(pre_rpr, new_text)
 
     # 메모 표식 보존 — 여는 것은 새 run 앞, 닫는 것과 참조 run 은 뒤에 둔다
     starts = "".join(re.findall(r'<w:commentRangeStart\b[^>]*/>', frag))

@@ -280,22 +280,45 @@ def fig_scheduler():
 
     g = json.load(open(os.path.join(HERE, "fig4_gantt_data.json")))
     gjobs = sorted(g["jobs"], key=lambda j: j["tau"])
+    # 2026-09-28(3d 배분): 사용자 지적 — "막힌다"만 보이고 "그래서 어디로
+    # 갔는가"가 없었다. gen_fig4_scheduler_data.py가 이미 골라 둔 한 건
+    # (highlight_id, 자료 기준 — 직접 고르지 않음)만 "가고 싶던 자리"(점선 상자)
+    # 를 얹고 실제 자리까지 화살표를 긋는다.
+    highlight_id = g.get("highlight_id")
+    highlight_job = next((j for j in gjobs if j["id"] == highlight_id), None)
     # 2026-09-24 4c 배분(세 번째 개정): 한 행에 한 작업 — 레일을 넣은 뒤로는
     # 그리디 구간 배정(안 겹치면 행 공유)이 성립하지 않는다. rows[i]=i로
     # 그대로 둔다.
     rows = list(range(len(gjobs)))
     n_rows = len(gjobs)
     ROW_PT = 10.0  # 2026-09-24 4c 배분: 6행→9행이어도 높이가 오히려 줄게(13.0→10.0)
+    # 2026-09-28(7차, 사용자 반려): "① 원하던 자리 · ② 실제 자리" 라벨이 맨 아래 행
+    # 밑 여백(0.85행)에 안 들어갔다 — 위로 올리면 레일과, 내리면 액자 테두리와
+    # 겹쳤다(400%에서 실제로 테두리가 글자를 관통한 것을 확인함). 자리를 옮겨서 될
+    # 문제가 아니라 자리 자체가 없었다(그림 4 때와 같은 종류의 제약) — 사용자가
+    # 권한 (a)안대로 빈 띠를 한 행만큼 더 넣는다. 높이 증가는 아래 로그에 적는다.
+    EXTRA_ROWS = 1.3  # 라벨 한 줄 + 인출선 굴곡이 들어갈 여유(렌더해서 정한 값)
 
     fig, (a1, a3, a2) = plt.subplots(
-        3, 1, figsize=(COL, (166 + ROW_PT * n_rows) / 72.0), dpi=300, sharex=True,
-        gridspec_kw=dict(height_ratios=[1, ROW_PT / 100 * n_rows + 0.12, 1.15], hspace=0.12))
+        3, 1, figsize=(COL, (166 + ROW_PT * (n_rows + EXTRA_ROWS)) / 72.0), dpi=300, sharex=True,
+        gridspec_kw=dict(height_ratios=[1, ROW_PT / 100 * (n_rows + EXTRA_ROWS) + 0.12, 1.15],
+                          hspace=0.12))
 
     a1.plot(t, car, color=INK, lw=1.3)
     lo = int(np.argmin(car))
     a1.scatter([lo], [car[lo]], s=26, marker="v", color=INK, zorder=4)
     a1.annotate("탄소 최저", (lo, car[lo]), textcoords="offset points",
                 xytext=(5, 9), ha="left", fontsize=NOTE)   # 2026-09-25: 곡선이 없는 오른쪽 위로
+    # 2026-09-28(3d 배분, 사용자 반려 후 2차): "꽉 찼다"만 보이고 "그래서 밀렸다"가
+    # 약했다 — 세 패널을 관통하는 안내선으로 탄소최저(위)→상한도달(아래)→실제로
+    # 밀린 자리(가운데)의 인과를 한 줄로 잇는다. lo와 highlight_job의 원하던 자리가
+    # 정확히 같은 시각(둘 다 x=16)임을 자료로 확인했다 — 우연이 아니라 애초에 그
+    # 시각이 탄소 최저라서 그 작업이 거기를 원했던 것이다.
+    if highlight_job is not None:
+        GUIDE = "#333333"
+        wx0_top = highlight_job["tau_unconstrained"]
+        a1.plot([wx0_top, wx0_top], [125, car[lo]], color=GUIDE, lw=0.9,
+                ls=(0, (3, 2)), zorder=1)
     a1.set_ylim(0, 138)
     a1.set_yticks([0, 40, 80, 120])
     a1.set_ylabel("탄소집약도\n(gCO₂/kWh)", fontsize=LAB, linespacing=1.25, labelpad=1)
@@ -316,6 +339,7 @@ def fig_scheduler():
     # 인쇄 크기 그대로 렌더해 구별됨을 확인했다.
     FORCED_GRAY = CRITICAL_GRAY
     forced_end = forced_row = forced_x0 = None
+    highlight_row = None
     for j, ri in zip(gjobs, rows):
         forced = j["forced"]
         fc = FORCED_GRAY if forced else "white"
@@ -340,7 +364,52 @@ def fig_scheduler():
         # 아래 occ 패널의 "마감 강제" 주석과 같은 사건을 가리킨다.
         if forced and x0 < 20 < x1 and (forced_end is None or x1 > forced_end):
             forced_end, forced_row, forced_x0 = x1, ri, x0
-    a3.set_ylim(n_rows - 0.15, -0.85)
+        if highlight_job is not None and j["id"] == highlight_id:
+            highlight_row = ri
+
+    # ── "가고 싶던 자리 → 실제 자리" — highlight_job 한 건만 그린다 ──
+    # wx0/wx1: capacity=100000(사실상 무제약)으로 재실행해 구한 시작·끝(자료
+    # 기준, 상상이 아니다). 점선 빈 상자로 실제 막대(굵은 채움)와 구분한다.
+    if highlight_job is not None:
+        hj, hr = highlight_job, highlight_row
+        wx0, wx1 = hj["tau_unconstrained"], hj["tau_unconstrained"] + hj["dur"]
+        ax0, ax1 = hj["tau"], hj["tau"] + hj["dur"]
+        GUIDE = "#333333"
+        a3.barh(hr, min(wx1, x_hi) - max(wx0, x_lo), left=max(wx0, x_lo), height=0.62,
+                facecolor="none", edgecolor=INK, lw=0.7, ls=(0, (2, 1.3)), zorder=4)
+        # 2026-09-28(2~4차, 사용자 반려 3회): 라벨을 상자에 붙였더니(2차) 좁은 행이라
+        # 계속 겹쳤고(3~4차), 흰 배경을 여러 겹 깔아야 했다. **5차, 사용자 재지시**:
+        # 글자를 그 자리에 붙이지 말고 상자 둘만 치고, 글자는 행 바깥(패널 아래
+        # 여백)에 모아 인출선 둘로 가리킨다. 여백은 이 행(맨 아래 행) 바로 아래뿐이라
+        # 다른 행과 안 부딪힌다.
+        # 5차 재시도: 글자를 가운데(label_x~20)에 두니 폭(13유닛 안팎)이 액자
+        # 오른쪽 끝(23.8)을 넘었다(400%에서 확인) — 왼쪽 빈 자리로 옮긴다. 이 행
+        # 아래 여백(y>hr)은 다른 모든 행보다 아래라 어디를 지나든 다른 행과 안
+        # 부딪힌다 — 인출선을 대각선으로 곧장 그어도 된다.
+        box_cx = (wx0 + min(wx1, x_hi)) / 2       # 원하던 자리(점선 상자) 중심
+        bar_cx = min(ax0, x_hi) + (ax1 - ax0) / 2  # 실제 자리(막대) 중심
+        pct = 100 * (hj["rate_actual"] / hj["rate_unconstrained"] - 1)
+        # 인출선이 이 행의 레일과 거의 나란히 겹쳐 보였다(400%에서 확인, label_y가
+        # 레일(y=hr)에 너무 가까웠다) — 액자 바닥 바로 위까지 더 내리고, 살짝 휘게
+        # 그어 레일의 곧은 직선과 눈으로 구별되게 한다.
+        label_y = n_rows + EXTRA_ROWS / 2 + 0.1   # 새로 늘린 빈 띠 한가운데 즈음
+        label_x0 = 0.5
+        a3.annotate(f"① 원하던 자리 · ② 실제 자리 (+{pct:.0f}%)", (label_x0, label_y),
+                    ha="left", va="center", fontsize=NOTE, zorder=6)
+        leader_from_x = label_x0 + 13.3  # 글자 오른쪽 끝 근처에서 인출선 출발
+        for cx in (box_cx, bar_cx):
+            a3.annotate("", xy=(cx, hr + 0.33), xytext=(leader_from_x, label_y),
+                        arrowprops=dict(arrowstyle="-|>", color=INK, lw=0.6, mutation_scale=5,
+                                         shrinkA=1.0, shrinkB=1.5,
+                                         connectionstyle="arc3,rad=0.12"),
+                        zorder=6)
+        # 2026-09-28(2차, 사용자 반려): "연회색 점선은 인쇄하면 거의 안 보인다" — 더
+        # 짙게(#333333) 하고, 위 탄소 패널까지 끌어올려 세 패널을 관통하는 한 줄로
+        # 만든다. 다른 행의 레일·막대보다 낮은 zorder로 두어 그 위에 겹치는 자리는
+        # 기존 요소가 이기게 한다(행마다 배경에 지나가는 눈금선처럼 읽힌다).
+        a3.plot([wx0, wx0], [-0.85, n_rows + EXTRA_ROWS - 0.15], color=GUIDE, lw=0.9,
+                ls=(0, (3, 2)), zorder=0.5)
+    a3.set_ylim(n_rows + EXTRA_ROWS - 0.15, -0.85)
     a3.set_yticks([])
     a3.set_ylabel("작업", fontsize=LAB, labelpad=1)   # 건수는 캡션 소관(y축 라벨 정렬 문제도 같이 없어짐)
     a3.tick_params(labelsize=TICK, left=False)
@@ -365,10 +434,21 @@ def fig_scheduler():
     a2.bar(t[~full], occ[~full], width=0.74, facecolor="white", edgecolor=INK, lw=0.7)
     a2.bar(t[full], occ[full], width=0.74, facecolor=EXCEPT_GRAY, edgecolor=INK, lw=0.7)
     a2.axhline(cap, color=INK, lw=1.0, ls=(0, (4, 1.6)))
-    a2.text(13.2, cap + 0.6, f"유효 상한 {cap}", ha="left", fontsize=NOTE)
+    # 2026-09-28: "원하던 자리" 세로 안내선이 이 글자를 관통했다(확대해서 발견,
+    # 위쪽 절반은 캡션 위쪽 빈 자리를 지나지만 x=16 부근에서 이 글자와 겹친다) —
+    # 흰 배경을 깔고 안내선보다 위 zorder로 그려 그 아래를 가린다.
+    a2.text(13.2, cap + 0.6, f"유효 상한 {cap}", ha="left", fontsize=NOTE, zorder=5,
+            bbox=dict(facecolor="white", edgecolor="none", pad=1.0))
     a2.set_ylim(0, 17.5)
     a2.set_yticks([0, 6, 12])
     a2.set_xlim(x_lo, x_hi)
+    if highlight_job is not None:
+        # 위 두 패널의 세로 안내선 아래쪽 절반 — "원하던 자리"의 시각이 이미
+        # 상한에 닿아 있었다는 것을 막대 위까지 이어 보여준다. 2026-09-28(2차):
+        # 위 두 패널과 같은 짙은 색·굵기로 맞춘다(사용자 반려 — "인쇄하면 안 보인다").
+        hour = int(round(highlight_job["tau_unconstrained"]))
+        a2.plot([highlight_job["tau_unconstrained"]] * 2, [17.5, occ[hour]],
+                color="#333333", lw=0.9, ls=(0, (3, 2)), zorder=0.5)
     a2.set_xticks([0, 6, 12, 18])   # 2026-09-25: 끝의 23 이 간격을 깨서 뺐다
     # 2026-09-24: x 축은 UTC 다(원자료가 UTC). day 101 은 4월이라 캘리포니아는
     # PDT(UTC−7) — UTC 14~23시가 현지 오전 7시~오후 4시, 곧 태양광 한낮이다.

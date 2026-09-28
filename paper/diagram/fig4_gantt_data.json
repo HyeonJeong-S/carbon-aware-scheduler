@@ -2,6 +2,8 @@
  "day": 101,
  "region": "US-CAL-CISO",
  "window_threshold_h": 22.0,
+ "frame_x_lo": -0.8,
+ "highlight_id": "j_005077",
  "jobs": [
   {
    "id": "j_023284",
@@ -11,7 +13,10 @@
    "D": 6.1877,
    "window": 22.3361,
    "forced": false,
-   "k": 1
+   "k": 1,
+   "tau_unconstrained": -7,
+   "rate_actual": 89.0,
+   "rate_unconstrained": 34.0
   },
   {
    "id": "j_132780",
@@ -21,7 +26,10 @@
    "D": 9.3713,
    "window": 22.6506,
    "forced": false,
-   "k": 1
+   "k": 1,
+   "tau_unconstrained": -7,
+   "rate_actual": 98.75,
+   "rate_unconstrained": 27.5
   },
   {
    "id": "j_023265",
@@ -31,7 +39,10 @@
    "D": 11.7482,
    "window": 22.3472,
    "forced": false,
-   "k": 1
+   "k": 1,
+   "tau_unconstrained": -8,
+   "rate_actual": 101.8,
+   "rate_unconstrained": 31.6
   },
   {
    "id": "j_096277",
@@ -41,7 +52,10 @@
    "D": 10.6974,
    "window": 22.029,
    "forced": false,
-   "k": 1
+   "k": 1,
+   "tau_unconstrained": -7,
+   "rate_actual": 98.75,
+   "rate_unconstrained": 27.5
   },
   {
    "id": "j_005011",
@@ -51,7 +65,10 @@
    "D": 14.0587,
    "window": 22.8965,
    "forced": false,
-   "k": 1
+   "k": 1,
+   "tau_unconstrained": -7,
+   "rate_actual": 112.0,
+   "rate_unconstrained": 29.67
   },
   {
    "id": "j_132777",
@@ -61,7 +78,10 @@
    "D": 20.5583,
    "window": 22.1222,
    "forced": false,
-   "k": 1
+   "k": 1,
+   "tau_unconstrained": -4.7609,
+   "rate_actual": 27.25,
+   "rate_unconstrained": 21.0
   },
   {
    "id": "j_005086",
@@ -71,7 +91,10 @@
    "D": 33.028,
    "window": 23.4959,
    "forced": false,
-   "k": 1
+   "k": 1,
+   "tau_unconstrained": 16,
+   "rate_actual": 28.0,
+   "rate_unconstrained": 27.0
   },
   {
    "id": "j_023314",
@@ -81,7 +104,10 @@
    "D": 33.1739,
    "window": 23.1396,
    "forced": false,
-   "k": 1
+   "k": 1,
+   "tau_unconstrained": 15,
+   "rate_actual": 26.0,
+   "rate_unconstrained": 27.0
   },
   {
    "id": "j_005077",
@@ -91,7 +117,10 @@
    "D": 34.7137,
    "window": 22.2035,
    "forced": false,
-   "k": 1
+   "k": 1,
+   "tau_unconstrained": 16,
+   "rate_actual": 32.5,
+   "rate_unconstrained": 25.0
   }
  ]
 }

@@ -46,38 +46,49 @@ LIGHT = "#cccccc"  # 눈금선용 — 팔레트 대상 아님(정상/예외를 �
 # 안 어순 그대로 맞춘다. '반사실'은 라벨에서 뺐다 — 캡션이 이미 "회색 막대(③)는
 # ...반사실"이라 설명해 라벨에 다시 쓰면 중복이다.
 # (라벨, kg, 절감률, 본 연구인가, 실현 가능한가)
+# 2026-09-28(2): − 는 U+2212 라 Apple SD Gothic Neo 에 없어 두부로 찍혔다
+# (check_glyphs 가 잡았다). 그림에서는 ASCII 하이픈을 쓴다 — 본문 표는
+# Word 서체라 − 를 그대로 쓴다. 인쇄 크기에서 둘은 사실상 구분되지 않는다.
+# 2026-09-28: 표 2 는 절감을 "−56.85" 로 적는데 그림은 "(56.85%)" 로 적어
+# 같은 수의 부호가 표와 그림에서 어긋나 있었다 — 그림에도 − 를 붙여 맞춘다.
+# "④ … (본 연구)" 라벨도 뺐다: 이 그림의 다섯 행이 **모두** 본 연구의 단계라
+# ④ 에만 그 말을 붙이면 나머지가 남의 것처럼 읽힌다. 검은 칠과 캡션이 이미 말한다.
+# 2026-09-28(4): 이름을 "용량을 언제 보는가"로 바꿨다. 사용자가 "시간 무제약이
+# 뭐야", "사후 용량 강제가 우리 CAST 아닌가"라고 물었다 — 뒤 셋은 공간+시간이
+# 똑같고 용량 처리만 다른데 옛 이름이 그걸 못 말했다. "시간 무제약"은 "시간"이
+# 들어가 시간만과 헷갈렸고, "사후 용량 강제"는 능동적으로 들려 본 연구처럼 읽혔다.
 ROWS = [
-    ("① 홈 리전 즉시 실행",        29225.6,  None, False, True),
-    ("② 탄소 인지 공간 이동",      12609.8, 56.85, False, True),
-    ("③′ 사후 용량 강제",          11873.0, 59.37, False, True),
-    ("④ 용량 인지 온라인 (본 연구)", 10805.0, 63.03, True,  True),
-    ("③ 시간 이동(용량 미강제)",    9958.2, 65.93, False, False),
+    ("기준",     29225.6,  None, "ok"),
+    ("시간만",   23789.1, 18.60, "ok"),
+    ("공간만",   12609.8, 56.85, "ok"),
+    ("CAST",    10805.0, 63.03, "ours"),
+    ("용량 무시", 9958.2, 65.93, "unreach"),
 ]
 
 
 def main():
     fig, ax = plt.subplots(figsize=(215 / 72.0, 132 / 72.0), dpi=300)
     ys = range(len(ROWS))[::-1]
-    for y, (lab, kg, pct, ours, feas) in zip(ys, ROWS):
+    for y, (lab, kg, pct, kind) in zip(ys, ROWS):
         # 흑백에서 계열 구분은 무늬가 아니라 회색 농담으로 한다.
         # 본 연구는 검정, 실현 가능한 대조군은 흰색, 실현 불가능한 반사실은 회색
         # (2026-09-24 b6 배분: "정상 대비 예외" 단계 EXCEPT_GRAY — 그림 7의 상한
         # 도달과 같은 단계다. 예전엔 #bfbfbf였다).
-        fc = INK if ours else ("white" if feas else EXCEPT_GRAY)
+        fc = INK if kind == "ours" else (EXCEPT_GRAY if kind == "unreach" else "white")
         ax.barh(y, kg, height=0.62, facecolor=fc, edgecolor=INK,
                 linewidth=0.9, zorder=3)
-        txt = f"{kg:,.0f}" + (f"  ({pct:.2f}%)" if pct else "")
+        txt = f"{kg:,.0f}" + (f"  (-{pct:.2f}%)" if pct else "")
         # 본 연구 값을 가리키는 세로 점선이 ③행 라벨의 첫 글자를 가로지른다.
         # 글자 뒤에 흰 바탕을 깔아 어느 막대에서든 선이 글자를 뚫지 않게 한다.
         ax.text(kg + 600, y, txt, va="center", fontsize=6.0,
-                fontweight="bold" if ours else "normal", zorder=4,
+                fontweight="bold" if lab == "CAST" else "normal", zorder=4,
                 bbox=dict(facecolor="white", edgecolor="none", pad=0.8))
 
     ax.axvline(10805.0, color=INK, lw=0.7, ls=(0, (1, 1.6)), zorder=2)
     ax.set_yticks(list(ys))
     ax.set_yticklabels([r[0] for r in ROWS], fontsize=6.4)
     for t, r in zip(ax.get_yticklabels(), ROWS):
-        if r[3]:
+        if r[0] == "CAST":
             t.set_fontweight("bold")
     # 2026-09-25: 로그 눈금을 버리고 0 에서 시작하는 선형 눈금으로 바꿨다(그림 비판 검토).
     # 막대는 길이로 크기를 비교하므로 축이 0 에서 시작하지 않거나 로그면 길이 비가 값의

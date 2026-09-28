@@ -55,7 +55,7 @@ from interface import carbon_2025
 from interface.regions import REGIONS
 from load_balancer.framework.config import JOBS_CSV as YEAR_JOBS_CSV
 from load_balancer.framework.config import RESULTS_DIR as LB_RESULTS_DIR
-from scheduler import capacity, data_loader
+from scheduler import capacity, data_loader, timeshift
 
 YEAR_ASSIGN_CSV = LB_RESULTS_DIR / "assign_alpha_auto.csv"
 CAP = 12       # 유효 상한 — scheduler/reproduce.py의 CAP과 동일(표2 ④ 재현)
@@ -64,6 +64,12 @@ REGION = "US-CAL-CISO"
 # 2026-09-24(4c, 세 번째 개정): 실행시간 문턱→창(window) 문턱으로 바꿨다.
 # 이유는 파일 docstring 참고 — j_132777을 반드시 포함해야 했다.
 GANTT_WINDOW_THRESHOLD_H = 22.0   # 간트에 얹을 작업의 최소 창 길이(단일 문턱, 솎아내기 없음)
+# 2026-09-28(3d 배분): 사용자가 "그래서 어디로 가야 하는데?"가 안 보인다고 지적 —
+# "막힌다"만 보이고 "그래서 어떻게 됐나"가 없었다. 9건 가운데 한 건을 뽑아
+# "가고 싶던 슬롯"(용량 무시, capacity=100000 재실행)과 "실제 슬롯"을 견줘 그린다.
+# gen_figs_data.py의 x_lo(-0.8)와 반드시 같은 값이어야 한다 — 여기서 "그림 프레임
+# 안에 드는 후보"를 거르는 기준으로 쓴다.
+GANTT_FRAME_X_LO = -0.8
 
 
 def main():
@@ -118,9 +124,19 @@ def main():
     sel = sorted([v for v in overlapping if window_of(v) >= GANTT_WINDOW_THRESHOLD_H],
                  key=lambda v: v["scheduled_start"])
 
+    # ── "가고 싶던 슬롯" — 용량을 100000(사실상 무제약)으로 두고 같은 파이프라인을
+    # 다시 돌려, 같은 job이 시간 이동 점수(식 11)만으로 무엇을 골랐을지 구한다.
+    # 순수 상상이 아니라 이 재실행에서 직접 읽는다.
+    out_unc, _ = capacity.run_rolling(jobs, actual, pred24, capacity=100000, regions=REGIONS)
+    series = list(actual[REGION])
+
     gantt = []
     for v in sel:
         deadline = job_by_id[v["job_id"]]["deadline"]
+        unc = out_unc[v["job_id"]]
+        tau_unc = round(unc["scheduled_start"] - day_start, 4)
+        rate_actual = timeshift.mean_carbon(series, v["scheduled_start"], v["duration"], len(series))
+        rate_unc = timeshift.mean_carbon(series, unc["scheduled_start"], unc["duration"], len(series))
         gantt.append({
             "id": v["job_id"],
             "s": round(v["submit_time"] - day_start, 4),       # 제출 시각(레일 왼쪽 끝)
@@ -129,15 +145,33 @@ def main():
             "D": round(deadline - day_start, 4),                # 마감(레일 오른쪽 끝)
             "window": round(window_of(v), 4),
             "forced": bool(v["forced"]), "k": v["k"],
+            "tau_unconstrained": tau_unc,       # capacity=100000일 때 골랐을 시작 시각
+            "rate_actual": round(float(rate_actual), 2),
+            "rate_unconstrained": round(float(rate_unc), 2),
         })
+
+    # ── 그 중 하나를 "원하던 자리 → 실제 자리" 화살표로 그릴 후보로 고른다 ──
+    # 단일 기준: (a) 원하던 슬롯이 그림 틀 안(>= GANTT_FRAME_X_LO)에 들어와야
+    # 화살표를 그림 안에 그릴 수 있고, (b) 실제 슬롯이 원하던 슬롯보다 더 나쁜
+    # (탄소가 더 높은) 경우라야 "용량이 막았다"는 그림 논지와 맞는다. 이 둘을
+    # 만족하는 후보 중 탄소차가 가장 큰 건을 고른다. 손으로 고르지 않는다.
+    candidates = [g for g in gantt
+                  if g["tau_unconstrained"] >= GANTT_FRAME_X_LO
+                  and g["rate_actual"] > g["rate_unconstrained"]]
+    highlight_id = max(candidates, key=lambda g: g["rate_actual"] - g["rate_unconstrained"])["id"] \
+        if candidates else None
+
     gantt_path = os.path.join(_HERE, "fig4_gantt_data.json")
     json.dump({"day": DAY, "region": REGION, "window_threshold_h": GANTT_WINDOW_THRESHOLD_H,
+               "frame_x_lo": GANTT_FRAME_X_LO, "highlight_id": highlight_id,
                "jobs": gantt},
               open(gantt_path, "w"), ensure_ascii=False, indent=1)
     has_132777 = any(g["id"] == "j_132777" for g in gantt)
     print(f"wrote {gantt_path}  ({len(gantt)}건, 창 문턱 {GANTT_WINDOW_THRESHOLD_H}h, "
-          f"forced {sum(g['forced'] for g in gantt)}건, j_132777 포함={has_132777})")
+          f"forced {sum(g['forced'] for g in gantt)}건, j_132777 포함={has_132777}, "
+          f"강조 후보 {len(candidates)}건 중 highlight={highlight_id})")
     assert has_132777, "j_132777이 표본에서 빠졌다 — 이 그림의 핵심 사례라 반드시 있어야 한다"
+    assert highlight_id is not None, "강조할 후보가 하나도 없다 — 기준을 다시 봐야 한다"
 
 
 if __name__ == "__main__":
