@@ -156,14 +156,34 @@ def fig_loadbalancer(data):
 
     # 2026-09-24: ★을 뺀다(사용자 지적 — 학술지 그림에서 별표는 거의 쓰지 않는다).
     # 세 선택은 네모·원·채운원으로 구분하고, 무릎점만 테두리를 한 겹 더 둘러 강조한다.
-    marks = ((i_lat, "s", 30, "white", "α=0 · 홈(한국)"),
-             (i_car, "o", 30, "white", "α=1 · 프랑스"),
-             (i_auto, "o", 44, INK, "무릎점 · 캘리포니아"))
+    # 2026-09-28(3d 배분, 사용자 메모 "점 위에 나라 이름"): 세 강조 점의 나라는
+    # 지금까지 범례 글자("α=0 · 홈(한국)")로만 알 수 있었다 — 정작 "기타 리전"
+    # 회색 점은 이미 이름을 점 옆에 바로 찍어 두고 있어(위 for 문) 같은 그림
+    # 안에서 표기 규약이 갈렸다(그림_검수규약 "같은 성격 요소는 같은 규약"과
+    # 어긋남). 강조 점도 옆에 이름을 찍어 통일하고, 이제 중복이 된 범례의
+    # 나라 이름은 뺀다 — 남는 "α=0 · 홈"·"α=1"·"무릎점"은 이름이 아니라
+    # 그 점이 셋 중 어느 역할인지(범례 도형 규약)만 말하면 된다. 검게(INK) 써
+    # 회색인 "기타 리전" 이름과 강조 대비를 그대로 유지한다.
+    marks = ((i_lat, "s", 30, "white", "α=0 · 홈"),
+             (i_car, "o", 30, "white", "α=1"),
+             (i_auto, "o", 44, INK, "무릎점"))
     for idx, mk, s, fc, lab in marks:
         ax.scatter([lat[idx]], [c[idx]], s=s, marker=mk, facecolor=fc,
                    edgecolor=INK, lw=1.0, zorder=5, label=lab)
     ax.scatter([lat[i_auto]], [c[i_auto]], s=110, marker="o", facecolor="none",
                edgecolor=INK, lw=0.7, zorder=5)
+    ax.annotate(KO[REGIONS[i_lat]], (lat[i_lat], c[i_lat]), textcoords="offset points",
+                xytext=(6, 2), fontsize=NOTE, color=INK, zorder=6)
+    # 2026-09-28(3d 재지적, 400% 확대로 확인): 무릎점·프랑스 둘 다 y≈0~15에 앉아
+    # 있어 그 아래 여백이 거의 없다 — 자리를 옮겨 가며 풀다 네 번 다 뭔가에
+    # 부딪혔다(테두리 잘림·격자선 관통·화살표와 헷갈림). 자리를 옮기는 대신
+    # ylim 아래 끝을 내려 자리 자체를 만든다: 각자 제 점 바로 아래(data 좌표로
+    # 직접 지정 — offset points 는 ylim이 바뀌면 스케일도 같이 바뀌어 혼동을
+    # 더한다)에 놓아 y=0 격자선 아래·테두리 위 빈 구간 안에 들어가게 한다.
+    ax.annotate(KO[REGIONS[i_car]], xy=(lat[i_car], c[i_car]), xytext=(lat[i_car], -30),
+                textcoords="data", ha="center", va="top", fontsize=NOTE, color=INK, zorder=6)
+    ax.annotate(KO[REGIONS[i_auto]], xy=(lat[i_auto], c[i_auto]), xytext=(lat[i_auto], -30),
+                textcoords="data", ha="center", va="top", fontsize=NOTE, color=INK, zorder=6)
 
     # 무릎점이 무엇을 아꼈는지 — 프랑스까지 더 가는 구간을 화살표로
     ax.annotate("", xy=(lat[i_car], c[i_car]), xytext=(lat[i_auto], c[i_auto]),
@@ -185,7 +205,9 @@ def fig_loadbalancer(data):
             bbox=dict(facecolor="white", edgecolor="none", pad=1.2))
 
     ax.set_xlim(-16, 262)
-    ax.set_ylim(-42, 430)
+    # 2026-09-28(3d 재지적): 아래 끝을 -42→-95 로 내려 무릎점·프랑스 라벨 한 줄이
+    # y=0 격자선 아래·테두리 위에 들어갈 자리를 만든다(위 주석 참고).
+    ax.set_ylim(-95, 430)
     ax.set_xticks([0, 50, 100, 150, 200, 250])
     ax.set_xlabel("출발지(한국)로부터의 네트워크 지연 (ms)", fontsize=LAB)
     ax.set_ylabel("탄소집약도 (gCO₂/kWh)", fontsize=LAB)   # "그 슬롯의"는 캡션이 이미 말한다
