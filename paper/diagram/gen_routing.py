@@ -41,8 +41,9 @@ plt.rcParams["axes.unicode_minus"] = False
 SUM = os.path.join(ROOT, "load_balancer", "framework", "results", "summary.json")
 # 2026-09-24 b6 배분(회색 팔레트 통일): "홈 유지분"은 보조·부수 정보라 AUX_GRAY.
 GRAY = AUX_GRAY
-SHORT = {"US-CAL-CISO": "캘리포니아", "US-TEX-ERCO": "텍사스", "US-NY-NYIS": "뉴욕",
-         "FR": "프랑스", "DE": "독일", "KR": "한국", "IN": "인도", "JP": "일본"}
+# 2026-10-08: JOK 10항(그림 내용 영문)에 따라 영문으로. gen_figs_data.NAME 과 같은 표기.
+SHORT = {"US-CAL-CISO": "California", "US-TEX-ERCO": "Texas", "US-NY-NYIS": "New York",
+         "FR": "France", "DE": "Germany", "KR": "Korea", "IN": "India", "JP": "Japan"}
 
 
 def main():
@@ -51,7 +52,7 @@ def main():
     tot = M.sum()
     recv = M.sum(axis=0)
 
-    fig, ax = plt.subplots(figsize=(215 / 72.0, 132 / 72.0), dpi=300)
+    fig, ax = plt.subplots(figsize=(215 / 72.0, 132 / 72.0), dpi=500)
     xs = np.arange(n)
     yt, yb = 1.0, 0.0
 
@@ -93,17 +94,26 @@ def main():
         # 상자 아래 테두리에 얹혔고, 검은 상자에서는 검은 글자가 묻혔다(지면 확인).
         # 가장 큰 상자보다 아래의 한 줄에 모두 맞춘다 — 열 위치가 상자를 가리킨다.
         ax.text(xs[j], yb - 0.255 - 0.05, f"{recv[j]/tot*100:.0f}%", ha="center",
-                va="top", fontsize=6.2,
+                va="top", fontsize=6.8,
                 fontweight="bold" if recv[j] > tot * 0.2 else "normal")
 
     for i in range(n):
         ax.add_patch(plt.Rectangle((xs[i] - 0.34, yt), 0.68, 0.055,
                                    facecolor="white", edgecolor=INK, lw=0.8, zorder=4))
-        ax.text(xs[i], yt + 0.11, SHORT[REGIONS[i]], ha="left", fontsize=6.2,
-                rotation=32, rotation_mode="anchor")
+        # 2026-10-08: 영문 지명이 한글보다 길어(California 10자 vs 캘리포니아 5자)
+        # 32도에서는 이웃 라벨끼리 가로로 4.0~5.6pt 겹쳤다(PDF 글자범위 자동검사).
+        # 각도를 쓸어 보니 55도에 0.8pt 남고 57도에서 겹침 0 이었는데, 57도로는
+        # 문제가 반만 풀린다 — 기울어진 라벨이 제 열을 벗어나 위로 뻗어 "Texas"가
+        # New York 열 위에, "France"가 Germany 열 위에 놓인다(두 안을 나란히
+        # 렌더해 확인). 겹치지만 않을 뿐 어느 열의 이름인지 모호한 건 그대로다.
+        # 90도로 세우면 라벨의 가로 폭이 글자 높이(약 7.5pt)로 줄어 **제 열 폭
+        # (0.68 데이터단위) 안에 완전히 들어간다** — 수직선이 곧 소속을 말한다.
+        # 글자 크기는 그대로 둔다(이미 6.2pt 로 작다).
+        ax.text(xs[i], yt + 0.11, SHORT[REGIONS[i]], ha="left", fontsize=6.8,
+                rotation=90, rotation_mode="anchor")
 
-    ax.text(-0.85, yt + 0.02, "출발", fontsize=6.2, ha="right", va="bottom")
-    ax.text(-0.85, yb - 0.02, "도착", fontsize=6.2, ha="right", va="top")
+    ax.text(-0.85, yt + 0.02, "Origin", fontsize=6.8, ha="right", va="bottom")
+    ax.text(-0.85, yb - 0.02, "Destination", fontsize=6.8, ha="right", va="top")
     ax.set_xlim(-1.15, n + 0.15)
     ax.set_ylim(-0.46, 1.62)
     ax.axis("off")

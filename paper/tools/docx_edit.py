@@ -45,7 +45,7 @@ def find_one(xml, head):
     return hits[0]
 
 
-def replace_text(xml, head, new_text):
+def replace_text(xml, head, new_text, allow_sectpr=False):
     """문단 하나의 본문 텍스트를 통째로 갈아끼운다. 첫 run 의 서식을 유지한다.
 
     2026-09-24 사고: 이 함수는 run 을 전부 버리고 새로 하나 만든다. 그런데
@@ -59,6 +59,11 @@ def replace_text(xml, head, new_text):
     """
     s, e, frag, old = find_one(xml, head)
     for k in PROTECT:
+        if k == "<w:sectPr" and allow_sectpr:
+            # 2026-10-08: 전단 그림의 영문 캡션 문단이 구역 나눔을 품는다. 이 함수는
+            # <w:pPr> 를 통째로 보존하므로(아래 ppr) sectPr 도 그대로 남는다 —
+            # 호출하는 쪽이 그걸 알고 있을 때만 열어 준다. 끝에서 보존을 검사한다.
+            continue
         assert k not in frag, f"{head[:30]!r}: {k} 포함 — 편집 금지"
 
     runs = RUN.findall(frag)
@@ -125,6 +130,8 @@ def replace_text(xml, head, new_text):
     ppr = ppr.group(0) if ppr else ""
     open_tag = re.match(r'<w:p\b[^>]*?>', frag).group(0)
     new_frag = f"{open_tag}{ppr}{starts}{new_run}{ends}{refs}</w:p>"
+    if "<w:sectPr" in frag:
+        assert "<w:sectPr" in new_frag, f"{head[:30]!r}: 구역 나눔이 사라졌다"
     if starts:
         ids = re.findall(r'w:id="(\d+)"', starts)
         print(f"  · 메모 {ids} 가 달린 문단이다 — 표식을 문단 전체로 옮겨 보존했다")
@@ -156,3 +163,231 @@ def save(path, z, xml, expect_delta):
     shutil.move(tmp, path)
     import docx
     docx.Document(path)          # 적재 검사
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# 표 칸 편집 — 2026-10-08 추가
+#
+# paragraphs() 는 표 안 문단을 **일부러 제외한다**(표는 통째로 손대지 않는다는
+# 원칙). 그런데 JOK 투고 규정 10항이 "그림 및 표의 내용은 모두 영문"을 요구해
+# 칸 안의 글을 바꿔야 했다. 문단처럼 글머리로 찾으면("한국" 같은 짧은 말) 다른
+# 데와 겹쳐 위험하므로, **(표 번호, 행 번호, 칸 번호) 좌표로만** 찾는다.
+# 서식은 다수결(_major 와 같은 규칙)로 고른다 — 칸은 보통 서식이 하나뿐이다.
+TR = re.compile(r'<w:tr\b(?:(?!<w:tr\b).)*?</w:tr>', re.DOTALL)
+TC = re.compile(r'<w:tc>(?:(?!<w:tc>).)*?</w:tc>', re.DOTALL)
+
+
+def table_spans(xml):
+    return [(m.start(), m.end()) for m in TBL.finditer(xml)]
+
+
+def cell_text(xml, ti, ri, ci):
+    s, e, _ = _locate_cell(xml, ti, ri, ci)
+    return text_of(xml[s:e])
+
+
+def _locate_cell(xml, ti, ri, ci):
+    """(표, 행, 칸) 좌표의 <w:tc> 범위를 절대 위치로 돌려준다. 1부터 센다."""
+    sp = table_spans(xml)
+    assert 1 <= ti <= len(sp), f"표 {ti} 없음 (총 {len(sp)}개)"
+    ts, te = sp[ti - 1]
+    tbl = xml[ts:te]
+    assert tbl.count("<w:tbl>") == 1, f"표 {ti}: 중첩 표 — 손대지 않는다"
+    rows = list(TR.finditer(tbl))
+    assert 1 <= ri <= len(rows), f"표 {ti} 행 {ri} 없음 (총 {len(rows)}행)"
+    row = rows[ri - 1]
+    cells = list(TC.finditer(row.group(0)))
+    assert 1 <= ci <= len(cells), f"표 {ti} 행 {ri} 칸 {ci} 없음 (총 {len(cells)}칸)"
+    c = cells[ci - 1]
+    s = ts + row.start() + c.start()
+    e = ts + row.start() + c.end()
+    return s, e, c.group(0)
+
+
+def replace_cell(xml, ti, ri, ci, old_expect, new_text):
+    """표 칸 하나의 글을 바꾼다. old_expect 와 지금 글이 다르면 멈춘다.
+
+    old_expect 를 요구하는 이유: 좌표만으로 고치면 표 구조가 바뀌었을 때
+    엉뚱한 칸을 조용히 덮어쓴다. 지금 글을 함께 대조해야 안전하다.
+    """
+    s, e, frag = _locate_cell(xml, ti, ri, ci)
+    for k in PROTECT:
+        assert k not in frag, f"표{ti}/{ri}/{ci}: {k} 포함 — 편집 금지"
+    cur = text_of(frag)
+    assert cur == old_expect, f"표{ti}/{ri}/{ci}: 지금 글이 {cur!r} 인데 {old_expect!r} 를 기대했다"
+
+    paras = list(PARA.finditer(frag))
+    assert len(paras) == 1, f"표{ti}/{ri}/{ci}: 문단이 {len(paras)}개 — 1개여야 한다"
+    p = paras[0]
+    pf = p.group(0)
+    runs = RUN.findall(pf)
+    assert runs, f"표{ti}/{ri}/{ci}: run 이 없음"
+
+    def _rpr(r):
+        m = re.search(r'<w:rPr\b.*?</w:rPr>', r, re.DOTALL)
+        return m.group(0) if m else ""
+
+    def _txt(r):
+        return "".join(re.findall(r'<w:t\b[^>]*>(.*?)</w:t>', r, re.DOTALL))
+
+    best, blen = "", -1
+    for r in runs:                       # 다수결 서식
+        t = len(_txt(r))
+        if t > blen:
+            best, blen = _rpr(r), t
+
+    starts = "".join(re.findall(r'<w:commentRangeStart\b[^>]*/>', pf))
+    ends = "".join(re.findall(r'<w:commentRangeEnd\b[^>]*/>', pf))
+    refs = "".join(re.findall(
+        r'<w:r\b(?:(?!</w:r>).)*?<w:commentReference\b[^>]*/>(?:(?!</w:r>).)*?</w:r>',
+        pf, re.DOTALL))
+    ppr = re.search(r'<w:pPr\b.*?</w:pPr>', pf, re.DOTALL)
+    ppr = ppr.group(0) if ppr else ""
+    open_tag = re.match(r'<w:p\b[^>]*?>', pf).group(0)
+    new_run = f'<w:r>{best}<w:t xml:space="preserve">{_esc(new_text)}</w:t></w:r>'
+    new_p = f"{open_tag}{ppr}{starts}{new_run}{ends}{refs}</w:p>"
+    new_frag = frag[:p.start()] + new_p + frag[p.end():]
+    return xml[:s] + new_frag + xml[e:]
+
+
+def insert_after(xml, head, new_text, size_half=None):
+    """head 로 찾은 문단 **바로 뒤**에 같은 서식의 문단을 하나 끼운다.
+
+    2026-10-08 추가. JOK 규정 10항이 그림·표 제목을 한글과 영문 두 줄로 요구해
+    기존 캡션 아래에 영문 줄을 넣어야 했다. 앵커 문단의 <w:pPr> 과 다수결 서식을
+    그대로 물려받되, size_half(=w:sz 값, pt의 두 배)를 주면 글자 크기만 바꾼다.
+    앵커 문단 자체는 건드리지 않는다 — 메모 앵커가 날아갈 일이 없다.
+    """
+    s, e, frag, old = find_one(xml, head)
+    for k in PROTECT:
+        assert k not in frag, f"{head[:30]!r}: {k} 포함 — 뒤에 끼우지 않는다"
+
+    runs = RUN.findall(frag)
+    assert runs, f"{head[:30]!r}: run 이 없음"
+
+    def _rpr(r):
+        m = re.search(r'<w:rPr\b.*?</w:rPr>', r, re.DOTALL)
+        return m.group(0) if m else ""
+
+    def _txt(r):
+        return "".join(re.findall(r'<w:t\b[^>]*>(.*?)</w:t>', r, re.DOTALL))
+
+    best, blen = "", -1
+    for r in runs:
+        t = len(_txt(r))
+        if t > blen:
+            best, blen = _rpr(r), t
+    if size_half is not None:
+        best = re.sub(r'<w:sz w:val="\d+"\s*/>', f'<w:sz w:val="{size_half}"/>', best)
+        best = re.sub(r'<w:szCs w:val="\d+"\s*/>', f'<w:szCs w:val="{size_half}"/>', best)
+        if "<w:sz " not in best:
+            inner = best[len("<w:rPr>"):-len("</w:rPr>")] if best.startswith("<w:rPr>") else ""
+            best = f'<w:rPr>{inner}<w:sz w:val="{size_half}"/><w:szCs w:val="{size_half}"/></w:rPr>'
+
+    ppr = re.search(r'<w:pPr\b.*?</w:pPr>', frag, re.DOTALL)
+    ppr = ppr.group(0) if ppr else ""
+    # 앵커의 줄간격/들여쓰기는 물려받되, 캡션 아래 여백(spacing after)은 앵커 쪽에
+    # 남겨 두는 게 자연스럽다 — 여기서는 그대로 쓴다(조판은 눈으로 확인할 것).
+    new_p = (f'<w:p>{ppr}<w:r>{best}'
+             f'<w:t xml:space="preserve">{_esc(new_text)}</w:t></w:r></w:p>')
+    return xml[:e] + new_p + xml[e:]
+
+
+def set_run_text(xml, head, idx, expect, new_text):
+    """문단 안 idx 번째 run 의 글자만 바꾼다 (0부터). 서식은 손대지 않는다.
+
+    2026-10-08 추가. 캡션 머리("그림 1.")는 굵은 run 둘로 쪼개져 있어
+    replace_text 로 문단을 통째 갈면 굵기를 잃는다(2026-09-28 사고와 같은 길).
+    run 하나의 <w:t> 내용만 바꾸면 서식·메모 앵커가 전부 그대로 남는다.
+    expect 로 지금 글을 대조해 엉뚱한 run 을 건드리지 않게 한다.
+    """
+    s, e, frag, old = find_one(xml, head)
+    runs = list(RUN.finditer(frag))
+    assert 0 <= idx < len(runs), f"{head[:24]!r}: run {idx} 없음 (총 {len(runs)}개)"
+    r = runs[idx]
+    rf = r.group(0)
+    cur = "".join(re.findall(r'<w:t\b[^>]*>(.*?)</w:t>', rf, re.DOTALL))
+    assert cur == expect, f"{head[:24]!r} run{idx}: 지금 {cur!r} 인데 {expect!r} 를 기대했다"
+    ts = list(re.finditer(r'(<w:t\b[^>]*>)(.*?)(</w:t>)', rf, re.DOTALL))
+    assert len(ts) == 1, f"{head[:24]!r} run{idx}: <w:t> 가 {len(ts)}개"
+    t = ts[0]
+    new_rf = rf[:t.start()] + f'<w:t xml:space="preserve">{_esc(new_text)}</w:t>' + rf[t.end():]
+    new_frag = frag[:r.start()] + new_rf + frag[r.end():]
+    return xml[:s] + new_frag + xml[e:]
+
+
+def set_ppr_spacing(xml, head, before=None, after=None, keep_next=None):
+    """문단의 <w:spacing> 과 keepNext 만 손본다. 글자는 건드리지 않는다.
+
+    2026-10-08 추가. 캡션 한글 줄과 영문 줄이 각각 after=240(12pt) 을 들고 있어
+    두 줄 사이가 15pt 나 벌어졌다(한글의 after 12 + 영문의 before 3). 두 줄은
+    한 제목이므로 붙여야 하고, 붙이면 세로 공간도 회수된다.
+    요소 순서는 스키마가 정한다 — keepNext 가 keepLines 보다 앞이다.
+    """
+    s, e, frag, old = find_one(xml, head)
+    m = re.search(r'<w:pPr\b.*?</w:pPr>', frag, re.DOTALL)
+    assert m, f"{head[:24]!r}: pPr 이 없다"
+    ppr = m.group(0)
+    if before is not None or after is not None:
+        sp = re.search(r'<w:spacing\b[^>]*/>', ppr)
+        assert sp, f"{head[:24]!r}: spacing 이 없다"
+        cur = dict(re.findall(r'w:(before|after|line|lineRule|beforeLines|afterLines)="([^"]+)"', sp.group(0)))
+        if before is not None:
+            cur["before"] = str(before)
+        if after is not None:
+            cur["after"] = str(after)
+        order = ["before", "after", "line", "lineRule"]
+        attrs = " ".join(f'w:{k}="{cur[k]}"' for k in order if k in cur)
+        ppr = ppr[:sp.start()] + f"<w:spacing {attrs}/>" + ppr[sp.end():]
+    if keep_next is True and "<w:keepNext/>" not in ppr:
+        ppr = ppr.replace("<w:pPr>", "<w:pPr><w:keepNext/>", 1)
+    if keep_next is False:
+        ppr = ppr.replace("<w:keepNext/>", "")
+    new_frag = frag[:m.start()] + ppr + frag[m.end():]
+    return xml[:s] + new_frag + xml[e:]
+
+
+def delete_substring(xml, head, target):
+    """문단 안의 특정 글자만 잘라낸다. run 서식은 그대로 둔다.
+
+    2026-10-09 사고: replace_text 로 문단을 통째 갈았더니 기울임 변수 13개(t, Wj, Dj …)가
+    납작해졌다. Word 는 한 문단을 run 수십~수백 개로 쪼개 두고 변수마다 기울임을 준다 —
+    문단을 하나의 run 으로 다시 쓰면 그 서식이 전부 사라진다.
+    글자 몇 개만 지우는 일에는 문단을 다시 쓰지 말고 이 함수를 쓴다.
+    """
+    s, e, frag, old = find_one(xml, head)
+    runs = list(RUN.finditer(frag))
+    assert runs, f"{head[:24]!r}: run 이 없음"
+
+    texts, spans = [], []
+    pos = 0
+    for r in runs:
+        t = "".join(re.findall(r'<w:t\b[^>]*>(.*?)</w:t>', r.group(0), re.DOTALL))
+        texts.append(t)
+        spans.append((pos, pos + len(t)))
+        pos += len(t)
+    whole = "".join(texts)
+    i = whole.find(target)
+    assert i >= 0, f"{head[:24]!r}: {target!r} 를 못 찾음"
+    assert whole.count(target) == 1, f"{head[:24]!r}: {target!r} 가 여러 번 나온다"
+    j = i + len(target)
+
+    out, last = [], 0
+    for k, r in enumerate(runs):
+        a, b = spans[k]
+        if b <= i or a >= j:                       # 손댈 것 없음
+            continue
+        out.append((r, a, b))
+    new_frag = frag
+    for r, a, b in reversed(out):
+        keep = texts[runs.index(r)][: max(0, i - a)] + texts[runs.index(r)][max(0, j - a):]
+        rf = r.group(0)
+        if keep == "":
+            new_frag = new_frag[:r.start()] + new_frag[r.end():]
+        else:
+            ts = list(re.finditer(r'(<w:t\b[^>]*>)(.*?)(</w:t>)', rf, re.DOTALL))
+            assert len(ts) == 1, f"{head[:24]!r}: run 안 <w:t> 가 {len(ts)}개"
+            t = ts[0]
+            new_rf = rf[:t.start()] + f'<w:t xml:space="preserve">{_esc(keep)}</w:t>' + rf[t.end():]
+            new_frag = new_frag[:r.start()] + new_rf + new_frag[r.end():]
+    return xml[:s] + new_frag + xml[e:], len(target)

@@ -46,7 +46,7 @@ def main():
     # 215pt = 단내(single-column) 폭 — gen_figs.py 관례와 동일, 2.99in @300dpi.
     # 2026-09-21까지 239pt로 잘못 잡혀 있었음(수정).
     W_IN, H_IN = 215 / 72.0, 190 / 72.0
-    fig, ax = plt.subplots(figsize=(W_IN, H_IN), dpi=300)
+    fig, ax = plt.subplots(figsize=(W_IN, H_IN), dpi=500)
 
     # 2026-09-25: 곡선은 고정 α 점만 잇는다. auto 는 슬롯마다 α 가 바뀌는 다른 정책이라
     # 고정 α 곡선 위의 점이 아니다 — 한 선으로 이으면 "0.5 와 0.75 사이의 어떤 고정값"처럼
@@ -71,11 +71,16 @@ def main():
                edgecolor=INK, lw=1.6, zorder=5)
 
     for i, (lab, x, y) in enumerate(POINTS):
-        t = f"α={lab}" if lab != "auto" else "α=auto\n(무릎점)"
+        t = f"α={lab}" if lab != "auto" else "α=auto\n(knee point)"
         dx, dy = 4, 6
         ha = "left"
         if i == 0:
-            dx, dy, ha = 4, -12, "left"
+            # 2026-10-08(선-글자 교차 자동검사로 발견): dy=-12 는 α=0 점이 그래프
+            # 맨 아래(y=0)라 라벨을 **x축 선 아래로** 내보냈다 — 축선이 글자 위를
+            # 지나고 눈금 표시가 글자를 찔렀다(축 아래로 5.5pt). 번역과 무관한
+            # 기존 결함으로, HEAD 판에도 5.4pt 빠져나가 있었다. 점 오른쪽이
+            # 비어 있으니 그쪽으로 올린다 — 축선 위 7.5pt, α=0.25 라벨까지 5.5pt.
+            dx, dy, ha = 7, 1, "left"
         elif i == AUTO_IDX:
             dx, dy = -4, 8
             ha = "right"
@@ -86,18 +91,18 @@ def main():
         elif lab == "0.25":      # 같은 이유로 아래쪽 빈 자리로
             dx, dy, ha = 7, -7, "left"
         ax.annotate(t, (x, y), textcoords="offset points", xytext=(dx, dy),
-                    fontsize=6.5, ha=ha, linespacing=1.2)
+                    fontsize=7.1, ha=ha, linespacing=1.2)
 
     # 2026-09-25: "+6.7 ms, -3,108.8 kg" 주석과 α=0.5→auto 점선을 뺐다. 같은 비교
     # (지연 6.7 ms 로 10.64%p 더 줄임)를 본문 3.3절이 이미 말한다 — 그림은 곡선만 보인다.
 
     ax.set_xlim(-6, 122)
     ax.set_ylim(-4, 74)
-    ax.set_xlabel("평균 지연 (ms)", fontsize=8)
+    ax.set_xlabel("Average latency (ms)", fontsize=8.8)
     # 2026-09-24 b6 배분(그림 10장 통합 점검): "% vs baseline"이 그림 8·10의
     # "탄소 절감률 (%)"과 표기가 달랐다(같은 ① 기준 비율인데). 맞춘다.
-    ax.set_ylabel("탄소 절감률 (%)", fontsize=8)
-    ax.tick_params(labelsize=7)
+    ax.set_ylabel("Carbon savings (%)", fontsize=8.8)
+    ax.tick_params(labelsize=7.7)
 
     for spine in ("top", "right"):
         ax.spines[spine].set_visible(False)

@@ -32,9 +32,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 from interface import carbon_2025
 from interface.regions import REGIONS, REGION_LABELS
 
-# 본문·표와 같은 한글 표기. REGION_LABELS는 영문이라 한국어 논문 그림에 쓰지 않는다.
-KO = {"US-CAL-CISO": "캘리포니아", "US-TEX-ERCO": "텍사스", "US-NY-NYIS": "뉴욕",
-      "FR": "프랑스", "DE": "독일", "KR": "한국", "IN": "인도", "JP": "일본"}
+# 2026-10-08: JOK 투고 규정 10항("그림 및 표의 내용은 모두 영문")에 따라 영문으로 바꿨다.
+# REGION_LABELS("US West (California)")는 산점도 점 라벨로 쓰기엔 너무 길어 짧은 지명만 쓴다.
+NAME = {"US-CAL-CISO": "California", "US-TEX-ERCO": "Texas", "US-NY-NYIS": "New York",
+        "FR": "France", "DE": "Germany", "KR": "Korea", "IN": "India", "JP": "Japan"}
 from load_balancer.framework.config import load_latency_matrix
 
 for name in ("Apple SD Gothic Neo", "AppleGothic", "Malgun Gothic", "Noto Sans KR"):
@@ -57,7 +58,7 @@ from palette import EXCEPT_GRAY, CRITICAL_GRAY
 INK, GRAY, LIGHT = "#000000", "#7a7a7a", "#cccccc"
 COL = 215 / 72.0                 # 단내 폭
 FULL = 451 / 72.0                # 전단 폭(그림 1·2가 쓰는 구역)
-LAB, TICK, NOTE = 7.5, 6.5, 6.0  # 축 이름 / 눈금 / 주석
+LAB, TICK, NOTE = 8.2, 7.1, 6.6  # 축 이름 / 눈금 / 주석
 # 2026-09-24 b6 배분(그림 10장 통합 점검): NOTE가 5.6이라 그림 3·4·7의 범례·주석이
 # 6pt 아래였다. 6.0으로 올린다 — 렌더해서 겹침 없는지 확인 완료.
 
@@ -86,20 +87,20 @@ def fig_forecast(data):
     # (그림 비판 검토). 입력은 최근 48 h 만 보이고, 168 h 라는 사실은 캡션·본문이 말한다.
     SHOW = 48
     hist = hist[-SHOW:]
-    fig, ax = plt.subplots(figsize=(COL, 116 / 72.0), dpi=300)
+    fig, ax = plt.subplots(figsize=(COL, 116 / 72.0), dpi=500)
     ax.plot(np.arange(-SHOW, 0), hist, color=GRAY, lw=0.9)
-    ax.plot(np.arange(24), fut, color=GRAY, lw=1.7, label="실측")
-    ax.plot(np.arange(24), pred, color=INK, lw=1.3, ls=(0, (3.5, 1.6)), label="LSTM 예측")
+    ax.plot(np.arange(24), fut, color=GRAY, lw=1.7, label="Actual")
+    ax.plot(np.arange(24), pred, color=INK, lw=1.3, ls=(0, (3.5, 1.6)), label="LSTM forecast")
     ax.axvline(0, color=INK, lw=0.8)
 
     ax.axvspan(-SHOW - 2, 0, color="#f2f2f2", zorder=0)
     # 출력 구간이 전체 폭의 12%뿐이라 그 안에 글자를 넣으면 전부 겹친다.
     # 구간 이름은 아래쪽에, 오차는 위쪽 빈 곳에 따로 둔다. 발행 시각은 세로선과
     # 음영 경계가 이미 말하므로 따로 적지 않는다.
-    ax.text(-SHOW / 2, 14, "입력 (최근 48 h)", ha="center", fontsize=6.4)
+    ax.text(-SHOW / 2, 14, "Input (last 48 h)", ha="center", fontsize=7.0)
     # 출력 구간이 24단위뿐이라 "출력 24 h"(8자)를 넣으면 구분선과 오른쪽
     # 테두리를 둘 다 넘는다. 시간 길이는 x축 눈금(0, 24)이 이미 말한다.
-    ax.text(12, 14, "출력", ha="center", fontsize=6.4)
+    ax.text(12, 14, "Output", ha="center", fontsize=7.0)
     # 2026-09-24 b6 배분(그림 10장 통합 점검): "이 구간 MAE ..."가 캡션("이 구간의
     # 평균 절대 오차는 12.2 gCO₂/kWh다")과 겹쳤다 — 어디를 가리킬 필요도 없는 떠
     # 있는 주석이라 캡션 쪽에 맡기고 그림에서는 뺀다(왼쪽 축선에 거의 붙던 문제도
@@ -109,8 +110,8 @@ def fig_forecast(data):
     ax.set_ylim(0, 245)
     ax.set_yticks([0, 50, 100, 150, 200])
     ax.set_xticks([-48, -36, -24, -12, 0, 12, 24])
-    ax.set_xlabel("발행 시각 기준 경과 시간 (h)", fontsize=LAB)
-    ax.set_ylabel("탄소집약도 (gCO₂/kWh)", fontsize=LAB)
+    ax.set_xlabel("Hours since issue time (h)", fontsize=LAB)
+    ax.set_ylabel("Carbon intensity (gCO₂/kWh)", fontsize=LAB)
     ax.tick_params(labelsize=TICK)
     legend_above(ax, 2)
     fig.tight_layout(pad=0.3)
@@ -134,25 +135,42 @@ def fig_loadbalancer(data):
     sc = lambda a: a * (c / c.max()) + (1 - a) * (lat / 244.0)
     i_auto, i_lat, i_car = int(np.argmin(sc(0.508))), int(np.argmin(lat)), int(np.argmin(c))
 
-    fig, ax = plt.subplots(figsize=(COL, 128 / 72.0), dpi=300)
+    fig, ax = plt.subplots(figsize=(COL, 128 / 72.0), dpi=500)
     # 2026-09-25: 나머지 리전을 빈 원으로 그리면 범례의 빈 원("α=1 · 프랑스")과 구별이
     # 안 됐다(그림 비판 검토). 세 선택 밖의 리전은 작은 회색 점으로 낮춘다.
     others = [i for i in range(len(REGIONS)) if i not in (i_auto, i_lat, i_car)]
     ax.scatter(lat[others], c[others], s=10, facecolor=GRAY, edgecolor="none",
-               zorder=3, label="기타 리전")
+               zorder=3, label="Other regions")
     for i, r in enumerate(REGIONS):
         if i in (i_auto, i_lat, i_car):
             continue
-        nm = KO[r]
+        nm = NAME[r]
         # 2026-09-24 b6 배분(그림 10장 통합 점검): 독일(lat=244)이 x축 오른쪽
         # 끝(262)에 바짝 붙어 있어, 오른쪽으로 미는 기본 오프셋을 쓰면 라벨이
         # 축선을 넘어간다(400% 확대로 발견) — 이 점만 왼쪽으로 뒤집는다.
-        if r == "DE":
-            ax.annotate(nm, (lat[i], c[i]), textcoords="offset points",
-                        xytext=(-4, 3), ha="right", fontsize=NOTE, color=GRAY)
-        else:
-            ax.annotate(nm, (lat[i], c[i]), textcoords="offset points",
-                        xytext=(4, 3), fontsize=NOTE, color=GRAY)
+        # 2026-10-08(영문화): 영문 지명이 한글보다 서너 배 길어(New York 8자 vs
+        # 뉴욕 2자, Germany 7자 vs 독일 2자) 기본 배치(점 오른쪽 위)로는 라벨이
+        # 제 점에서 멀어져 **이웃 점을 가리키는 것처럼 읽힌다**. 실측(PDF 글자
+        # 범위)으로 확인한 것:
+        #   · 뉴욕 라벨 오른쪽 끝 x=195.6 — 제 점(167.1)보다 독일 점(200.3)에
+        #     4.7pt 로 더 가까웠다.
+        #   · 독일 라벨(173.7..196.3)과 뉴욕 라벨(171.1..195.6)이 가로로 93%
+        #     겹친 채 세로 간격 0.1pt — 글자끼리 교차하지 않아 bbox 검사는
+        #     통과하지만 두 줄짜리 한 덩어리로 읽혔다.
+        # 셋을 같이 푼다. 뉴욕은 제 점 바로 위에 가운데맞춤해 수직선이 곧
+        # 소속을 말하게 하고, 독일은 오른쪽 축선(x≈212)에 자리가 없어 점 왼쪽에
+        # 둔 채 위로 띄우며, 텍사스는 그만큼 더 올려 뉴욕과 줄을 뗀다.
+        # 아래로 내리는 안은 전부 주석 "104 ms more cuts"(y 61.7..69.0)와
+        # 부딪혀 기각했다. 일본은 그대로 둔다 — 가운데맞춤하면 한국 라벨을 덮는다.
+        OFF = {"DE": ((-4, 11), "right", "baseline"),
+               "US-NY-NYIS": ((0, 3), "center", "baseline"),
+               "US-TEX-ERCO": ((4, 7), "left", "baseline"),
+               # 2026-10-08: Japan 을 내리는 안은 "134 ms cuts" 주석과 정면으로
+               # 부딪혀(16.1×6.0pt) 기각했다 — 움직일 것은 지명이 아니라 주석이다.
+               }
+        xy, ha, va = OFF.get(r, ((4, 3), "left", "baseline"))
+        ax.annotate(nm, (lat[i], c[i]), textcoords="offset points",
+                    xytext=xy, ha=ha, va=va, fontsize=NOTE, color=GRAY)
 
     # 2026-09-24: ★을 뺀다(사용자 지적 — 학술지 그림에서 별표는 거의 쓰지 않는다).
     # 세 선택은 네모·원·채운원으로 구분하고, 무릎점만 테두리를 한 겹 더 둘러 강조한다.
@@ -164,15 +182,18 @@ def fig_loadbalancer(data):
     # 나라 이름은 뺀다 — 남는 "α=0 · 홈"·"α=1"·"무릎점"은 이름이 아니라
     # 그 점이 셋 중 어느 역할인지(범례 도형 규약)만 말하면 된다. 검게(INK) 써
     # 회색인 "기타 리전" 이름과 강조 대비를 그대로 유지한다.
-    marks = ((i_lat, "s", 30, "white", "α=0 · 홈"),
+    marks = ((i_lat, "s", 30, "white", "α=0 · origin"),
              (i_car, "o", 30, "white", "α=1"),
-             (i_auto, "o", 44, INK, "무릎점"))
+             (i_auto, "o", 44, INK, "Knee point"))
     for idx, mk, s, fc, lab in marks:
         ax.scatter([lat[idx]], [c[idx]], s=s, marker=mk, facecolor=fc,
                    edgecolor=INK, lw=1.0, zorder=5, label=lab)
     ax.scatter([lat[i_auto]], [c[i_auto]], s=110, marker="o", facecolor="none",
                edgecolor=INK, lw=0.7, zorder=5)
-    ax.annotate(KO[REGIONS[i_lat]], (lat[i_lat], c[i_lat]), textcoords="offset points",
+    # 2026-10-08(글자 1.099배): 오른쪽으로 뻗은 Korea 라벨이 Japan 라벨과 붙어
+    # 한 덩어리로 읽혔다. Korea 를 올리는 안은 범례·축 윗변에 걸려 기각하고,
+    # 아래 OFF 표에서 Japan 을 제 점 아래로 내렸다.
+    ax.annotate(NAME[REGIONS[i_lat]], (lat[i_lat], c[i_lat]), textcoords="offset points",
                 xytext=(6, 2), fontsize=NOTE, color=INK, zorder=6)
     # 2026-09-28(3d 재지적, 400% 확대로 확인): 무릎점·프랑스 둘 다 y≈0~15에 앉아
     # 있어 그 아래 여백이 거의 없다 — 자리를 옮겨 가며 풀다 네 번 다 뭔가에
@@ -180,18 +201,18 @@ def fig_loadbalancer(data):
     # ylim 아래 끝을 내려 자리 자체를 만든다: 각자 제 점 바로 아래(data 좌표로
     # 직접 지정 — offset points 는 ylim이 바뀌면 스케일도 같이 바뀌어 혼동을
     # 더한다)에 놓아 y=0 격자선 아래·테두리 위 빈 구간 안에 들어가게 한다.
-    ax.annotate(KO[REGIONS[i_car]], xy=(lat[i_car], c[i_car]), xytext=(lat[i_car], -30),
+    ax.annotate(NAME[REGIONS[i_car]], xy=(lat[i_car], c[i_car]), xytext=(lat[i_car], -30),
                 textcoords="data", ha="center", va="top", fontsize=NOTE, color=INK, zorder=6)
-    ax.annotate(KO[REGIONS[i_auto]], xy=(lat[i_auto], c[i_auto]), xytext=(lat[i_auto], -30),
+    ax.annotate(NAME[REGIONS[i_auto]], xy=(lat[i_auto], c[i_auto]), xytext=(lat[i_auto], -30),
                 textcoords="data", ha="center", va="top", fontsize=NOTE, color=INK, zorder=6)
 
     # 무릎점이 무엇을 아꼈는지 — 프랑스까지 더 가는 구간을 화살표로
     ax.annotate("", xy=(lat[i_car], c[i_car]), xytext=(lat[i_auto], c[i_auto]),
                 arrowprops=dict(arrowstyle="->", lw=0.7, color=INK,
                                 shrinkA=5, shrinkB=5, ls=(0, (2, 1.5))))
-    ax.text((lat[i_auto] + lat[i_car]) / 2, c[i_car] + 42,
-            f"여기서 {lat[i_car]-lat[i_auto]:.0f} ms 를 더 써도\n"
-            f"탄소는 {c[i_auto]-c[i_car]:.0f} 밖에 못 줄인다",
+    ax.text((lat[i_auto] + lat[i_car]) / 2, c[i_car] + 28,
+            f"{lat[i_car]-lat[i_auto]:.0f} ms more cuts\n"
+            f"only {c[i_auto]-c[i_car]:.0f} gCO₂/kWh",
             ha="center", va="bottom", fontsize=NOTE, linespacing=1.35)
     # 반대로 홈에서 무릎점까지는 같은 지연으로 훨씬 많이 준다 — 무릎점의 근거
     ax.annotate("", xy=(lat[i_auto], c[i_auto]), xytext=(lat[i_lat], c[i_lat]),
@@ -199,18 +220,25 @@ def fig_loadbalancer(data):
                                 shrinkA=6, shrinkB=8))
     # 2026-09-24 b6 배분(그림 10장 통합 점검): 이 글자가 바로 위 화살표 선 위에
     # 놓여 "탄소" 글자를 선이 가로질렀다(확대해서 발견) — 흰 바탕을 깔아 뗀다.
-    ax.text((lat[i_lat] + lat[i_auto]) / 2 - 4, (c[i_lat] + c[i_auto]) / 2 + 18,
-            f"{lat[i_auto]-lat[i_lat]:.0f} ms 로\n탄소 {c[i_lat]-c[i_auto]:.0f} 감소",
+    # 2026-10-08(글자 1.099배): 이 글자의 흰 배경상자(x 63.9..106.5)가 Japan 점
+    # (x 62.5..65.7)의 오른쪽 아래를 49% 지우고 있었다 — 흰 상자는 줄마다가 아니라
+    # 두 줄을 한 덩어리로 덮어서, 글자 상자를 줄 단위로 재는 검사로는 안 잡힌다.
+    # 오른쪽·아래로 옮겨 점을 비껴간다. 오른쪽은 Texas(x 140.9)까지 비어 있다.
+    ax.text((lat[i_lat] + lat[i_auto]) / 2 + 5, (c[i_lat] + c[i_auto]) / 2 - 14,
+            f"{lat[i_auto]-lat[i_lat]:.0f} ms cuts\n{c[i_lat]-c[i_auto]:.0f} gCO₂/kWh",
             ha="center", fontsize=NOTE, linespacing=1.35, zorder=6,
             bbox=dict(facecolor="white", edgecolor="none", pad=1.2))
 
     ax.set_xlim(-16, 262)
     # 2026-09-28(3d 재지적): 아래 끝을 -42→-95 로 내려 무릎점·프랑스 라벨 한 줄이
     # y=0 격자선 아래·테두리 위에 들어갈 자리를 만든다(위 주석 참고).
-    ax.set_ylim(-95, 430)
+    # 2026-10-08(글자 1.099배): 라벨이 커져 x축 눈금 표시를 1.2pt 파고들었다.
+    # 라벨을 올리는 안(-20)은 화살표·주석과 부딪혀 기각하고, 라벨은 -30 에 두고
+    # ylim 만 -135 로 내려 아래 여백을 키웠다.
+    ax.set_ylim(-130, 430)
     ax.set_xticks([0, 50, 100, 150, 200, 250])
-    ax.set_xlabel("출발지(한국)로부터의 네트워크 지연 (ms)", fontsize=LAB)
-    ax.set_ylabel("탄소집약도 (gCO₂/kWh)", fontsize=LAB)   # "그 슬롯의"는 캡션이 이미 말한다
+    ax.set_xlabel("Network latency from origin (Korea) (ms)", fontsize=LAB)
+    ax.set_ylabel("Carbon intensity (gCO₂/kWh)", fontsize=LAB)   # "그 슬롯의"는 캡션이 이미 말한다
     ax.tick_params(labelsize=TICK)
     ax.grid(axis="y", color=LIGHT, lw=0.45, zorder=0)
     ax.set_axisbelow(True)
@@ -297,17 +325,23 @@ def fig_scheduler():
     # 겹쳤다(400%에서 실제로 테두리가 글자를 관통한 것을 확인함). 자리를 옮겨서 될
     # 문제가 아니라 자리 자체가 없었다(그림 4 때와 같은 종류의 제약) — 사용자가
     # 권한 (a)안대로 빈 띠를 한 행만큼 더 넣는다. 높이 증가는 아래 로그에 적는다.
-    EXTRA_ROWS = 1.3  # 라벨 한 줄 + 인출선 굴곡이 들어갈 여유(렌더해서 정한 값)
+    # 2026-10-08(영문화, 70 지적): 영문 라벨이 한글보다 길고 키도 커져 1.3 으로는
+    # 빈 띠가 모자랐다 — 라벨이 패널 바닥선 아래로 2.8pt 삐져나와 x축 눈금 표시가
+    # 글자를 관통했다(PDF 벡터 도형 대조로 확인). 2.0 으로 늘리고 라벨을 띠
+    # 한가운데보다 0.5 위에 둔다 — 위 4.5pt / 아래 3.0pt 로 균형이 맞고, 그림
+    # 높이는 269→276pt 로 7pt 만 는다(3.0 으로 늘리는 안은 286pt 에 위 여유만
+    # 11.5pt 로 치우쳐 기각).
+    EXTRA_ROWS = 2.0  # 라벨 한 줄 + 인출선 굴곡이 들어갈 여유(렌더해서 정한 값)
 
     fig, (a1, a3, a2) = plt.subplots(
-        3, 1, figsize=(COL, (166 + ROW_PT * (n_rows + EXTRA_ROWS)) / 72.0), dpi=300, sharex=True,
+        3, 1, figsize=(COL, (166 + ROW_PT * (n_rows + EXTRA_ROWS)) / 72.0), dpi=500, sharex=True,
         gridspec_kw=dict(height_ratios=[1, ROW_PT / 100 * (n_rows + EXTRA_ROWS) + 0.12, 1.15],
                           hspace=0.12))
 
     a1.plot(t, car, color=INK, lw=1.3)
     lo = int(np.argmin(car))
     a1.scatter([lo], [car[lo]], s=26, marker="v", color=INK, zorder=4)
-    a1.annotate("탄소 최저", (lo, car[lo]), textcoords="offset points",
+    a1.annotate("Carbon minimum", (lo, car[lo]), textcoords="offset points",
                 xytext=(5, 9), ha="left", fontsize=NOTE)   # 2026-09-25: 곡선이 없는 오른쪽 위로
     # 2026-09-28(3d 배분, 사용자 반려 후 2차): "꽉 찼다"만 보이고 "그래서 밀렸다"가
     # 약했다 — 세 패널을 관통하는 안내선으로 탄소최저(위)→상한도달(아래)→실제로
@@ -321,7 +355,7 @@ def fig_scheduler():
                 ls=(0, (3, 2)), zorder=1)
     a1.set_ylim(0, 138)
     a1.set_yticks([0, 40, 80, 120])
-    a1.set_ylabel("탄소집약도\n(gCO₂/kWh)", fontsize=LAB, linespacing=1.25, labelpad=1)
+    a1.set_ylabel("Carbon intensity\n(gCO₂/kWh)", fontsize=LAB, linespacing=1.25, labelpad=1)
     a1.tick_params(labelsize=TICK)
 
     # ── 가운데: 작업별 간트 — 막대 왼쪽 끝이 tau_j(실행 시작), 길이가 d_j(실행시간) ──
@@ -392,11 +426,18 @@ def fig_scheduler():
         # 인출선이 이 행의 레일과 거의 나란히 겹쳐 보였다(400%에서 확인, label_y가
         # 레일(y=hr)에 너무 가까웠다) — 액자 바닥 바로 위까지 더 내리고, 살짝 휘게
         # 그어 레일의 곧은 직선과 눈으로 구별되게 한다.
-        label_y = n_rows + EXTRA_ROWS / 2 + 0.1   # 새로 늘린 빈 띠 한가운데 즈음
+        label_y = n_rows + EXTRA_ROWS / 2 - 0.4   # 빈 띠 한가운데보다 0.5 위(위 주석)
         label_x0 = 0.5
-        a3.annotate(f"① 원하던 자리 · ② 실제 자리 (+{pct:.0f}%)", (label_x0, label_y),
+        a3.annotate(f"① Desired slot · ② Actual slot (+{pct:.0f}%)", (label_x0, label_y),
                     ha="left", va="center", fontsize=NOTE, zorder=6)
-        leader_from_x = label_x0 + 13.3  # 글자 오른쪽 끝 근처에서 인출선 출발
+        # 2026-10-08(영문화, 70 지적): 13.3 은 한글 라벨(짧다) 기준으로 정한 값이라
+        # 영문에서는 **글자 안쪽**이 됐다 — 인출선 둘이 "(+30%)" 를 가로질렀다.
+        # 영문 라벨은 데이터 좌표로 0.5..14.69 를 차지한다(PDF 글자범위에서 축
+        # 눈금으로 역산). 그 오른쪽 밖에서 출발시킨다. 목표 둘(16.80 · 23.80)이
+        # 모두 오른쪽이라 인출선이 글자 위로 되돌아오지 않는다.
+        # 2026-10-08(글자 1.099배): 라벨이 150.5→160.0pt 로 길어져 15.0 이 다시
+        # 글자 안이 됐다. 새 오른쪽 끝은 데이터 좌표로 16.10 이다.
+        leader_from_x = label_x0 + 16.2  # 글자 오른쪽 끝(16.10) 밖에서 출발
         for cx in (box_cx, bar_cx):
             a3.annotate("", xy=(cx, hr + 0.33), xytext=(leader_from_x, label_y),
                         arrowprops=dict(arrowstyle="-|>", color=INK, lw=0.6, mutation_scale=5,
@@ -411,7 +452,7 @@ def fig_scheduler():
                 ls=(0, (3, 2)), zorder=0.5)
     a3.set_ylim(n_rows + EXTRA_ROWS - 0.15, -0.85)
     a3.set_yticks([])
-    a3.set_ylabel("작업", fontsize=LAB, labelpad=1)   # 건수는 캡션 소관(y축 라벨 정렬 문제도 같이 없어짐)
+    a3.set_ylabel("Jobs", fontsize=LAB, labelpad=1)   # 건수는 캡션 소관(y축 라벨 정렬 문제도 같이 없어짐)
     a3.tick_params(labelsize=TICK, left=False)
     if forced_row is not None:
         # 패널 오른쪽 밖으로 글자가 잘리던 문제(2026-09-24 b6 지적) — 막대 왼쪽의
@@ -422,7 +463,7 @@ def fig_scheduler():
         # 관통할 수 있다(확대해서 발견) — 흰 배경을 깔아 뗀다. 이번 9건 표본에는
         # forced 작업이 없어 이 분기가 실제로는 안 그려지지만, forced가 다시
         # 섞이는 문턱으로 바뀔 때를 위해 고쳐 둔다.
-        a3.annotate("마감 강제", (forced_x0, forced_row),
+        a3.annotate("Forced", (forced_x0, forced_row),
                     textcoords="offset points", xytext=(-4, 0), ha="right", va="center",
                     fontsize=NOTE, zorder=6,
                     bbox=dict(facecolor="white", edgecolor="none", pad=1.0))
@@ -437,7 +478,13 @@ def fig_scheduler():
     # 2026-09-28: "원하던 자리" 세로 안내선이 이 글자를 관통했다(확대해서 발견,
     # 위쪽 절반은 캡션 위쪽 빈 자리를 지나지만 x=16 부근에서 이 글자와 겹친다) —
     # 흰 배경을 깔고 안내선보다 위 zorder로 그려 그 아래를 가린다.
-    a2.text(13.2, cap + 0.6, f"유효 상한 {cap}", ha="left", fontsize=NOTE, zorder=5,
+    # 2026-10-08(영문화): "유효 상한 12"(7자) → "Effective ceiling 12"(20자)로 길어져
+    # 글자 오른쪽 끝(x=187.2)과 상한을 넘는 강제 편입 막대의 왼쪽 변(x≈188) 사이가
+    # 0.8pt 밖에 안 남았다(16배 확대로 확인 — 닿지는 않지만 인쇄에서 빠듯하다).
+    # 왼쪽은 "At ceiling" 범례(다른 높이)뿐이라 비어 있어 0.8 더 민다.
+    # 2026-10-08(글자 1.099배): 글자가 길어져 오른쪽 끝이 강제 편입 막대 왼쪽
+    # 변(x=183.7)을 2.8pt 파고들었고 흰 배경상자가 막대를 지웠다. 더 민다.
+    a2.text(11.5, cap + 0.6, f"Effective ceiling {cap}", ha="left", fontsize=NOTE, zorder=5,
             bbox=dict(facecolor="white", edgecolor="none", pad=1.0))
     a2.set_ylim(0, 17.5)
     a2.set_yticks([0, 6, 12])
@@ -453,14 +500,16 @@ def fig_scheduler():
     # 2026-09-24: x 축은 UTC 다(원자료가 UTC). day 101 은 4월이라 캘리포니아는
     # PDT(UTC−7) — UTC 14~23시가 현지 오전 7시~오후 4시, 곧 태양광 한낮이다.
     # 축에 UTC 를 명시하지 않으면 "저녁"으로 읽힌다(fd 가 원자료 대조로 발견).
-    a2.set_xlabel("하루 중 시각 (UTC · 현지는 7시간 이르다)", fontsize=LAB)
-    a2.set_ylabel("동시 실행 수", fontsize=LAB, labelpad=1)
+    a2.set_xlabel("Hour of day (UTC; local time is 7 h earlier)", fontsize=LAB)
+    a2.set_ylabel("Concurrent executions", fontsize=LAB, labelpad=1)
     a2.tick_params(labelsize=TICK)
     # 상한을 넘긴 슬롯 — 마감이 임박해 미룰 수 없는 작업이 들어간 자리
     over = int(np.argmax(occ))
     if occ[over] > cap:
-        a2.annotate("마감 강제", (over, occ[over]), textcoords="offset points",
-                    xytext=(0, 3), ha="center", fontsize=NOTE)
+        # 2026-10-08(글자 1.099배): 아래 "Effective ceiling 12" 와 세로 간격이
+        # 1.0pt 로 좁아져 두 줄 한 덩어리로 읽혔다 — 2pt 더 띄운다.
+        a2.annotate("Forced", (over, occ[over]), textcoords="offset points",
+                    xytext=(0, 5), ha="center", fontsize=NOTE)
     # 2026-09-24 b6 지적: 채움이 이제 셋(흰색·중간회색·짙은회색)인데 범례는 둘뿐이었고,
     # 그나마 하나뿐인 범례가 맨 위에 있어 세 패널 전부에 적용되는 것처럼 읽혔다.
     # 세로 높이를 더 늘리지 말라는 지시(11→10쪽 목표)에 따라 줄을 하나 더 만드는
@@ -474,11 +523,11 @@ def fig_scheduler():
     # 것처럼 읽혔다. 채움 두 가지는 아래(동시 실행 수) 패널의 것이므로 그 패널 안
     # 윗부분(상한 12 위 빈 띠)으로 옮기고, 패널 안이라 "(그 시각)"도 뺀다.
     handles = [
-        Patch(facecolor="white", edgecolor=INK, lw=0.7, label="여유 있음"),
-        Patch(facecolor=EXCEPT_GRAY, edgecolor=INK, lw=0.7, label="상한 도달"),
+        Patch(facecolor="white", edgecolor=INK, lw=0.7, label="Headroom"),
+        Patch(facecolor=EXCEPT_GRAY, edgecolor=INK, lw=0.7, label="At ceiling"),
     ]
     if any(j["forced"] for j in gjobs):
-        handles.append(Patch(facecolor=FORCED_GRAY, edgecolor=INK, lw=0.6, label="마감 강제(그 작업)"))
+        handles.append(Patch(facecolor=FORCED_GRAY, edgecolor=INK, lw=0.6, label="Forced (this job)"))
     a2.legend(handles=handles, fontsize=NOTE, frameon=False, ncol=len(handles), loc="upper left",
               bbox_to_anchor=(0.0, 1.02), handlelength=1.3, columnspacing=0.9,
               handletextpad=0.35, borderaxespad=0.2)

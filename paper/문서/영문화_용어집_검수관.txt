@@ -1,0 +1,343 @@
+════════════════════════════════════════════════════════════════════
+ JOK 영문화 용어집 — 검수관(그림5~7 담당) 독립 작성본      2026-10-08
+ 분담 없음 지시에 따라 대상목록.txt 전체를 혼자 끝까지 훑었다.
+ 19·5d 의 용어집과 대조해 다툴 것 — 이 파일은 "정답"이 아니라 "한 표".
+ ** 추가 지시(출처 열) 반영 — 0-1절에 "출처" 추가. 한글 음차 안 씀. **
+════════════════════════════════════════════════════════════════════
+
+────────────────────────────────────────────────────────────────────
+ 0-1. 출처 — paper/참고 PDF 넷을 전부 직접 열어 확인했다
+────────────────────────────────────────────────────────────────────
+ **"spatial"/"temporal"은 초록엔 없지만(0절 참고) 선행연구 넷 중 넷
+ 다에서 확인된다 — 음차가 아니라 이 분야 표준 용어라는 뜻이다.**
+   · CASPER(casper.pdf) 초록: "spatiotemporal and performance
+     flexibility" — spatiotemporal 복합어로 직접 사용
+   · Caspian(Caspian_*.pdf) I장: "temporal shifting of workloads...
+     the spatial workload placement among geographically distributed
+     data centers" — 본문에 각각 독립된 말로 직접 사용
+   · CarbonFlex(CarbonFlex.pdf) §2.2 소제목: "Temporal Shifting"
+     (절 제목 그대로)
+   · carbon-aware-computing.pdf(CICS, Radovanović 등) p.1-2:
+     "temporally flexible workloads", "spatially flexible usage"
+   → **출처=원문(4건), 결론: Spatial/Temporal을 1절 다섯 이름에 쓰는
+     쪽을 "지어냄"이 아니라 "관행"으로 격상한다.** 다만 초록이 이
+     말을 피한 것도 사실이라(0절) 최종 선택은 여전히 사용자 몫.
+
+ 아래 "출처" 표기 범례:
+   [초록] 우리 영문 초록·키워드에 이미 있는 말
+   [원문:논문명] 선행논문 4건 중 해당 논문이 쓰는 말(쪽 번호 생략,
+                위에 인용문 적어 뒀다)
+   [관행] 이 네 논문 다수가 공유하는, 분야 전반의 표준 표현
+   [지어냄] 출처 못 찾음 — 내가 만든 말, 다퉈야 함
+
+ **지어냄으로 솔직히 표시하는 것들(1~3절 본문에 표시 못 한 것 보충)**:
+   · "Capacity ignored"(용량 무시) — [지어냄]. 초록은 "Ignoring
+     capacity"(동명사구)만 쓰고 "ignored"(과거분사 수식형) 꼴은
+     어디에도 없다. 표/그림 라벨은 명사구가 필요해 내가 형태만
+     바꿨다 — 출처 없음, 다퉈야 함.
+   · "Has headroom"/"At ceiling"(여유 있음/상한 도달) — [지어냄].
+     "capacity ceiling"은 [초록] 출처가 있지만 "At ceiling"이라는
+     축약형 자체, "headroom"이라는 단어 선택은 넷 중 어느 논문에도
+     없었다(내가 다시 확인함 — Caspian 이 "capacity limit", CarbonFlex
+     가 "cluster capacity"를 쓰지만 "headroom"은 안 쓴다).
+   · "Desired slot"/"Actual slot"(원하던 자리/실제 자리) — [지어냄].
+     이건 내가 이번 세션에 직접 그림7에 붙인 라벨이라 애초에 선행
+     논문에 있을 말이 아니다 — 순수 창작, 사용자 재확인 필요.
+   · "Forced admission"(강제 편입) — [관행에 가까움, 확정은 아님].
+     "admission"은 스케줄링 분야 일반 용어(admission control)라
+     흔하지만, 이 네 논문이 "admission"을 그대로 쓰는 구절은 못
+     찾았다 — 조심스럽게 [지어냄]쪽에 둔다.
+   · "Concurrent jobs"/"Concurrency"(동시 실행 수) — [관행]. CASPER가
+     "concurrent"는 안 쓰지만 일반 시스템 분야 표준어라 이 정도는
+     [관행]으로 분류했다 — 다만 넷 중 리터럴로 쓴 논문은 없다는 점은
+     밝혀 둔다(약한 관행).
+ 나머지(지역명·단위·표 안 영문 등)는 고유명사·숫자 번역이라 출처
+ 표시 대상이 아니라고 판단했다 — 이 판단 자체도 다퉈도 된다.
+
+────────────────────────────────────────────────────────────────────
+ 0-2. JOK 공식 템플릿 파일 — 못 찾았다, 시도한 경로 전부 기록
+────────────────────────────────────────────────────────────────────
+ KSC 때 먹힌 방법(`admin/file/asis?file=/resources/files/front_conference/
+ DocForm.doc`)의 디렉터리명만 바꿔 여러 번 시도했다 — **전부 HTTP 200
+ 인데 size=0**(파일 없음을 이렇게 응답하는 서버로 보인다):
+   front_journal/DocForm.doc, journal/DocForm.doc, front_jok/DocForm.hwp
+   등. jok.kiise.or.kr/static/guideA, guideB 도 직접 읽었는데 **"단편논문
+   게재면수 5면 이내"** 같은 분량 규정만 있고 글꼴·여백·단수는 역시
+   없었다(19 가 이미 보고한 것과 같은 결론). GitHub Kiise-Latex-template
+   도 열어 봤는데 이건 **KCC(학술대회)용**이지 JOK(논문지)용이 아니었다
+   — 참고가 안 된다.
+ **결론: 공식 템플릿 파일 자체는 못 뚫었다.** journal.kiise.or.kr(온라인
+ 투고 시스템, 로그인 필요)에 있을 가능성이 가장 크다는 19의 판단에
+ 동의한다. **19의 PyMuPDF 실측값(515×728pt, 2단 69.0mm, 휴먼명조
+ 7.8pt)을 쓰고 "공식 템플릿 미확보"로 남기는 데 동의한다.**
+
+────────────────────────────────────────────────────────────────────
+ 0. 먼저 — 영문 초록을 다시 확인했다, "이미 쓰고 있다"는 전제가 반은 틀렸다
+────────────────────────────────────────────────────────────────────
+3d 메시지: "영문 초록이 이미 spatial·temporal·capacity ceiling·knee point
+같은 말을 쓴다." → 직접 paper/CAST_본문.docx 를 다시 읽어 대조했다.
+
+  확인됨(초록 원문 그대로):
+    "capacity ceiling"  — "enforcing a per-region capacity ceiling"
+    "knee point"        — "knee point of the Pareto curve"
+    "ceiling violations"— "ceiling violations, from 227 to 20,208"
+    "Ignoring capacity" — "Ignoring capacity reaches 65.93%"
+    키워드: Carbon-aware scheduling, Workload shifting, Integer
+            programming, Regional capacity, LSTM
+
+  틀림 — "spatial"·"temporal"은 초록 어디에도 없다:
+    공간 이동 자리 → "places jobs across regions" (spatial 안 씀)
+    시간 이동 자리 → "shifts them in time"         (temporal 안 씀)
+  초록은 의도적으로 학술 용어를 피하고 쉬운 말로 풀어 썼다 — 이건
+  cast-쉬운말-선호 메모와 결이 같다(사용자가 처음부터 쉬운말을 선호).
+  **그림 라벨에 Spatial/Temporal 을 그대로 쓰면 초록과 결이 어긋날 수
+  있다.** 아래 표에서 이 경우 "초록식 쉬운말"과 "학술 관행" 둘 다 적고
+  고른 이유를 달았다 — 이게 다툴 자리다.
+
+────────────────────────────────────────────────────────────────────
+ 1. 공용 뼈대 — 다섯 방식 이름(표3·표4·그림8·그림10 전부에 나옴)
+────────────────────────────────────────────────────────────────────
+ 반드시 넷 모두 같은 말을 써야 한다(규칙 3). 표3·표4는 이미 영문 "CAST
+ (ours)"/"CICS"/"Caspian"/"Sukprasert"/"CASPER" 같은 고유명사와 섞여
+ 나오므로, 다섯 이름은 **학술 관행 쪽(Spatial/Temporal)으로 통일**하는
+ 쪽을 추천한다 — 고유명사 사이에서 "Across-region only"처럼 길게 풀면
+ 표 안에서 유독 튀고, 그림10 산점도 라벨 자리가 제일 좁다(아래 3절).
+
+   기준        → Baseline
+   공간만      → Spatial only      (대안: Routing only — ILP가 리전만
+                 정하고 실행은 즉시이므로 "Routing"이 더 정확할 수 있다.
+                 다만 Routing 은 §3.3 제목에도 쓰일 말이라 겹친다, Spatial
+                 을 민다)
+   시간만      → Temporal only     (대안: Timing only — Spatial과 대구를
+                 맞추려면 Temporal이 낫다)
+   용량 무시   → Capacity ignored  (대안1: Unconstrained — 표4의
+                 "시간 무제약" 캡션 설명과 혼동 위험. 대안2: No capacity —
+                 3d가 예로 든 말인데 "용량이 아예 없다"로 오독될 수 있어
+                 더 안전한 Capacity ignored를 1순위로 민다. 초록 원문이
+                 정확히 "Ignoring capacity"라 이 선택이 초록과 가장 가깝다)
+   CAST        → CAST (고유명사, 불변)
+
+ 표3·표4의 열 이름:
+   방식/정책 → Method / Policy   (표3="방식", 표4="정책" — 원문도 이미
+               서로 다른 말을 썼다. 번역도 그대로 구분 유지 추천)
+   총 배출량 (kg) → Total emissions (kg)
+   총배출         → Total emissions (kg)        (표4, 단위 표기 통일 추천)
+   기준 대비      → vs. baseline (%)             (부호 −는 그대로 유지)
+   절감률         → Reduction (%)
+   용량 위반      → Capacity violations           (초록의 "ceiling
+                    violations"과 비교해 "Ceiling violations"도 가능 —
+                    대안으로 적어 둔다. 표 쪽은 짧은 "Violations"도 열
+                    너비 보면 고려할 만하다)
+
+────────────────────────────────────────────────────────────────────
+ 2. 표 1·2 (영문화_대상목록.txt B절)
+────────────────────────────────────────────────────────────────────
+ 표1 (α 배정 변화):
+   배정 리전 → Assigned region
+   탄소      → Carbon (gCO₂/kWh)      (표 자체 단위 표기가 있던 자리라
+               단위까지 옮긴다 — 원 표 보고 셀/헤더 구분 확인 필요)
+   지연      → Latency (ms)
+   한국 (홈) → Korea (home)
+   캘리포니아/프랑스 → California / France
+
+ 표2 (지연 등급·작업 수·β(k)):
+   등급 k    → Grade k
+   지연 예산 → Delay budget
+   작업 수   → Jobs (count)             (대안: # of jobs — 표 폭 보고 결정)
+   12~24시간/2~8시간/2~10분/15~60초/1~5초
+     → 12–24 h / 2–8 h / 2–10 min / 15–60 s / 1–5 s
+     (영문 관행은 "시간" 생략하고 단위기호만 — en dash "–" 사용 추천,
+      하이픈 "-"과 구분)
+
+────────────────────────────────────────────────────────────────────
+ 3. 그림별 — 실제 렌더링 라벨만(코드 주석·print·개발메모는 전부 뺐다)
+────────────────────────────────────────────────────────────────────
+ ** 먼저 중요한 발견: 대상목록.txt(A절)의 상당수가 "그림에 안 찍히는
+ 글자"다.** grep으로 뽑다 보니 print() 로그, docstring 설명, 사용자
+ 피드백을 그대로 인용한 코드 주석까지 섞여 들어갔다. 이것들을 번역하면
+ 헛일이다 — 아래 파일별로 "뺀 것"과 "남긴 것"을 나눴다.
+
+ --- gen_c5_data.py: 8개 전부 제외 ---
+   전부 print() 로그다("jobs 로딩...", "CAL 배정 N건" 등) — 그림에 전혀
+   안 찍힌다. 번역 대상 아님.
+
+ --- gen_capacity_sweep.py: 번역 필요 4개, 제외 다수 ---
+   (주의: 이 파일 자체가 "그림7(안)"이라는 **폐기/재배치된 초안**일 수
+   있다 — 파일 docstring에 "그림6→그림7로 밀렸다가 새 그림7은
+   gen_comparison.py가 가져갔다"고 적혀 있다. **이 그림이 최종 10장
+   안에 실제로 들어가는지부터 3d/5d가 확인해 달라** — 안 쓰이면 아래
+   번역 자체가 불필요하다.)
+   번역 필요:
+     총배출                       → Total emissions
+     리전 용량 (η·cap_r, 기준=12 대비 배수)
+                                   → Regional capacity (×baseline, cap=12)
+     강제 편입 (마감 임박)         → Forced admission (deadline near)
+     강제 편입 건수               → Forced admissions (count)
+   제외(주석/문자열 보간 f-string 설명문이지 그림 라벨 아님):
+     "용량을 6→∞로 늘리면...", "용량을 줄일수록..." — 이건 캡션 초안
+     메모로 보이나 ax.annotate 호출부를 직접 못 봤다 — **번역 전에 실제
+     .annotate()/.text() 호출인지 재확인 필요(내가 이번엔 호출부 줄까지
+     못 봤다, 미확인으로 남긴다)**.
+
+ --- gen_comparison.py (그림 8): 번역 필요 1개 + 공용 다섯이름 ---
+     총 배출량 (kg) → Total emissions (kg)
+   제외: "달성한 값이 아니다"(점선 테두리의 의미를 설명하는 코드 주석,
+   실제 렌더 텍스트인지는 annotate 호출을 직접 못 봤다 — 미확인),
+   "위의 그림 너무 그 슬래시랑..."(사용자 피드백 인용 주석, 명백히 제외)
+
+ --- gen_concurrency.py (그림 9): 번역 필요 5개 ---
+     무제약 (시간이동, 용량 미인지) → Unconstrained (temporal, no
+                                      capacity awareness)
+       (길다 — 범례 자리 좁으면 "Unconstrained"만 쓰고 괄호 설명은
+        캡션으로 미루는 안을 추천한다. 1절의 spatial/temporal 논쟁이
+        여기도 적용된다: "temporal"행 대신 "time-shift"도 대안)
+     온라인 (용량 인지, Algorithm 1) → Online (capacity-aware, Alg. 1)
+     상한 {cap}         → Ceiling {cap}         (capacity ceiling과 통일)
+     연중 일수 (day)    → Day of year
+     캘리포니아 동시 실행 수 → California concurrency
+       (대안: "Concurrent jobs — California" — y축 세로 라벨이라 짧은
+        쪽을 민다)
+
+ --- gen_fig4_scheduler_data.py: 번역 대상 0개 ---
+   17개 전부 print() 로그·assert 메시지·docstring 설명이다(예: "j_132777
+   포함", "창이 넉넉한" 등은 전부 코드 주석 속 표현이지 그림에 안 찍힌다
+   — 실제 렌더 라벨은 전부 gen_figs_data.py 쪽에 있다, 아래 참고). 번역
+   불필요.
+
+ --- gen_figs.py: 69개 중 실제 렌더 추정 약 20개뿐 — **내가 직접 담당한
+     그림이 아니라 호출부를 전수로 못 짚었다. 아래는 1차 분류이고
+     19·5d 가 실제 .text()/.annotate()/.set_label() 호출부를 대조해
+     확정해 달라(나는 이 파일을 깊이 다뤄본 적이 없다, 그림7검수관
+     역할은 gen_routing/gen_pareto/gen_benchmark였다 — 여기는 추정임을
+     밝힌다).** ---
+   "그림 1 CAST 전체 구조"·"그림 2 리전별 LSTM 구조"·"그림 3 공간 이동 ·
+   로드밸런서"·"그림 4 시간 이동 · 용량 인지 스케줄러"는 섹션 구분용
+   코드 주석(# ═══ 패턴)으로 보인다 — 제외 추정.
+   figS_loadbalancer_개념도 / figS_scheduler_개념도 — 파일명 변수,
+   제외(다만 이 두 SVG 안에 있는 "CO₂ 구름"·"LSTM"·"ILP · 용량" 같은
+   라벨은 실제 개념도 그림 글자일 가능성이 커 보인다 — 아래에 번역
+   시도는 해 둔다):
+     CO₂ 구름 — 탄소집약도 입력. → CO₂ cloud — carbon-intensity input
+       (주석 설명이면 제외, SVG 안 라벨 자체면 "CO₂ cloud"만 쓰고 뒤
+        설명은 캡션으로)
+     LSTM — 층이 보이는 신경망 표식. → LSTM (라벨 자체는 "LSTM"뿐,
+        나머지는 주석 설명으로 판단)
+     ILP · 용량 → ILP · Capacity
+     기울어진 리본 라벨 → (주석, 제외) / 그 안의 실제 텍스트는 "기상 +3",
+       "공통 10" 같은 것으로 추정:
+         기상 +3       → +3 weather
+         공통 10       → 10 shared
+     리전 r(j)     → Region r(j)
+     마감 · 용량 인지 → Deadline · capacity-aware
+     마감은 하드 · 용량은 소프트 → Deadline hard · Capacity soft
+       (본문 §2.3의 핵심 대구 — 본문 번역과 반드시 같은 말 써야 함,
+        19 가 본문 영문화할 때 이 쌍을 먼저 확정해 주면 그걸 따르겠다)
+     실행 시각 τⱼ  → Execution time τⱼ
+     예측 Ĉᵣ(t) · 지연 ℓ · 잔여 용량 → Forecast Ĉᵣ(t) · Latency ℓ ·
+       Remaining capacity
+     용량 인지 마감 스케줄러 → Capacity-aware deadline scheduler
+     은닉 64 · 2층 → Hidden 64 · 2 layers
+     작업 j · 리전 r(j) · 예측 Ĉ · 잔여 자리 → Job j · Region r(j) ·
+       Forecast Ĉ · Remaining slots
+     탄소집약도 과거 168 h / 탄소집약도 이력 → Carbon intensity, past
+       168 h / Carbon-intensity history
+   위 목록은 **추정이 많다 — 19·5d가 실제 그림 렌더(400%)로 대조
+   확인해 주길 부탁한다.** 나는 이 파일의 좌표·겹침을 직접 재 본 적이
+   없어 충돌 위험도 못 짚는다(아래 4절은 내가 실제로 만진 파일만).
+
+ --- gen_figs_data.py (그림 2·3·4, 내가 이번 세션에 직접 수정) ---
+   LSTM 예측            → LSTM forecast
+   α=0 · 홈             → α=0 · Home
+   ① 원하던 자리 · ② 실제 자리 (+{pct}%)
+       → ① Desired slot · ② Actual slot (+{pct}%)
+   기타 리전             → Other regions
+   높이를 늘리지 마라... → (사용자 지시 인용 주석, 제외)
+   뉴욕/독일/인도/일본/캘리포니아/텍사스/프랑스/한국
+       → New York / Germany / India / Japan / California / Texas /
+         France / Korea
+   동시 실행 수          → Concurrent jobs
+   마감 강제             → Deadline-forced
+   마감 강제(그 작업)    → Deadline-forced (that job)
+   무릎점                → Knee point            (초록과 완전히 일치.
+         출처 보강: 47이 다목적최적화 표준 정의 확인[Bielefeld/Surrey
+         저장소] — [초록]+[관행(다목적최적화)] 이중 출처로 격상)
+   발행 시각 기준 경과 시간 (h) → Elapsed time since issue (h)
+   상한 도달             → At ceiling
+   실측                  → Measured
+   여유 있음             → Has headroom           (대안: Available —
+         "여유 있음"의 대구인 "상한 도달"과 짝을 맞추려면 "Headroom" /
+         "At ceiling"이 더 선명하다, 이 조합을 민다)
+   유효 상한 {cap}       → Effective ceiling {cap}  (capacity ceiling과
+         통일, "Effective" 생략하고 그냥 "Ceiling {cap}"도 고려 — 그림7
+         occ 패널 자리가 좁아서 짧은 쪽을 민다)
+   입력 (최근 48 h)      → Input (last 48 h)
+   자리 없음             → No slot
+   작업                  → Job(s)                (y축 라벨 단수 Job, 범례
+         복수는 맥락 따라)
+   창(window) >= 22h     → (필터링 기준 — 코드 docstring, 그림에 안 찍힘,
+         제외)
+   출력                  → Output
+   출발지(한국)로부터의 네트워크 지연 (ms) → Network latency from origin
+         (Korea) (ms)
+   탄소 최저             → Carbon minimum         (대안: Lowest carbon —
+         그림7에서 안내선과 함께 쓰이는 짧은 라벨이라 "Minimum" 쪽을 민다)
+   하루 중 시각 (UTC · 현지는 7시간 이르다)
+       → Time of day (UTC · local is 7 h earlier)
+
+ --- gen_pareto.py (그림 6, 내가 이번 세션에 직접 수정) ---
+   탄소 절감률 (%) → Emission reduction (%)
+   평균 지연 (ms)  → Average latency (ms)
+   (주의: 이 파일의 POINTS 라벨 — "α=auto"/"baseline" 등 — 은 이미
+    영문/기호라 목록에 안 잡혔다. 그대로 둔다.)
+
+ --- gen_routing.py (그림 5, 내가 이번 세션에 직접 다루지는 않았으나
+     검수관 담당 그림이라 확인함) ---
+   출발 → Origin
+   도착 → Destination
+   (지역명은 gen_figs_data.py와 동일 — 캘리포니아→California 등.
+    "wrote fig4_routing — ..." 는 print 로그, 제외)
+
+ --- gen_benchmark.py (그림 10, 내가 이번 세션에 직접 수정) ---
+   용량 상한 위반 배정 (건) → Capacity ceiling violations (count)
+       (초록의 "ceiling violations"와 정확히 맞춘다 — 이 선택은 거의
+        확정이라고 본다)
+   탄소 절감률 (%)         → Emission reduction (%)   (gen_pareto.py와
+        통일 — 두 그림 다 같은 y축 성격이라 반드시 같은 말)
+   (다섯 방식 이름은 1절 참고. Sukprasert 공간+시간/Sukprasert 시간은
+    고유명사+설명이라 "Sukprasert (spatial+temporal)"/"Sukprasert
+    (temporal)" 형태 추천 — 다만 이것도 1절의 spatial/temporal 논쟁과
+    얽힌다)
+
+────────────────────────────────────────────────────────────────────
+ 4. 자리 좁아서 위험한 곳 — 내가 400%로 직접 본 세 그림만(요청사항)
+────────────────────────────────────────────────────────────────────
+ 그림 10(gen_benchmark.py) — **가장 위험하다.** 오늘 "④ CAST (ours)"
+   한 라벨(13자)이 점선에 거의 닿아 오프셋을 (-4,5)→(-9,5)로 밀어야
+   했다(실제로 겪은 충돌, 이 세션 기록에 있음). 영문으로 바뀌면 모든
+   라벨이 한글보다 평균적으로 더 길어질 데다(예: "Sukprasert
+   공간+시간"(9자)→"Sukprasert (spatial+temporal)"(27자)), 로그축
+   왼쪽은 점·점 사이 간격이 촘촘하다. **다섯 방식 이름을 최대한
+   짧게(Baseline/Spatial/Temporal/No-cap/CAST 식) 가는 걸 강하게
+   권한다** — 괄호 설명형은 이 그림에서 거의 못 쓴다.
+ 그림 7(gen_figs_data.py, fig_scheduler) — 맨 아래 행 여백에 넣은
+   "① Desired slot · ② Actual slot (+30%)" 인출선 라벨은 이미 한글
+   기준으로 폭을 꽉 채웠다(label_x0=0.5부터 13.3유닛 너비 확보해 간신히
+   맞춤, 이 세션에서 직접 잰 값). 영문이 한글보다 짧을 수도 있어(한글은
+   음절당 전각이라 영문 알파벳보다 보통 더 넓다) 여기는 오히려 여유가
+   생길 가능성이 있다 — 다만 렌더해서 재확인 전에는 안심 금지.
+ 그림 6(gen_pareto.py) — "α=0.5→auto"류 점 라벨은 이미 영문/기호
+   혼용이라 추가 번역 부담이 적다. "+6.7 ms, -3,108.8 kg (464.9 kg/ms,
+   전 구간 최대)" 같은 설명 주석이 있다면(코드에 남아 있는지 이번엔
+   확인 못함) 그건 번역 필요 — 미확인으로 남긴다.
+
+────────────────────────────────────────────────────────────────────
+ 5. 전체 요약 — 다음 사람이 할 일
+────────────────────────────────────────────────────────────────────
+ 1) 1절의 spatial/temporal 쟁점을 **사용자에게 먼저 확인**받는 게
+    가장 급하다 — 이게 안 정해지면 아래 모든 라벨이 흔들린다.
+ 2) gen_figs.py(그림1·개념도류)는 내가 추정만 했다 — 실제 호출부 대조
+    필요.
+ 3) gen_capacity_sweep.py가 최종 10장에 쓰이는지부터 확인(안 쓰이면
+    그 번역 작업 자체가 낭비).
+ 4) "마감은 하드 · 용량은 소프트" 같은 본문-그림 공용 문구는 본문
+    영문화(19 담당 추정) 확정 후 그대로 가져올 것.

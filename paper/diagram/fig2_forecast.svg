@@ -1,6 +1,6 @@
-<!-- 그림 2 리전별 LSTM 구조 · gen_figs.py 로 생성 (직접 편집 금지)
-     1단위 = 1pt, 폭 215pt. 100% 크기로 삽입할 것. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 215 156" width="215pt" height="156pt"
+<!-- 그림 2 리전별 LSTM 구조 (전단) · gen_figs.py 로 생성 (직접 편집 금지)
+     1단위 = 1pt, 폭 404pt. 100% 크기로 삽입할 것. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 404 110" width="404pt" height="110pt"
      xml:space="preserve"
      font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif"
      font-size="9" fill="#000000">
@@ -8,60 +8,45 @@
   <marker id="a" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
     <path d="M0,0 L10,5 L0,10 z" fill="#000000"/></marker>
 </defs>
-<rect width="215" height="156" fill="#fff"/>
-<rect x="9.5" y="14.5" width="205" height="141" rx="12" fill="#fff" stroke="#000000" stroke-width="0.35"/>
-<rect x="7.0" y="12.0" width="205" height="141" rx="12" fill="#fff" stroke="#000000" stroke-width="0.53"/>
-<rect x="4.5" y="9.5" width="205" height="141" rx="12" fill="#fff" stroke="#000000" stroke-width="0.72"/>
-<rect x="2.0" y="7.0" width="205" height="141" rx="12" fill="#fff" stroke="#000000" stroke-width="0.9"/>
-<rect x="6" y="8" width="203" height="50" rx="8" fill="#fff" stroke="#000000" stroke-width="1.0"/>
-<g transform="translate(14,14) scale(0.52)">
+<rect width="404" height="110" fill="#fff"/>
+<rect x="7" y="4" width="390" height="92" rx="12" fill="#fff" stroke="#000000" stroke-width="0.9"/>
+<text x="391" y="14" text-anchor="end" font-size="6.0">× 8 regions</text>
+<rect x="16" y="18" width="104" height="74" fill="#fff" stroke="#000000" stroke-width="1.0"/>
+<g transform="translate(26,24) scale(0.52)">
 <path d="M12,14 a7,7 0 0,1 13,-4 a6,6 0 0,1 10,5 a5.5,5.5 0 0,1 -1,11 L10,26 a6,6 0 0,1 2,-12 z" fill="#000000"/>
 <circle cx="8" cy="9" r="5" fill="#000000"/>
 <text x="21" y="24" font-size="7" fill="#fff" text-anchor="middle" font-weight="bold">CO₂</text>
 </g>
-<polyline points="13.0,36.0 14.1,36.1 15.3,36.3 16.4,36.6 17.5,37.1 18.6,37.7 19.8,38.4 20.9,39.1 22.0,40.0 23.2,40.8 24.3,41.7 25.4,42.6 26.5,43.5 27.7,44.2 28.8,45.0 29.9,45.6 31.1,46.1 32.2,46.6 33.3,46.8 34.4,47.0 35.6,47.0 36.7,46.8 37.8,46.6 38.9,46.1 40.1,45.6 41.2,45.0 42.3,44.2 43.5,43.5 44.6,42.6 45.7,41.7 46.8,40.8 48.0,40.0 49.1,39.1 50.2,38.4 51.4,37.7 52.5,37.1 53.6,36.6 54.7,36.3 55.9,36.1 57.0,36.0" fill="none" stroke="#000000" stroke-width="0.9" stroke-linejoin="round"/>
-<text x="38" y="54" text-anchor="middle" font-size="5.3">탄소집약도 과거 168 h</text>
-<rect x="76.0" y="16.0" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="87.2" y="16.0" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="98.4" y="16.0" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="109.6" y="16.0" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="120.8" y="16.0" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="132.0" y="16.0" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="143.2" y="16.0" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="76.0" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="87.2" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="98.4" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="116.6" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#d9d9d9" stroke="#000000" stroke-width="0.8"/>
-<rect x="127.8" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#d9d9d9" stroke="#000000" stroke-width="0.8"/>
-<rect x="139.0" y="27.2" width="9.0" height="9.0" rx="1.8" fill="#d9d9d9" stroke="#000000" stroke-width="0.8"/>
-<text x="91.7" y="47" text-anchor="middle" font-size="5.6">공통 10</text>
-<text x="132.3" y="47" text-anchor="middle" font-size="5.6">기상 +3</text>
-<path d="M104.0,58.0 L104.0,65.0 L101.0,65.0 L107.0,70.0 L113.0,65.0 L110.0,65.0 L110.0,58.0 Z" fill="#fff" stroke="#000000" stroke-width="1.2"/>
-<rect x="20" y="74" width="175" height="41" rx="10" fill="#fff" stroke="#000000" stroke-width="1.0"/>
-<text x="29" y="87" font-size="10" font-weight="bold">LSTM</text>
-<text x="189" y="87" text-anchor="end" font-size="5.8">+ 미래 24 h 날씨</text>
-<text x="189" y="95" text-anchor="end" font-size="5.8">기상 리전만 · 24×3 = 72</text>
-<path d="M190,95 L205,95 L205,127 L197,127" fill="none" stroke="#000000" stroke-width="0.8" stroke-dasharray="2.5 1.8" marker-end="url(#a)"/>
-<text x="29" y="96" font-size="5.8">은닉 64 · 2층</text>
-<rect x="44.0" y="99" width="9.0" height="6.0" rx="1.3" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="54.5" y="99" width="9.0" height="6.0" rx="1.3" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="65.0" y="99" width="9.0" height="6.0" rx="1.3" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="75.5" y="99" width="9.0" height="6.0" rx="1.3" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="86.0" y="99" width="9.0" height="6.0" rx="1.3" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="96.5" y="99" width="9.0" height="6.0" rx="1.3" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="107.0" y="99" width="9.0" height="6.0" rx="1.3" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="44.0" y="106.5" width="9.0" height="6.0" rx="1.3" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="54.5" y="106.5" width="9.0" height="6.0" rx="1.3" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="65.0" y="106.5" width="9.0" height="6.0" rx="1.3" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="75.5" y="106.5" width="9.0" height="6.0" rx="1.3" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="86.0" y="106.5" width="9.0" height="6.0" rx="1.3" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="96.5" y="106.5" width="9.0" height="6.0" rx="1.3" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<rect x="107.0" y="106.5" width="9.0" height="6.0" rx="1.3" fill="#fff" stroke="#000000" stroke-width="0.8"/>
-<path d="M59.0,105.0 L59.0,106.5" fill="none" stroke="#000000" stroke-width="0.8"/>
-<path d="M80.0,105.0 L80.0,106.5" fill="none" stroke="#000000" stroke-width="0.8"/>
-<path d="M101.0,105.0 L101.0,106.5" fill="none" stroke="#000000" stroke-width="0.8"/>
-<path d="M104.0,115.0 L104.0,120.2 L101.0,120.2 L107.0,124.0 L113.0,120.2 L110.0,120.2 L110.0,115.0 Z" fill="#fff" stroke="#000000" stroke-width="1.2"/>
-<rect x="20" y="125" width="175" height="22" rx="10" fill="#fff" stroke="#000000" stroke-width="1.0"/>
-<text x="29" y="134" font-size="8"><tspan font-weight="bold">출력  Ĉ</tspan><tspan font-size="5.8" dy="1.5">r</tspan><tspan dy="-1.5"> (t … t+24)</tspan></text>
-<polyline points="34.0,137.0 38.5,137.1 43.0,137.6 47.6,138.3 52.1,139.2 56.6,140.2 61.1,141.3 65.7,142.3 70.2,143.3 74.7,144.1 79.2,144.7 83.7,145.0 88.3,145.0 92.8,144.7 97.3,144.1 101.8,143.3 106.3,142.3 110.9,141.3 115.4,140.2 119.9,139.2 124.4,138.3 129.0,137.6 133.5,137.1 138.0,137.0" fill="none" stroke="#000000" stroke-width="0.9" stroke-linejoin="round"/>
+<polyline points="24.0,42.0 25.6,42.1 27.3,42.3 28.9,42.6 30.6,43.1 32.2,43.7 33.8,44.4 35.5,45.1 37.1,46.0 38.8,46.8 40.4,47.7 42.1,48.6 43.7,49.5 45.3,50.2 47.0,51.0 48.6,51.6 50.3,52.1 51.9,52.6 53.5,52.8 55.2,53.0 56.8,53.0 58.5,52.8 60.1,52.6 61.7,52.1 63.4,51.6 65.0,51.0 66.7,50.2 68.3,49.5 69.9,48.6 71.6,47.7 73.2,46.8 74.9,46.0 76.5,45.1 78.2,44.4 79.8,43.7 81.4,43.1 83.1,42.6 84.7,42.3 86.4,42.1 88.0,42.0" fill="none" stroke="#000000" stroke-width="0.9" stroke-linejoin="round"/>
+<text x="68" y="58" text-anchor="middle" font-size="6.0">Carbon intensity, past 168 h</text>
+<rect x="22.0" y="64.0" width="9.0" height="9.0" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="33.2" y="64.0" width="9.0" height="9.0" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="44.4" y="64.0" width="9.0" height="9.0" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="55.599999999999994" y="64.0" width="9.0" height="9.0" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="66.8" y="64.0" width="9.0" height="9.0" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="78.0" y="64.0" width="9.0" height="9.0" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="89.19999999999999" y="64.0" width="9.0" height="9.0" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="22.0" y="75.2" width="9.0" height="9.0" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="33.2" y="75.2" width="9.0" height="9.0" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="44.4" y="75.2" width="9.0" height="9.0" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<rect x="62.599999999999994" y="75.2" width="9.0" height="9.0" fill="#d9d9d9" stroke="#000000" stroke-width="0.8"/>
+<rect x="73.8" y="75.2" width="9.0" height="9.0" fill="#d9d9d9" stroke="#000000" stroke-width="0.8"/>
+<rect x="85.0" y="75.2" width="9.0" height="9.0" fill="#d9d9d9" stroke="#000000" stroke-width="0.8"/>
+<text x="37.699999999999996" y="90" text-anchor="middle" font-size="6.0">Common 10</text>
+<text x="78.30000000000001" y="90" text-anchor="middle" font-size="6.0">Weather +3</text>
+<path d="M120.0,74.0 L130.4,74.0 L130.4,77.0 L138.0,71.0 L130.4,65.0 L130.4,68.0 L120.0,68.0 Z" fill="#fff" stroke="#000000" stroke-width="1.2"/>
+<rect x="142" y="18" width="144" height="74" fill="#fff" stroke="#000000" stroke-width="1.0"/>
+<text x="150" y="34" font-size="10" font-weight="bold">LSTM</text>
+<text x="278" y="34" text-anchor="end" font-size="6.0">+ future 24 h weather</text>
+<text x="278" y="44" text-anchor="end" font-size="6.0">Weather regions only · 24×3 = 72</text>
+<text x="150" y="50" font-size="6.0">Hidden 64 · 2 layers</text>
+<path d="M263,48 L263,56" fill="none" stroke="#000000" stroke-width="0.8" stroke-dasharray="2.5 1.8" marker-end="url(#a)"/>
+<line x1="158" y1="71" x2="246" y2="71" stroke="#000000" stroke-width="0.9" marker-end="url(#a)"/>
+<text x="200" y="67" text-anchor="middle" font-size="6.0"><tspan font-style="italic">h</tspan> (64)</text>
+<rect x="248" y="58" width="30" height="26" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<text x="263" y="75" text-anchor="middle" font-size="8" font-weight="bold">FC</text>
+<path d="M288.0,74.0 L293.8,74.0 L293.8,77.0 L298.0,71.0 L293.8,65.0 L293.8,68.0 L288.0,68.0 Z" fill="#fff" stroke="#000000" stroke-width="1.2"/>
+<rect x="302" y="18" width="86" height="74" fill="#fff" stroke="#000000" stroke-width="1.0"/>
+<text x="308" y="40" font-size="8"><tspan font-weight="bold">Output  Ĉ</tspan><tspan font-size="6.0" dy="1.5">r</tspan><tspan dy="-1.5"> (t … t+24)</tspan></text>
+<polyline points="310.0,52.0 313.0,52.5 316.1,54.0 319.1,56.4 322.2,59.6 325.2,63.2 328.3,67.0 331.3,70.7 334.3,74.1 337.4,76.9 340.4,78.8 343.5,79.9 346.5,79.9 349.6,78.8 352.6,76.9 355.7,74.1 358.7,70.7 361.7,67.0 364.8,63.2 367.8,59.6 370.9,56.4 373.9,54.0 377.0,52.5 380.0,52.0" fill="none" stroke="#000000" stroke-width="0.9" stroke-linejoin="round"/>
 </svg>

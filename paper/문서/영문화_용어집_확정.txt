@@ -1,0 +1,102 @@
+CAST 영문화 확정 용어집
+작성 2026-10-08 · 세 세션(19·70·5d) 독립 작성 → 교차반박 → 47 이 원문으로 재확인
+
+출처 범례
+  [초록]  우리 영문 초록이 이미 쓰는 말 — 가장 강한 근거(한 문서 안의 일관성)
+  [원문]  선행 논문 PDF 에서 직접 확인 (paper/참고/)
+  [관행]  분야 표준어, 특정 논문 인용 가능
+  [조어]  출처 없음 — 직역, 숨기지 않고 표시
+
+═══════════ 0. 다섯 방식 이름 — 표3·표4·그림8·그림10 공통 ═══════════
+기준              → Baseline              [원문] CarbonFlex "carbon-agnostic baseline" 22회
+공간만            → Spatial-only          [관행] 어근은 참고문헌[6] 제목 "Spatial ... Shifting"
+시간만            → Temporal-only         [관행] 동일
+CAST              → CAST                  고유명사
+CAST (ours)       → CAST (ours)           사용자 지정 (메모처리_20260924.txt:102)
+용량 무시          → Capacity ignored      [원문] CASPER "we ignore issues regarding resource limits"
+  ※ 그림10 은 점 라벨 자리가 빠듯하다 — 렌더해서 겹치면 그때 Spatial/Temporal 로 줄인다.
+     미리 줄이지 말 것. 실제 충돌을 보고 정한다.
+
+═══════════ 1. 핵심 개념 ═══════════
+탄소집약도         → Carbon intensity      [초록] "carbon-intensity data"
+용량              → Capacity              [초록] "regional capacity"
+상한 / 유효 상한    → Ceiling / Effective ceiling   [초록] "per-region capacity ceiling"
+용량 위반          → Ceiling violations    [초록] "ceiling violations, from 227 to 20,208"
+상한 도달          → At ceiling            [초록] 파생
+여유 있음          → Headroom              [원문] CarbonFlex "the headroom available to stack workloads"
+무릎점            → Knee point            [초록] "the knee point of the Pareto curve"
+지연              → Latency               [초록]
+마감              → Deadline              [초록] "within each deadline"
+작업              → Job(s)                [초록]
+리전              → Region                [초록] "across regions"
+슬롯              → Slot                  [초록] "at every slot"
+공간 이동          → Spatial shifting      [관행] 참고문헌[6] 제목
+시간 이동          → Temporal shifting     [관행] 동일
+동시 실행 수        → Concurrent executions [조어]
+강제 편입          → Forced admission      [조어] 내부 코드 forced_admissions 와 일치
+등급 k            → Tier k                [원문] Google "Every job belongs to a tier ... lower tiers tolerate delays" 11회
+지연 예산          → Latency budget        [관행] 실시간 스케줄링 표준구
+총 배출량          → Total emissions       [초록] "cuts emissions"
+탄소 절감률         → Carbon savings (%)    [조어]
+기준 대비          → vs. baseline          [관행]
+용량이 막았다       → capacity blocks it    [초록] 마지막 문장 그대로
+자리 (용량 여유)    → room                  [조어]  ※ 아래와 구별할 것
+자리 (시간상 위치)  → slot                  [조어]  ※ "원하던 자리"·"실제 자리" 는 이쪽
+완전예지 오라클      → Oracle / perfect-knowledge oracle  [원문] CarbonFlex 그대로
+CICS 가상 용량 곡선 → CICS Virtual Capacity Curve        [원문] Google 원저자 11회
+   ※ CarbonFlex 는 "Variable" 이라 쓰지만 그건 인용한 쪽이다. 원저자가 "Virtual" 이고
+     "artificially limits" 라 설명한다 — 한글 "가상"이 맞다. 고치지 말 것.
+CASPER CAP        → CASPER CAP            [원문] casper.pdf Fig.2 의 컴포넌트 이름
+
+═══════════ 2. 지명 8개 ═══════════
+한국 Korea · 일본 Japan · 인도 India · 프랑스 France · 독일 Germany
+캘리포니아 California · 텍사스 Texas · 뉴욕 New York        [관행]
+
+═══════════ 3. 축·범례 ═══════════
+총 배출량 (kg)            → Total emissions (kg)
+탄소 절감률 (%)            → Carbon savings (%)
+평균 지연 (ms)            → Average latency (ms)
+용량 상한 위반 배정 (건)    → Ceiling violations (jobs)
+동시 실행 수               → Concurrent executions
+연중 일수 (day)           → Day of year
+하루 중 시각 (UTC · 현지는 7시간 이르다)
+                         → Hour of day (UTC; local time is 7 h earlier)
+출발지(한국)로부터의 네트워크 지연 (ms)
+                         → Network latency from origin (Korea) (ms)
+발행 시각 기준 경과 시간 (h) → Hours since issue time (h)
+리전 용량 (η·cap_r, 기준=12 대비 배수)
+                         → Regional capacity (η·cap_r, x baseline 12)
+강제 편입 건수             → Forced admissions (count)
+실측                     → Actual
+LSTM 예측                 → LSTM forecast
+기타 리전                 → Other regions
+출발 / 도착               → Origin / Destination
+입력 (최근 48 h) / 출력    → Input (last 48 h) / Output
+작업                     → Jobs
+
+═══════════ 4. 2026-10-08 그림 적용 중 추가로 정한 말 ═══════════
+홈 (α=0 일 때 머무는 리전) → origin
+   [그림] 같은 그림(그림4)의 x축이 이미 "Network latency from origin (Korea)"
+   를 쓴다. §3 의 출발→Origin 과도 맞는다.
+   ※ 5d 가 "Home"을 제안했으나 기각했다 — 용어집에 없고, 선행 논문 5편
+     (CarbonFlex·Caspian·CASPER·Google·carbon-aware-computing) 전문 검색에
+     "home region"·"local region" 이 0회다. 출처 없는 말은 쓰지 않는다.
+
+시간 이동 → Temporal shift   ※ 그림1 한정. 그 밖은 §1 대로 Temporal shifting.
+공간 이동 → Spatial shift     ※ 그림1 한정. 짝을 맞추려고 같이 줄였다.
+   [그림] 그림9 가 이미 "Capacity ignored (temporal shift)" 를 찍고 있다.
+   왜 그림1 만 다른가: 시계 아이콘(x 122.6..135.0)과 상자 오른쪽 변(196)
+   사이에 61pt 밖에 없는데 "Temporal shifting" 은 굵은체로 62.8pt 다.
+   아이콘을 0.62→0.56 으로 줄여도 안 들어간다.
+   ※ 70·5d 에게 반박 요청해 둠(2026-10-08). 뒤집히면 여기부터 고칠 것.
+
+Deadline · capacity   ← "Deadline · capacity-aware" 에서 줄임 (그림1 한정)
+   위 상자 "ILP · capacity" 와 짝이 맞는다. 두 상자 다 용량 제약을 받으므로
+   그 자리에서 "-aware" 가 구별에 기여하지 않는다는 판단.
+   ※ 같이 반박 요청해 둠 — 용량 인지가 우리 주장이라 빼면 안 된다는 반론 가능.
+
+Carbon intensity / History · per region · 1 h   ← "Carbon intensity history"
+   한 줄로는 캔버스 왼쪽 밖(x=−9.5)으로 잘려 제목과 부제로 나눴다. 뜻은 그대로.
+
+Sukprasert temporal / Sukprasert spatial+temporal   [관행] 그림10 선행 정책 이름
+Capacity ignored (temporal shift)   [그림9 현행] 그대로 둠

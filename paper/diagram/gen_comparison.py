@@ -58,16 +58,16 @@ LIGHT = "#cccccc"  # 눈금선용 — 팔레트 대상 아님(정상/예외를 �
 # 똑같고 용량 처리만 다른데 옛 이름이 그걸 못 말했다. "시간 무제약"은 "시간"이
 # 들어가 시간만과 헷갈렸고, "사후 용량 강제"는 능동적으로 들려 본 연구처럼 읽혔다.
 ROWS = [
-    ("기준",     29225.6,  None, "ok"),
-    ("시간만",   23789.1, 18.60, "ok"),
-    ("공간만",   12609.8, 56.85, "ok"),
-    ("CAST",    10805.0, 63.03, "ours"),
-    ("용량 무시", 9958.2, 65.93, "unreach"),
+    ("Baseline",         29225.6,  None, "ok"),
+    ("Temporal-only",    23789.1, 18.60, "ok"),
+    ("Spatial-only",     12609.8, 56.85, "ok"),
+    ("CAST",             10805.0, 63.03, "ours"),
+    ("Capacity ignored",  9958.2, 65.93, "unreach"),
 ]
 
 
 def main():
-    fig, ax = plt.subplots(figsize=(215 / 72.0, 132 / 72.0), dpi=300)
+    fig, ax = plt.subplots(figsize=(215 / 72.0, 132 / 72.0), dpi=500)
     ys = range(len(ROWS))[::-1]
     for y, (lab, kg, pct, kind) in zip(ys, ROWS):
         # 흑백에서 계열 구분은 무늬가 아니라 회색 농담으로 한다.
@@ -80,13 +80,13 @@ def main():
         txt = f"{kg:,.0f}" + (f"  (-{pct:.2f}%)" if pct else "")
         # 본 연구 값을 가리키는 세로 점선이 ③행 라벨의 첫 글자를 가로지른다.
         # 글자 뒤에 흰 바탕을 깔아 어느 막대에서든 선이 글자를 뚫지 않게 한다.
-        ax.text(kg + 600, y, txt, va="center", fontsize=6.0,
+        ax.text(kg + 600, y, txt, va="center", fontsize=6.6,
                 fontweight="bold" if lab == "CAST" else "normal", zorder=4,
                 bbox=dict(facecolor="white", edgecolor="none", pad=0.8))
 
     ax.axvline(10805.0, color=INK, lw=0.7, ls=(0, (1, 1.6)), zorder=2)
     ax.set_yticks(list(ys))
-    ax.set_yticklabels([r[0] for r in ROWS], fontsize=6.4)
+    ax.set_yticklabels([r[0] for r in ROWS], fontsize=7.0)
     for t, r in zip(ax.get_yticklabels(), ROWS):
         if r[0] == "CAST":
             t.set_fontweight("bold")
@@ -95,9 +95,9 @@ def main():
     # 비와 달라진다. 값의 범위도 9,958~29,226(3배)뿐이라 로그가 필요 없다.
     ax.set_xlim(0, 37000)
     ax.set_xticks([0, 10000, 20000, 30000])
-    ax.set_xticklabels(["0", "10,000", "20,000", "30,000"], fontsize=6.5)
-    ax.set_xlabel("총 배출량 (kg)", fontsize=7.5)
-    ax.tick_params(labelsize=6.5)
+    ax.set_xticklabels(["0", "10,000", "20,000", "30,000"], fontsize=7.1)
+    ax.set_xlabel("Total emissions (kg)", fontsize=8.2)
+    ax.tick_params(labelsize=7.1)
     ax.grid(axis="x", color=LIGHT, lw=0.45, zorder=0)
     ax.set_axisbelow(True)
     # 2026-09-24 b6 배분(그림 10장 통합 점검): 이 각주 한 줄이 캡션("회색 막대(③)는

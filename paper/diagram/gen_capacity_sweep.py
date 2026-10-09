@@ -61,10 +61,10 @@ def main():
     # 215pt = 단내(single-column) 폭 — gen_figs.py 관례와 동일, 2.99in @300dpi.
     # 2026-09-21까지 239pt로 잘못 잡혀 있었음(수정).
     W_IN, H_IN = 215 / 72.0, 190 / 72.0
-    fig, ax1 = plt.subplots(figsize=(W_IN, H_IN), dpi=300)
+    fig, ax1 = plt.subplots(figsize=(W_IN, H_IN), dpi=500)
 
     ax1.plot(xs, carbon, color=INK, lw=1.1, marker="o", ms=3.2, zorder=3,
-              label="총배출")
+              label="Total\nemissions")
     i1x = ORDER.index("1x")
     ax1.scatter([xs[i1x]], [carbon[i1x]], s=95, marker="*", facecolor=INK,
                 edgecolor=INK, zorder=4)
@@ -75,7 +75,7 @@ def main():
 
     ax1.set_xticks(xs)
     ax1.set_xticklabels([LABELS[k] for k in ORDER], fontsize=7)
-    ax1.set_xlabel("리전 용량 (η·cap_r, 기준=12 대비 배수)", fontsize=7.8)
+    ax1.set_xlabel("Regional capacity (η·cap_r, x baseline 12)", fontsize=7.8)
     # rotation=90(기본) 세로 라벨은 "총"(U+CD1D) 글자가 이 폰트/matplotlib
     # 조합에서 회전 시 문자 간격이 0에 가깝게 계산돼 겹쳐 보이는 버그가 있음
     # (2026-09-22, be가 격리 테스트로 확인 — 문자 단위 최소재현: "총총총"도
@@ -88,8 +88,8 @@ def main():
 
     ax2 = ax1.twinx()
     ax2.plot(xs, forced, color=GRAY, lw=0.9, ls=(0, (3, 1.5)), marker="s", ms=2.6,
-              zorder=2, label="강제 편입 (마감 임박)")
-    ax2.set_ylabel("강제 편입 건수", fontsize=8, color=GRAY)
+              zorder=2, label="Forced admission (deadline near)")
+    ax2.set_ylabel("Forced admissions (count)", fontsize=8, color=GRAY)
     ax2.tick_params(axis="y", labelsize=7, colors=GRAY)
     ax2.set_ylim(0, max(forced) * 1.25)
     for spine in ("top",):

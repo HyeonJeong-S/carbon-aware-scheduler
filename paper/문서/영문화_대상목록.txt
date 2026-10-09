@@ -1,0 +1,248 @@
+═══ A. 그림 안 한글 문자열 (파일별) ═══
+
+--- gen_benchmark.py (7) ---
+  Sukprasert 공간+시간
+  Sukprasert 시간
+  공간만
+  시간만
+  용량 무시
+  용량 상한 위반 배정 (건)
+  탄소 절감률 (%)
+
+--- gen_c5_data.py (8) ---
+    CAL 배정 {len(spans_a)}건
+    CAL 배정 {len(spans_b)}건
+    job {len(jobs):,}개
+  jobs 로딩...
+  무제약 CAL 피크(연속)={peak_a}  온라인 CAL 피크(연속)={peak_b}
+  무제약(A) 시뮬레이션 실행...
+  온라인(B) run_rolling 실행 (capacity=12)...
+  저장:
+
+--- gen_capacity_sweep.py (8) ---
+  강제 편입 (마감 임박)
+  강제 편입 건수
+  강제 편입은 {forced[0]:,}→{forced[-1]:,}건으로 함께 준다. 모든 구간 마감위반 0.
+  그림7
+  리전 용량 (η·cap_r, 기준=12 대비 배수)
+  용량을 6→∞로 늘리면 총배출은 {carbon[0]:.2f}→{carbon[-1]:.2f} t
+  용량을 줄일수록 총배출도 늘고 강제 편입도 늘어난다
+  총배출
+
+--- gen_comparison.py (7) ---
+  공간만
+  기준
+  달성한 값이 아니다
+  시간만
+  용량 무시
+  위의 그림 너무 그 슬래시랑, 점점 되어있는 그래프가 너무 별로인데?
+  총 배출량 (kg)
+
+--- gen_concurrency.py (5) ---
+  무제약 (시간이동, 용량 미인지)
+  상한 {cap}
+  연중 일수 (day)
+  온라인 (용량 인지, Algorithm 1)
+  캘리포니아 동시 실행 수
+
+--- gen_fig4_scheduler_data.py (17) ---
+  carbon 불일치
+  forced {sum(g['forced'] for g in gantt)}건, j_132777 포함={has_132777}, 
+  j_132777 포함
+  j_132777이 표본에서 빠졌다 — 이 그림의 핵심 사례라 반드시 있어야 한다
+  occ 불일치: {occ.tolist()} vs {old['occ']}
+  wrote {gantt_path}  ({len(gantt)}건, 창 문턱 {GANTT_WINDOW_THRESHOLD_H}h, 
+  ~8건
+  강조 후보 {len(candidates)}건 중 highlight={highlight_id})
+  강조할 후보가 하나도 없다 — 기준을 다시 봐야 한다
+  검산 통과 — 기존 fig4_slot_data.json과 occ·carbon·cap 전부 일치
+  레일
+  왜 하필 거기서 실행됐는가
+  이해가 안 된다
+  주의: fig4_slot_data.json이 없어 검산을 못 함 (이번이 최초 생성)
+  창은 넓은데 용량 때문에 16시로 밀린
+  창이 넉넉한
+  창이 빡빡한데 눈에 보이는
+
+--- gen_figs.py (69) ---
+   이전엔 이 표가 fig3·4를 
+  + 미래 24 h 날씨
+  24 h 곡선
+  24h랑 Ĉ(t)랑 왜 나눈거지
+  CO₂ 구름 — 탄소집약도 입력.
+  ILP · 용량
+  LSTM — 층이 보이는 신경망 표식.
+  LSTM 상자와 출력 상자 아래쪽이 꽤 비었다
+  LSTM 예측
+  avail은 뭐고
+  figS_loadbalancer_개념도
+  figS_scheduler_개념도
+  ① α 자동 결정 — 슬롯마다 파레토 무릎점
+  ① 슬롯마다 α 를 파레토 무릎점에서
+  ② ILP 배정
+  값 하나
+  값 하나를 뜻하는 점 — spark() 와 대비시켜 쓴다.
+  곡선
+  공간 이동
+  공통 10
+  그림 1 CAST 전체 구조
+  그림 2 리전별 LSTM 구조
+  그림 3 공간 이동 · 로드밸런서
+  그림 4 시간 이동 · 용량 인지 스케줄러
+  그림을 조금 수정해봐, 무턱대고 중복이라 하지 말고
+  그림이 아니라 글
+  기상 +3
+  기상 리전만 · 24×3 = 72
+  기울어진 리본 라벨 — CASPER 의 'Forecasts', 'SLOs' 같은 것.
+  두꺼운 속 빈 화살표 — CASPER 의 User Requests 화살표.
+  둥근 모서리 컨테이너 — CASPER 의 본체 상자.
+  리전 r(j)
+  리전별 · 1시간
+  리전별 동시 실행 ≤ availᵣ  (식 3)
+  마감
+  마감 · 용량 인지
+  마감 안에서, 자리 있는 슬롯 중 최소
+  마감은 하드 · 용량은 소프트
+  막대 대 곡선
+  막힌 슬롯을 빼므로 최저점이 아닐 수 있다
+  무릎점 → α*
+  무엇
+  선택
+  슬롯 단위 ILP 로드밸런서
+  시간 이동
+  시계 — 시간 축.
+  실행 (리전, 시각)
+  실행 시각 τⱼ
+  없음
+  예약 시간표
+  예측 Ĉᵣ(t) · 지연 ℓ · 잔여 용량
+  왜
+  용량 인지 마감 스케줄러
+  용량 제약을 온라인으로 반영하는 구현은 수행하지 않았다
+  은닉 64 · 2층
+  입력
+  자리
+  자리가 없는 슬롯을 빼고 고른다
+  작업 j · 리전 r(j) · 예측 Ĉ · 잔여 자리
+  작업 · 마감
+  작업 묶음 — 겹친 문서.
+  지구 — 공간 축.
+  지연
+  최저점을 고른다
+  탄소
+  탄소집약도 과거 168 h
+  탄소집약도 이력
+  탐색 윈도우
+  한계수익이 정점
+
+--- gen_figs_data.py (41) ---
+  LSTM 예측
+  wrote fig3_loadbalancer  (무릎점={REGIONS[i_auto]})
+  α=0 · 홈
+  ① 원하던 자리 · ② 실제 자리 (+{pct:.0f}%)
+  그 슬롯의
+  그날 겹치는 캘리포니아 작업 중 실행시간 3.0시간 이상
+  그림 이해가 잘 안 된다
+  기타 리전
+  높이를 늘리지 마라, 줄일 수 있으면 줄여라
+  뉴욕
+  독일
+  동시 실행 수
+  마감 강제
+  마감 강제(그 작업)
+  몇 개가 겹치는가
+  무릎점
+  발행 시각 기준 경과 시간 (h)
+  상자와 화살표
+  상한 도달
+  실측
+  여유 있음
+  왜 하필 거기서 실행됐는가
+  용량이 막았다
+  유효 상한 {cap}
+  이 창이 어느 작업 것인지
+  인도
+  일본
+  입력 (최근 48 h)
+  자리 없음
+  작업
+  작업 하나가 몇 시간을 무는가
+  창(window) >= 22h
+  출력
+  출발지(한국)로부터의 네트워크 지연 (ms)
+  캘리포니아
+  탄소 최저
+  탄소는 {c[i_auto]-c[i_car]:.0f} 밖에 못 줄인다
+  텍사스
+  프랑스
+  하루 중 시각 (UTC · 현지는 7시간 이르다)
+  한국
+
+--- gen_pareto.py (2) ---
+  탄소 절감률 (%)
+  평균 지연 (ms)
+
+--- gen_routing.py (11) ---
+  wrote fig4_routing — 프랑스 %.1f%%, 캘리포니아 %.1f%%, 인도 %.1f%%
+  뉴욕
+  도착
+  독일
+  인도
+  일본
+  출발
+  캘리포니아
+  텍사스
+  프랑스
+  한국
+
+
+═══ B. 표 안 한글 ═══
+
+--- 표 1 (6) ---
+  배정 리전
+  지연
+  캘리포니아
+  탄소
+  프랑스
+  한국 (홈)
+
+--- 표 2 (8) ---
+  12~24시간
+  15~60초
+  1~5초
+  2~10분
+  2~8시간
+  등급 k
+  작업 수
+  지연 예산
+
+--- 표 3 (8) ---
+  공간만
+  기준
+  기준 대비
+  방식
+  시간만
+  용량 무시
+  용량 위반
+  총 배출량 (kg)
+
+--- 표 4 (12) ---
+  CICS 가상 용량 곡선
+  Caspian (분수)
+  Sukprasert 공간+시간
+  Sukprasert 시간
+  공간만
+  기준
+  시간만
+  용량 무시
+  용량 위반
+  절감률
+  정책
+  총배출
+
+
+═══ C. 이미 쓰고 있는 영문 용어 (기준) ═══
+
+Abstract  The carbon footprint of a cloud workload varies substantially with where and when it runs. Prior work has measured this potential but has mostly assumed unlimited regional capacity. Without a capacity limit the optimum collapses onto the single cleanest region: on our data that policy sends 99.75% of all jobs to France, a placement that cannot actually be executed. We present CAST, which forecasts carbon intensity with an LSTM, places jobs across regions by integer programming, and shifts them in time within each deadline while enforcing a per-region capacity ceiling at every slot. The weight between carbon and latency is not fixed but chosen at each slot from the knee point of the Pareto curve. On 146,000 synthetic jobs driven by one year of measured carbon-intensity data across 8 regions, CAST cuts emissions by 63.03% with no deadline violations. Ignoring capacity reaches 65.93%, but those 2.90 percentage points cost an 89-fold rise in ceiling violations, from 227 to 20,208. The principal finding is not the total but its distribution: 71.9% of what temporal shifting can save without a capacity limit arises in California alone, and 87.4% of that region’s over-capacity time falls in three hours, 19:00–21:00 UTC — local midday. The region where temporal shifting creates value is the same region where capacity blocks it.
+
+Keywords: Carbon-aware scheduling, Workload shifting, Integer programming, Regional capacity, LSTM

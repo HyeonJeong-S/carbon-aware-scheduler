@@ -249,7 +249,9 @@ def main():
 
     t = doc.add_paragraph()
     t.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = t.add_run("CAST 추가자료\n선행 정책 재현의 원문 수식과 적용 절차")
+    # 2026-10-08: 부제가 옛 구조를 말하고 있었다. 9/24 에 CAST 를 A.10 → A.1 로 올려
+    # 가장 큰 절(36.8%)이 되었는데도 부제는 "선행 정책 재현"이 본체인 것처럼 적혀 있었다.
+    r = t.add_run("CAST 추가자료\n정식화와 알고리즘 · 선행 정책 재현 절차")
     r.bold = True
     r.font.size = Pt(15)
     d = doc.add_paragraph()

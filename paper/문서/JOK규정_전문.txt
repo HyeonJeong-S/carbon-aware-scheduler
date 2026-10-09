@@ -1,0 +1,309 @@
+JOK(정보과학회논문지) 규정 전문 — 긁어온 날 2026-10-09
+==========================================================================
+
+검증용이다. 아래 '출처'의 주소를 직접 열어 대조하면 된다.
+원본 파일은 paper/참고/JOK규정/ 에 같이 넣어뒀다.
+
+※ 전에 메모에 적힌 'HWP 편집양식(인쇄용지 A4, 여백 38.5mm…)'은
+   KIICE(한국정보통신학회) 것이고 JOK와 무관하다. 혼동하지 말 것.
+
+
+━━━ 0. 출처와 검증 ━━━
+
+  논문지투고규정.pdf
+    http://www.kiise.or.kr/data/pdf/규정_논문지투고규정.pdf
+    md5 082e37de · ★ 가장 중요. 16조. 33차 개정 2024-06-27
+
+  연구윤리규정.pdf
+    http://www.kiise.or.kr/data/pdf/규정_연구윤리규정.pdf
+    md5 902be825 · 27조. 4차 개정 2021-11-26
+
+  회원윤리규정.pdf
+    http://www.kiise.or.kr/data/pdf/규정_회원윤리규정.pdf
+    md5 6e890cd7 · 7개 항. 제정 2017-11-10
+
+  논문지편집위원회규정_20150430.pdf
+    http://www.kiise.or.kr/data/pdf/규정_논문지편집위원회규정_20150430.pdf
+    md5 1b72094f · 5조. 2015-04-30
+
+  Research_Ethics.pdf
+    https://www.kiise.or.kr/journal/data/Research_Ethics.pdf
+    md5 1a2c424f · 연구윤리규정 영문판
+
+  Copyright_Transfer_Form.docx
+    https://www.kiise.or.kr/journal/Copyright_Transfer_Form.docx
+    md5 6cce740e · ★ 저작권 위임서 — 규정이 요구하는 유일한 별도 서류
+
+  jok_guideA.html
+    https://jok.kiise.or.kr/journals/jok/static/guideA
+    md5 41a1578b · ★ Guide for Authors. 국문 PDF에 없는 내용이 더 있다
+
+  jok_guideB.html
+    https://jok.kiise.or.kr/journals/jok/static/guideB
+    md5 f35b2437 · Guide for Reviewers
+
+  jok_guideE.html
+    https://jok.kiise.or.kr/journals/jok/static/guideE
+    md5 e78c8e65 · Guide for Editors
+
+  jok_ethics.html
+    https://jok.kiise.or.kr/journals/jok/static/ethics
+    md5 700ccf68 · Policies and Guidelines
+
+  그 밖에 확인한 주소
+    투고 시스템     https://journal.kiise.or.kr/
+    JOK 홈          https://jok.kiise.or.kr/
+    학회 규정 모음  https://www.kiise.or.kr/academy/main/getContent.fa?content_no=16&MENU_ID=060100
+    편집국 연락처   chwoo@kiise.or.kr · Tel +82-2-588-9240 · Fax +82-2-521-1352
+
+  ** 열 개 주소 전부 2026-10-09 에 HTTP 200 으로 응답하는 것을 확인했다. **
+  ** 투고규정 PDF 는 10/8 에 받아둔 사본과 md5 가 같다 — 그 사이 개정 없음. **
+
+  ** 편집양식(템플릿)은 JOK 가 공개하지 않는다. ** 사이트에서 받을 수 있는
+  문서는 Research_Ethics.pdf 와 Copyright_Transfer_Form.docx 둘뿐이다.
+  그래서 판면·글자크기를 실측으로 정할 수밖에 없었다([[cast-jok-실측]]).
+
+
+━━━ 1. 논문지 투고규정 전문 (국문 원본 그대로) ━━━
+
+┄┄┄┄┄ 원본 1/3 쪽 ┄┄┄┄┄
+논문지 투고규정
+1974년 5월 1일 제정
+(중간 개정 이력 생략)
+30차 개정 : 2012년 12월 1일
+31차 개정 : 2014년  7월 1일
+32차 개정 : 2022년 5월 27일
+33차 개정 : 2024년 6월 27일
+1. 투고 논문은 정보과학 및 그 응용에 관련되는 것으로서, 학술 및 산업발전에 기여하는 내용이거나 독
+창성이 인정되는 것이어야 하며, 국내외 타 학술지에 투고하여 심사 중이거나 게재되었던 논문은 투고
+할 수 없다. 또한, 투고자는 연구 및 출판윤리에 대한 기준(한국정보과학회 논문윤리 규정, 국제표준출판
+윤리)을 숙지하고 동의하는 것으로 간주한다.
+2. 논문지 편집위원회는 저자에게 투고 논문의 수정을 요구할 수 있다. 수정 요구후 일반논문 6주, 초청논문․
+단편논문은 3주, 2개월보장긴급논문은 2주가 지나도록 저자의 회신이 없으면 포기하는 것으로 간주한다. 
+3. 게재 논문의 내용에 대한 최종 책임은 저자가 진다. 
+4. 투고자는 논문의 성격 및 분야에 따라 해당되는 논문분야로 투고하여야 하며, 심사가 완료된 후에는 
+투고 논문분야가 포함된 논문지로 게재된다. 논문의 성격이나 분야가 부적합한 경우, 편집위원회에서 투
+고 논문분야를 변경할 수 있다. 
+5. (1) 논문은 본회 홈페이지를 통하여 투고하여야 한다.
+   (2) 논문 접수는 수시로 하며 접수일은 논문이 본회 사무국에서 확인된 날로 한다. 
+6. 심사용 논문은 pdf 형태로 제출하되 다른 형태의 파일인 경우는 1회 변환시 변환료 10,000원이 부과된다.
+   게재용 논문은 워드프로세서 “아래한글”, “MS워드”를 사용하여 작성한 화일을 제출한다.
+7. (1) 논문의 구성은 국문 제목, 영문 제목, 국문 요약, 국문 키워드, 영문 요약, 영문 키워드, 본문, 참고
+논문분야
+게재 논문지
+․ 시스템 및 이론 : 하드웨어, OS, 그래픽스, 병렬처리, 컴퓨터 이론 분야  
+․ 소프트웨어 및 응용 : 소프트웨어공학, 인공지능, HCI, PL, 자연어처리,  
+                      컴퓨터교육 분야 
+․ 데이타베이스 : DBMS, 정보시스템 관리, 데이타마이닝, 정보검색, 
+                XML, 지리정보시스템 등 데이타베이스 분야 
+․ 정보통신 : 유무선 네트워크, 이동통신, 인터넷 통신 및 응용, 정보보안, 
+            멀티미디어 통신, 센서 네트워크 등 정보통신 분야  
+정보과학회논문지
+(Journal of KIISE)
+․ 컴퓨팅의 실제 : 컴퓨터 시스템의 구현․ 개발 사례․ 사용 분석․ 도구  
+ 등을 위주로 한 실제적인 경험, 산업체의 경험, 전문적인 교육 경험  
+ 등의 논문
+정보과학회 컴퓨팅의 실제 논문지
+(KIISE Transactions on 
+Computing Practices)
+
+┄┄┄┄┄ 원본 2/3 쪽 ┄┄┄┄┄
+문헌, 부록 순으로 작성하며, 저자에 관한 사항은 일체 표기하지 않는다. 
+   (2) 국문 요약은 300~500의 글자 수로, 영문 요약은 100~200의 단어 수로 작성한다. 또한 국문, 영문 키워
+드는 4~6개로 작성한다.
+   (3) 단편논문은 출판 논문지의 편집형식을 기준으로 게재면수 5면 이내로 작성하여야 한다.
+  (4) 심사용 논문에는 감사의 글을 기재하지 않는다. 
+8. 논문 내용에 직접 관련이 있는 문헌에 대해서는 관련이 있는 본문 중에 참고문헌 번호를 쓰고 그 문
+헌을 참고문헌란에 인용 순서대로 기술한다. 참고문헌은 영문으로만 표기하며 학술지의 경우에는 저자, 
+제목, 학술지명, 권, 호, 쪽수, 발행년도의 순으로, 단행본은 저자, 도서명, 발행소, 발행년도의 순으로 기
+술한다.
+<단행본>
+  [1] R. Bellman, Introduction to Matrix Analysis, 2nd Ed., pp. 234, McGraw-Hill, New York, 1979. 
+<논문지>
+[1] K. Park, H. Hwang, C. Lee, and S. Min, “Analysis of Delay-Bandwidth Normalization Characteristic 
+in Decay Usage Algorithm of UNIX,” Journal of KIISE : Computer Systems and Theory, Vol. 34, 
+No. 10, pp. 511-520, Oct. 2007. (in Korean)
+[2] D. Kim, H. Kim, and J. Seo, “A Statistical Prediction Model of Speakers' Intentions in a 
+Goal-Oriented Dialogue,” Journal of KIISE : Software and Applications, Vol. 35, No. 9, pp. 
+554-561, Oct. 2008. (in Korean)
+[3] D. O. Seong, M. H. Yeo, and J. S. Yoo, “An Energy Efficient Continuous Skyline Query Processing 
+Method in Wireless Sensor Networks,” Journal of KIISE : Computing Practices and Letters, Vol. 
+15, No. 4, pp. 275-279, Apr. 2009. (in Korean)
+[4] J. Kim, I. Song, and M.-H. Kim, “An Efficient Keyword Search Method on RDF Data,” Journal of 
+KIISE : Databases, Vol. 35, No. 6, pp. 495-504, Dec. 2008. (in Korean)
+[5] J. Choe and D. Yoo, “A Mechanism for Handling Selfish Nodes using Credit in Sensor Networks,” 
+Journal of KIISE : Information Networking, Vol. 35, No. 2, pp. 120-129, Oct. 2008. (in Korean)
+[6] T.-Q. Nguyen, J.-S. Heo, J.-H. Lee, Y.-R. Kim, and K.-Y. Whang, "Query Expansion Using 
+Augmented Terms in an Extended Boolean Model," Journal of Computing Science and 
+Engineering, Vol. 2, No. 1, pp. 26-43, Mar. 2008. 
+ 
+<학술대회 발표 논문집>
+[1] S. Yu, S. J. Kim, "A Design of a Context-Aware Fault Recovery System for Smart Homes," Proc. 
+of the KIISE Korea Computer Congress 2008, pp. 354-358, 2008. (in Korean) 
+[2] K. J. Kang, S. J. Kim, “A Design of Probability-based Knowledge Model for Environment Control 
+Services on Smart Homes,” Proc. of the 35th KIISE Fall Conference, pp. 291-358, 2008. (in 
+Korean)
+<Web Site>
+[1] J. Jones. (1991, May 10). Networks (2nd ed.) [Online]. Available: http://www.atm.com (downloaded 
+2012, Sep. 10)
+9. 장 및 절에 해당되는 번호는 아라비아 숫자로 각각 1., 1.1 등과 같이 표기한다.
+10. 그림, 표는 인쇄될 크기의 두 배 정도로 선명하게 작성하여 본문 중에 위치를 정하고, 그림의 명칭
+은 하단 중앙에, 표의 경우는 상단 중앙에 각각 그림 1(Fig. 1) 및 표 1(Table 1)로 표기한다. 본문에 삽
+
+┄┄┄┄┄ 원본 3/3 쪽 ┄┄┄┄┄
+입되는 그림 및 표의 내용은 모두 영문으로 작성하고, 그림과 표의 제목은 한글과 영어로 모두 표기한
+다.
+11. 채택된 투고자는 약력을 서술식으로 200자 이내로 작성하여 반명함판 사진 화일과 함께 제출하여야 
+한다. 
+12. 투고자는 2개월보장긴급논문 1편당 심사료 500,000원을, 그 외의 논문은 1편당 심사료 50,000원을 논문 
+투고시 납부해야 하며, 2개월보장긴급논문의 경우 2개월내에 심사가 완료되지 않으면 심사료를 환불한다
+(단, 저자가 지연하는 경우는 제외함). 채택된 논문의 투고자는 인쇄 쪽수에 따라 다음의 게재료를 부담한다. 
+  단, 게재시 저자 중에 비회원이 포함된 경우에는 상기 게재료의 50%를 추가 부담하고, 연구비 지원 문구 
+포함시에는 100,000원을 추가 부담하며, 연구비 지원 문구가 포함되지 않는 경우에는 상기 게재료의 20%를 
+할인한다.   
+13. 채택된 논문 중 특별한 사정으로 게재 시기 조정을 원하는 경우에는 논문지 편집위원회의 승인을 
+얻어 게재할 수 있다. 단, 저자는 게재 시기 조정에 따른 경비 300,000원을 추가로 부담하여야 한다.
+14. 논문지에 게재된 논문은 본 학회의 승인없이 무단 복제할 수 없다.
+15. 논문지에 게재된 논문은 데이터베이스화하여 이를 불특정 다수에게 공개함에 동의하는 것으로 간주
+하며, 게재되는 논문의 저자는 논문 저작권 위임서를 제출한다.
+16. 본 규정은 2024년 6월 27일부터 효력을 발생한다.
+인쇄 쪽수
+1-6쪽
+ 7-8쪽
+9쪽 이상
+논문게재료
+15,000원/쪽
+30,000원/쪽
+50,000원/쪽
+단편논문게재료
+100,000원/편
+
+━━━ 2. 영문 Guide for Authors 에만 있는 것 ━━━
+
+국문 투고규정 PDF(16조)와 영문 Guide for Authors 는 1~16항이 같은 내용이지만,
+영문 쪽에 **국문 PDF 어디에도 없는 절이 여섯 개 더** 붙어 있다. 심사에 직접
+걸리는 내용이라 따로 옮긴다. (출처: https://jok.kiise.or.kr/journals/jok/static/guideA)
+
+  ■ Author's CheckList
+    투고 전 자가점검표. 항목 중 우리에게 걸리는 것:
+      · "Are tables and figures stated only in English and captions of them
+         both in Korean and in English?"  → 표·그림 내용은 영문만, 캡션은 국·영문 둘 다
+      · "Are authors identification information including acknowledgements
+         not presented in text?"          → 저자 정보·사사 본문에 없을 것
+      · "Are they only stated in English?" (참고문헌)
+      · "Manuscript must be submitted in pdf file, otherwise it is charges
+         ￦10,000 for conversion to Adobe PDF."
+
+  ■ Authorship (저자 자격 3요건 — 셋을 모두 충족해야 한다)
+    1) substantial contributions to conception and design, acquisition of
+       data, or analysis and interpretation of data
+    2) drafting the article or revising it critically for important
+       intellectual content
+    3) final approval of the version to be published
+
+  ■ Peer Review Process
+    · All manuscripts are treated as confidential.
+    · ** They are peer-reviewed by at least three anonymous reviewers
+      selected by the editor. **   ← 심사위원 최소 3인. 국문 규정엔 없는 숫자다.
+    · The review process operates under a double-blind system.
+    · Rejected papers will not be peer-reviewed again.
+    · 심사 기준 7가지:
+        - How does this manuscript advance the field of research and/or
+          contribute something new to the literature?
+        - Is this manuscript relevant to the community of readers?
+        - Is the manuscript technically sound?
+        - Is the paper clearly written and well organized?
+        - ** Are all figures and tables appropriately provided and is their
+          resolution in good quality? **   ← 그림 해상도가 명시된 심사 기준이다
+        - Does the introduction state the objectives of the manuscript?
+        - Are the references relevant and complete?
+
+  ■ Guidelines for Complaints and Appeals
+    심사 의견에 이의가 있으면 편집위원회에 **서면으로 1회에 한해** 이의신청할 수
+    있다. 실질적 논거나 경험적 사례를 제시해야 한다. 편집위원회의 최종 결정에는
+    다시 이의를 제기할 수 없다.
+
+  ■ Copyright
+    게재와 동시에 저작권은 저작권 위임서 제출 시점에 KIISE 로 이전된다.
+
+  ■ Data Sharing and Reproducibility
+    "We promote open science by recommending authors to include data sharing
+     methods in their manuscripts. It is recommended that authors deposit
+     their data, code, and materials in reputable repositories whenever
+     possible. … Manuscripts should contain sufficient methodological detail
+     to enable replication."
+    → 권고(recommended)이지 의무가 아니다. 공개 저장소가 없어도 규정 위반은
+      아니다. 다만 "재현 가능한 수준의 방법 기술"은 기대된다.
+
+
+━━━ 3. 국문 규정과 영문 안내가 어긋나는 곳 — 확인 필요 ━━━
+
+둘을 한 줄씩 맞대어 읽다 찾았다. 어느 쪽을 따를지 정해야 하는 것들이다.
+
+  ① 참고문헌 영문 표기 — 정면으로 어긋난다
+     국문 8조: "참고문헌은 **영문으로만 표기하며**"            (의무)
+     영문 8항: "References are in (translated/transliterated) Roman script
+               **(recommended but not mandatory)**"           (권고)
+     그런데 같은 영문 페이지의 Author's CheckList 에는
+               "Are they only stated in English?"             (의무처럼 물음)
+     → 영문판이 자기 안에서도 어긋난다. 우리는 이미 전부 영문이라 실무상
+       문제없지만, 어느 쪽이 유효한지는 규정만으로 판정 불가.
+
+  ② 약력 분량 — 단위가 다르다
+     국문 11조: "약력을 서술식으로 **200자** 이내로"
+     영문 11항: "a short **200-word** biography"
+     → 200자와 200단어는 다르다. 게재 확정 후 제출이라 급하진 않지만,
+       쓸 때 국문 기준(200자)으로 맞추는 게 안전하다.
+
+  ③ 그림 작성 크기 — 국문이 더 구체적이다
+     국문 10조: "그림, 표는 **인쇄될 크기의 두 배 정도로 선명하게** 작성하고"
+     영문 10항: "sufficiently large so that they remain legible when reduced
+                to the print size"
+     → 국문은 "2배로 그려라"라는 구체 지시다. 우리가 이번에 해상도를
+       329→550 dpi 로 올린 것이 이 조항 방향과 맞는다.
+
+  ④ 게재료 9쪽 이상 — 누진인지 일괄인지 여전히 불명
+     국문·영문 모두 표만 있고 계산 방식을 안 적었다.
+       1-6쪽 15,000원/쪽 · 7-8쪽 30,000원/쪽 · 9쪽이상 50,000원/쪽
+     전체 쪽수에 일괄 적용이면 11쪽 = 550,000원,
+     구간별 누진이면 11쪽 = 6×15,000 + 2×30,000 + 3×50,000 = 300,000원.
+     ** 차액이 25만원이다. 학회에 물어야 한다(chwoo@kiise.or.kr). **
+     여기에 비회원 포함 +50%, 연구비 문구 포함 +100,000원,
+     연구비 문구 없으면 −20% 가 더 붙는다.
+
+
+━━━ 4. CAST 에 바로 걸리는 조항만 추린 것 ━━━
+
+  [지금 지키고 있다]
+   7-(1) 구성 순서: 국문제목→영문제목→국문요약→국문키워드→영문요약→
+         영문키워드→본문→참고문헌→부록
+   7-(2) 국문요약 300~500자 · 영문요약 100~200단어 · 키워드 각 4~6개
+   8.    참고문헌 영문 표기, 인용 순서대로 번호
+   9.    장·절 번호 "1.", "1.1"
+   10.   그림 명칭 하단 중앙 / 표 상단 중앙, 그림 1(Fig. 1)·표 1(Table 1)
+         그림·표 내용은 영문, 제목은 국·영문 둘 다
+   6.    심사용은 PDF 제출 (아니면 변환료 10,000원)
+
+  [아직 안 한 것]
+   7-(1) "저자에 관한 사항은 일체 표기하지 않는다"
+         → ** 심사용 익명본을 아직 안 만들었다. ** double-blind 다.
+   7-(4) "심사용 논문에는 감사의 글을 기재하지 않는다"
+   12.   심사료 50,000원 투고 시 납부
+   15.   저작권 위임서 제출 (paper/참고/JOK규정/Copyright_Transfer_Form.docx)
+   11.   게재 확정 후 — 반명함판 사진 + 약력 200자
+
+  [규정에 아예 없는 것 — 지어내지 말 것]
+   · "추가자료(supplementary)" 개념이 없다. 7-(1)의 **부록**이 본문과 한
+     원고 안의 마지막 절로 있을 뿐이다. CAST_추가자료.docx 를 별도 파일로
+     내는 모델이 JOK 에 있는지는 규정으로 확인 불가 — 학회 문의 필요.
+   · 쪽수 상한 문구가 없다(단편논문 5면 제한만 있다). 11쪽이어도 투고는
+     막히지 않고 게재료만 늘어난다.
+   · 영문 이름 표기규칙, 소속 영문명, ORCID, †기호 정의 — 규정에 없다.
+     실물 논문에 다 있지만 조판 관행이지 규정 지시가 아니다.
+   · 심사 소요 기간 — 명시돼 있지 않다. 수정 회신 기한(일반 6주)만 있다.
+
+  [분야 선택 — 1조]
+   JOK 4개 분야: 시스템및이론 / 소프트웨어및응용 / 데이타베이스 / 정보통신
+   시스템및이론 = "하드웨어, OS, 그래픽스, 병렬처리, 컴퓨터 이론 분야"
+   KTCP(컴퓨팅의 실제)는 별도 논문지 — 구현·개발사례·산업체 경험용이라
+   CAST 대상이 아니다.

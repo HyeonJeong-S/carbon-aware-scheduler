@@ -65,15 +65,15 @@ def main():
     # 215pt = 단내(single-column) 폭 — gen_figs.py 관례와 동일, 2.99in @300dpi.
     # 2026-09-21까지 239pt로 잘못 잡혀 있었음(수정).
     W_IN, H_IN = 215 / 72.0, 184 / 72.0
-    fig, ax = plt.subplots(figsize=(W_IN, H_IN), dpi=300)
+    fig, ax = plt.subplots(figsize=(W_IN, H_IN), dpi=500)
 
     # 2026-09-25: 두 계열이 모두 검은 선이라 요동치는 실선이 점선을 가렸다(그림 비판
     # 검토). 무제약은 연한 회색 채움, 온라인은 검은 선 — 흑백 인쇄에서도 갈린다.
     ax.fill_between(xa, ya, step=None, color="#c8c8c8", lw=0, zorder=1,
-                    label="무제약 (시간이동, 용량 미인지)")
-    ax.plot(xb, yb, color=INK, lw=0.8, zorder=3, label="온라인 (용량 인지, Algorithm 1)")
+                    label="Capacity ignored (temporal shift)")
+    ax.plot(xb, yb, color=INK, lw=0.8, zorder=3, label="Online (capacity-aware, Algorithm 1)")
     ax.axhline(cap, color=INK, lw=0.6, ls=(0, (1, 1)))
-    ax.text(win_hi - win_lo, cap + 0.8, f"상한 {cap}", ha="right", va="bottom", fontsize=7,
+    ax.text(win_hi - win_lo, cap + 0.8, f"Ceiling {cap}", ha="right", va="bottom", fontsize=7.7,
             bbox=dict(facecolor="white", edgecolor="none", pad=1.0))
 
     # 이 구간(1주)의 국소 최대값을 그대로 표시한다 — 연중 최대(41/19)는
@@ -82,17 +82,21 @@ def main():
     ia = ya.index(pa)
     # 2026-09-25: 오른쪽 위 범례와 겹쳐 봉우리 왼쪽으로 옮겼다. 온라인 국소 최대 숫자는
     # 요동치는 선 위에 겹쳐 읽히지 않아 뺐다 — 상한선과의 관계는 그림이 그대로 보인다.
-    ax.annotate(f"{pa}", (xa[ia], pa), textcoords="offset points", xytext=(-4, -2),
-                fontsize=7.5, fontweight="bold", ha="right", va="top")
+    # 2026-10-08(글자 1.099배): 글자가 커져 봉우리 평탄부 선이 숫자를 관통했다.
+    # 2026-10-08(글자 1.099배): 범례 글자가 넓어지며 두 번째 손잡이 선이 왼쪽으로
+    # 뻗어 "41" 을 관통했다(2026-09-25 에 같은 이유로 한 번 옮긴 자리다).
+    # 봉우리 왼쪽을 따라 더 내려 범례 아래로 뺀다.
+    ax.annotate(f"{pa}", (xa[ia], pa), textcoords="offset points", xytext=(-4, -16),
+                fontsize=8.2, fontweight="bold", ha="right", va="top")
 
     ax.set_xlim(0, win_hi - win_lo)
     ax.set_ylim(0, max(ya) * 1.12)
     xt = list(range(0, win_hi - win_lo + 1, 24))
     ax.set_xticks(xt)
-    ax.set_xticklabels([f"{day0 + i // 24}" for i in xt], fontsize=7)
-    ax.tick_params(axis="y", labelsize=7)
-    ax.set_xlabel("연중 일수 (day)", fontsize=8)
-    ax.set_ylabel("캘리포니아 동시 실행 수", fontsize=8)
+    ax.set_xticklabels([f"{day0 + i // 24}" for i in xt], fontsize=7.7)
+    ax.tick_params(axis="y", labelsize=7.7)
+    ax.set_xlabel("Day of year", fontsize=8.8)
+    ax.set_ylabel("California: concurrent executions", fontsize=8.8)
 
     for spine in ("top", "right"):
         ax.spines[spine].set_visible(False)
@@ -100,7 +104,7 @@ def main():
         ax.spines[spine].set_linewidth(0.7)
     ax.grid(axis="y", color="#dddddd", lw=0.4)
 
-    ax.legend(loc="upper right", fontsize=6.5, frameon=False, handlelength=2.2)
+    ax.legend(loc="upper right", fontsize=7.1, frameon=False, handlelength=2.2)
 
     # 2026-09-24 b6 배분(그림 10장 통합 점검): 둘째 줄의 "41건→17건"이 캡션과
     # 겹쳤다 — 41은 이 주의 곡선 위 숫자(pa)와도 같은 값이라 그림 자체가 이미
