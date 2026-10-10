@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """CASPER의 공식 MILP(Carbon Aware Provisioner, CAP)를 원문 그대로 재구현.
 
 원문 확인 위치(2026-09-24, 0c/fd 직접 읽음):
@@ -75,7 +74,7 @@ ALPHA_LATENCY_BASELINE = 0.5   # Latency.schedule_servers (비교용, 참고 실
 def _bucket_by_hour(jobs):
     buckets = {}
     for j in jobs:
-        h = int(math.floor(j["submit_time"]))
+        h = math.floor(j["submit_time"])
         buckets.setdefault(h, []).append(j)
     return buckets
 
@@ -132,7 +131,7 @@ def _solve_hour(carbon_intensities, latency, request_rates, alpha, n_regions):
     if opt_model.sol_status not in (1,):
         raise RuntimeError(f"CASPER MILP infeasible/미해결 (request_rates={request_rates})")
 
-    return {(i, j): int(round(x_vars[i, j].varValue or 0)) for i in set_R for j in set_R}
+    return {(i, j): round(x_vars[i, j].varValue or 0) for i in set_R for j in set_R}
 
 
 def _solve_hour_latency_baseline(latency, request_rates, alpha, n_regions):
@@ -183,7 +182,7 @@ def _solve_hour_latency_baseline(latency, request_rates, alpha, n_regions):
     if opt_model.sol_status not in (1,):
         raise RuntimeError(f"CASPER(latency) MILP infeasible/미해결 (request_rates={request_rates})")
 
-    return {(i, j): int(round(x_vars[i, j].varValue or 0)) for i in set_R for j in set_R}
+    return {(i, j): round(x_vars[i, j].varValue or 0) for i in set_R for j in set_R}
 
 
 def run_casper(jobs, actual, latency, alpha, regions=REGIONS, max_hours=None, verbose_every=500,
@@ -248,7 +247,7 @@ def main():
     ap.add_argument("--hours", type=int, default=None, help="디버그용 — 앞 N시간만")
     args = ap.parse_args()
 
-    jobs, actual, pred24, W, latency = H.load_all()
+    jobs, actual, _pred24, W, latency = H.load_all()
     print(f"작업 {len(jobs):,}건, 리전 {len(REGIONS)}개, 시간 버킷 최대 {args.hours or '전체(8760)'}")
 
     runs = [(ALPHA_CAP, "carbon")] if args.alpha is not None and args.alpha == ALPHA_CAP else None

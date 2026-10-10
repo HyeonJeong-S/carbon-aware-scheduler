@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """2d 지시(2026-09-24, f6 제기) — 표5(선행 정책 재현) 네 행이 전부 같은
 회계 함수(prior_harness.score, 내부적으로 capacity._Windows.actual_mean)를
 타는지 확인하고, actual_mean(=slot 정수경계 평균근사)이 아니라 §5.7/§3.5가
@@ -19,10 +18,8 @@ actual_mean 근사의 정의(capacity._Windows.actual_mean, 참고용 재게재)
 """
 import math
 
-from interface.regions import REGIONS, LB_TO_REGION
-from load_balancer.framework.config import JOBS_CSV, RESULTS_DIR, load_latency_matrix
+from interface.regions import REGIONS
 
-from . import capacity, data_loader
 from . import prior_harness as H
 
 BASELINE_KG = 29225.6
@@ -33,8 +30,8 @@ def exact_integral(actual_series, start, dur):
     if dur <= 0:
         return 0.0
     end = start + dur
-    h0 = int(math.floor(start))
-    h1 = int(math.ceil(end))
+    h0 = math.floor(start)
+    h1 = math.ceil(end)
     n = len(actual_series)
     total = 0.0
     for h in range(h0, h1):
@@ -94,7 +91,7 @@ def format_result(r):
 def main():
     import time
 
-    jobs, actual, pred24, W, latency = H.load_all()
+    jobs, actual, _pred24, W, latency = H.load_all()
     out_lines = []
     out_lines.append("표5(선행 정책 재현) 회계 검증 — actual_mean 근사 vs 겹침가중 정확적분")
     out_lines.append("=" * 70)

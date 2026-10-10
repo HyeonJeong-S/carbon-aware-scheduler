@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """CICS (Google) 의 Virtual Capacity Curve 를 **원문 식 그대로** 우리 데이터에 적용.
 
 출처: Radovanovic et al., "Carbon-Aware Computing for Datacenters," IEEE TPS.
@@ -87,7 +86,7 @@ def solve_vcc(eta_day, n_flex, lam_ratio, delta_max=1.0):
 
 def run(lam_ratio=0.0, delta_max=1.0, verbose=True):
     """CICS 정책을 우리 데이터에 적용하고 harness 규약대로 결정만 반환한다."""
-    jobs, actual, pred24, W, lat = H.load_all()
+    jobs, actual, _pred24, W, lat = H.load_all()
 
     # 홈 리전 고정 (CICS 는 공간 이동을 하지 않는다)
     by_rd = defaultdict(list)          # (region, day) -> jobs
@@ -120,7 +119,7 @@ def run(lam_ratio=0.0, delta_max=1.0, verbose=True):
             if not q:
                 continue
             limit = vcc.get((r, day))
-            budget = int(round(limit[t % 24])) if limit is not None else 0
+            budget = round(limit[t % 24]) if limit is not None else 0
             q.sort(key=lambda j: j["deadline"] - j["duration"])   # EDF
             keep = []
             for j in q:

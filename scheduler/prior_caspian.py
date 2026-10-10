@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Caspian(Bahreini, Tantawi, Tardieu — "Caspian: A Carbon-aware Workload
 Scheduler in Multi-Cluster Kubernetes Environments", MASCOTS'24, IEEE) 의
 §II(MOSP 정식화)·§III(Algorithm 1~3) 를 원문 수식 그대로 구현한다.
@@ -172,7 +171,6 @@ Algorithm 3 Allocation(i, x, Z, M) — 원문 그대로
 import math
 import time
 
-import numpy as np
 import pulp
 
 from interface.regions import REGIONS
@@ -409,7 +407,7 @@ def run_caspian(jobs, W, omega1, omega2=1.0, omega3=1.0, cap=CAP_DEFAULT,
 
         # step 5~6: b_i 내림차순 정렬
         b = {}
-        for (jid, region, t_start), v in xval.items():
+        for (jid, _region, _t_start), v in xval.items():
             b[jid] = b.get(jid, 0.0) + v
         active.sort(key=lambda j: -b.get(j["id"], 0.0))
 

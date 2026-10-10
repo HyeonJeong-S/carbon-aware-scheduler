@@ -331,91 +331,97 @@ def fig_architecture():
     # x_jr · τ_j 를 덧붙이면 같은 말을 두 번 하는 것이 된다 — 이번 라운드에서
     # 없애기로 한 중복과 같은 종류다. 넣어 보니 짧은 화살표(26pt) 위에서
     # 아래첨자가 선에 닿기도 했다.
-    L += [path("M308,130 L334,130", sw=1.8),
-          txt(362, 76, "Execution (region, time)", anchor="middle", size=6.0)]
-    L.append(ic_rack(338, 86, 0.50, "R" + sb("1")))
-    L.append(ic_rack(372, 86, 0.50, "R" + sb("2")))
-    L.append(ic_rack(338, 120, 0.50, "R" + sb("3")))
-    L.append(ic_rack(372, 120, 0.50, "R" + sb("n")))
-    L += [dot(360, 128, 1.4), dot(365, 128, 1.4), dot(370, 128, 1.4)]
+    # 2026-10-10 사용자 메모: "R1,Rn까지 있는 게 쭉 나열되어 있는 게 좋을듯,
+    # 위에서부터 아래로 주르륵... 지금은 사각형 4개 그린 거잖아."
+    # 2×2 격자는 "리전이 넷"으로 읽히는데 뜻은 "리전이 n개"다. 세로 목록 +
+    # 가운데 세로 점 셋으로 바꾼다 — 목록이라는 게 모양으로 드러난다.
+    # 출력 화살표는 한 랙이 아니라 묶음 전체를 가리켜야 하므로, 세로 등뼈를
+    # 세우고 거기서 랙마다 짧은 가지를 뻗는다.
+    L += [txt(368, 13, "Execution (region, time)", anchor="middle", size=6.0)]
+    RX, RS = 338, 0.42
+    rows = [(20, "1"), (44, "2"), (68, "3"), (106, "n")]
+    for ry, name in rows:
+        L.append(ic_rack(RX, ry, RS))
+        L.append(txt(RX + 30 * RS + 5, ry + 34 * RS * 0.72, "R" + sb(name),
+                     size=FT, bold=True))
+    # 세로 점 셋 — R3 와 Rn 사이에 더 있다는 뜻
+    cx = RX + 30 * RS / 2
+    L += [dot(cx, 90, 1.3), dot(cx, 95.5, 1.3), dot(cx, 101, 1.3)]
+    # 등뼈와 가지
+    # 되먹임 점선이 상자 오른쪽 y 106~120 에 있으므로 출력선은 그 아래(y=128)로
+    # 뺀다 — y=117 로 두면 점선 고리를 가로질러 둘이 엉켜 읽힌다(렌더해서 확인).
+    ytop = 20 + 34 * RS / 2
+    L += [path("M308,128 L326,128", sw=1.8, head_=False),
+          path(f"M326,{ytop:.1f} L326,128", sw=1.8, head_=False)]
+    for ry, _ in rows:
+        yc = ry + 34 * RS / 2
+        L.append(arr(326, yc, RX - 1.5, yc, 0.9))
     L.append("</svg>")
     return "\n".join(L)
 
 # ═══════════ 그림 2 · 탄소 예측 (전단) ═══════════
 def fig_forecast():
-    """그림 2 — 리전별 LSTM 구조. 2026-10-08 전단(가로형)으로 재배치.
+    """그림 2 — 리전별 LSTM 구조. 2026-10-10 단내(세로 스택)로 재배치.
 
-    왜 바꿨나: 그림 1 과 같은 이유다. 215pt 설계를 JOK 단(195.6pt)에 넣으면 가장 작은
-    글자(5.3pt)가 4.8pt 로 찍힌다. 전단에 균등확대하면 404×293 이 되어 한 쪽의 절반을
-    먹는다. 세로로 쌓인 입력→LSTM→출력을 가로로 펴 404×110 으로 맞췄다.
-    작은 글자(5.3·5.6·5.8)는 전부 6.0pt 로 올렸다 — 전단에서는 축소가 없으므로
-    설계 크기가 곧 지면 크기다.
+    왜 또 바꿨나: 사용자 메모 — "본문 중간에 2단 다 차지하는 걸 바꿔".
+    전단(404×110)이라 쪽 한가운데서 2단을 통째로 갈라 본문이 위아래로 끊겼다.
+    60 이 실물 11편을 재보니 전단 그림은 ** 전부 쪽 맨 위 ** 에 붙고, 쪽 중간에
+    떠서 단을 가르는 전례가 하나도 없었다.
+    처음엔 그림1 바로 뒤로 옮겨 "그림-그림-본문"으로 만들었는데, 사용자 뜻은
+    위치가 아니라 ** 전단을 단내로 바꾸라 ** 는 것이었다. 그래서 단내로 다시 그린다.
 
-    담은 것은 전과 같다: 리전마다 독립 모델, 피처 13장(공통 10 + 기상 3),
-    은닉 64·2층, 그리고 기상 리전만 미래 24 h 기상을 FC 에 덧붙인다는 것.
+    단내 폭(195.6pt)에 맞추려고 가로 3열(입력→LSTM→출력)을 세로 3단으로 세웠다.
+    ** 설계 폭 = 지면 폭 ** 이라 축소가 없다 — gen_figs_data.py 쪽 단내 그림들이
+    쓰는 1.099배 글자 부풀리기가 여기엔 필요 없다(그것은 215pt 설계를 195.6pt 에
+    넣을 때의 보정이다). 가장 작은 글자 6.0pt 가 그대로 6.0pt 로 찍힌다.
 
-    2026-10-09 그림 교차반박 3라운드로 뺀 것 둘:
-      · 겹친 종이 넉 장(N_SHEETS=4). 캡션이 이미 "모델은 리전마다 독립이다"로
-        말하고, 참고 논문 4편(CASPER·Caspian·CarbonFlex·Google)에 이 "카드
-        쌓기" 효과가 한 번도 없다. 리전 수는 "× 8 regions" 글자로 적는다.
-      · LSTM 셀 격자(2행×7칸, 세로선 셋). 이 격자가 무엇을 뜻하는지 적은
-        주석이 코드 어디에도 없고(b0·96 각자 확인), 2행×7칸에 여섯 틈 중
-        셋만 이어 놓아 "의도한 추상화"인지 "그리다 만 것"인지 그림만 보고는
-        구분이 안 됐다. 은닉 64·2층은 바로 위 글자가 이미 말한다.
-    안쪽 상자는 전부 각진 사각형으로 바꾸고 바깥 틀만 둥글게 남긴다.
+    담은 것은 전과 같다: 리전마다 독립(× 8 regions), 피처 13장(공통 10 + 기상 3),
+    은닉 64·2층, 미래 24 h 기상이 FC 에서 합류(24×3=72), 출력 Ĉ_r(t…t+24).
     """
-    W, H = 404, 110
-    L = [head(W, H, "그림 2 리전별 LSTM 구조 (전단)")]
+    W, H = 196, 212
+    L = [head(W, H, "그림 2 리전별 LSTM 구조 (단내)")]
 
-    # 리전마다 독립 모델 — 겹친 종이 넉 장
     # 바깥 틀 하나만 둥글다. 안쪽 상자는 전부 각진다(모서리 위계).
-    L.append(rbox(7, 4, 390, 92, r=12, sw=0.9))
-    L.append(txt(391, 14, "× 8 regions", anchor="end", size=6.0))
+    L.append(rbox(4, 4, 188, 204, r=10, sw=0.9))
+    L.append(txt(186, 15, "\u00d7 8 regions", anchor="end", size=6.0))
 
-    # ── 입력: 탄소 이력 + 피처 13장 ──
-    L += [box(16, 18, 104, 74, sw=1.0),
-          ic_cloud(26, 24, 0.52), spark(24, 42, 64, 11, n=40),
-          txt(68, 58, "Carbon intensity, past 168 h", anchor="middle", size=6.0)]
-    TX, TY, TW, TH, G = 22, 64, 9.0, 9.0, 2.2
+    # ── ① 입력: 탄소 이력 + 피처 13장 ──
+    L += [box(12, 21, 172, 62, sw=1.0),
+          ic_cloud(20, 27, 0.45),
+          spark(48, 28, 64, 11, n=40),
+          txt(98, 48, "Carbon intensity, past 168 h", anchor="middle", size=6.0)]
+    TW, TH, G = 7.0, 7.0, 1.6
+    TX, TY = 34, 54
     for k in range(13):
-        col, row = k % 7, k // 7
-        x = TX + col * (TW + G) + (7 if k >= 10 else 0)
-        y = TY + row * (TH + G)
+        x = TX + k * (TW + G) + (6 if k >= 10 else 0)
         fill = "#d9d9d9" if k >= 10 else "#fff"
-        L.append(f'<rect x="{x}" y="{y}" width="{TW}" height="{TH}" '
-                 f'fill="{fill}" stroke="{INK}" stroke-width="0.8"/>')
-    L += [txt(TX + 1.5 * (TW + G) - G / 2, 90, "Common 10", anchor="middle", size=6.0),
-          txt(TX + 7 + 4.5 * (TW + G) - G / 2, 90, "Weather +3", anchor="middle", size=6.0)]
-    L += [fat_arrow(120, 71, 138, 71, w=6)]
+        L.append(f'<rect x="{x:.1f}" y="{TY}" width="{TW}" height="{TH}" '
+                 f'fill="{fill}" stroke="{INK}" stroke-width="0.7"/>')
+    L += [txt(TX + 5 * (TW + G) - G / 2, 72, "Common 10", anchor="middle", size=6.0),
+          txt(TX + 6 + 11.5 * (TW + G) - G / 2, 72, "Weather +3", anchor="middle", size=6.0)]
+    L.append(fat_arrow(98, 85, 98, 97, w=5))
 
-    # ── LSTM ──
-    L += [box(142, 18, 144, 74, sw=1.0),
-          txt(150, 34, "LSTM", size=FB, bold=True),
-          txt(278, 34, "+ future 24 h weather", anchor="end", size=6.0),
-          txt(278, 44, "Weather regions only · 24×3 = 72", anchor="end", size=6.0),
-          txt(150, 50, "Hidden 64 · 2 layers", size=6.0),
-          # 2026-10-08(70 지적): 점선이 LSTM 상자를 우회해 Output 으로 들어가니
-          # "미래 기상이 출력에 더해진다"로 읽혔다. 실제로는 FC 입력이 64+72 라
-          # **FC 에서 합류**한다 — 그림에 FC 가 없어서 생긴 모호함이다. FC 상자를
-          # 두고 셀과 미래 기상이 거기서 만나게 한다. 5d 가 지적한 Output 상자
-          # 빈 자리도 같이 풀린다(출력 곡선을 키워 상자를 채운다).
-          path("M263,48 L263,56", sw=0.8, dash="2.5 1.8")]
-    # 셀 격자를 뺀 자리에는 실제로 흐르는 것을 적는다 — 마지막 은닉 상태
-    # h(64)가 FC 로 가고, 거기서 미래 기상 72 와 합쳐진다. 가짜 구조도보다
-    # 이 라벨 하나가 FC 입력이 64+72 라는 걸 더 정확히 말한다.
-    L += [arr(158, 71, 246, 71, 0.9),
-          f'<text x="200" y="67" text-anchor="middle" font-size="6.0">'
-          f'<tspan font-style="italic">h</tspan> (64)</text>']
-    # FC → (굵은 화살표) → 출력
-    L += [box(248, 58, 30, 26, sw=0.8),
-          txt(263, 75, "FC", anchor="middle", bold=True, size=FT)]
-    L.append(fat_arrow(288, 71, 298, 71, w=6))
+    # ── ② LSTM ──
+    L += [box(12, 101, 172, 62, sw=1.0),
+          txt(20, 115, "LSTM", size=FB, bold=True),
+          txt(20, 127, "Hidden 64 \u00b7 2 layers", size=6.0),
+          txt(176, 115, "+ future 24 h weather", anchor="end", size=6.0),
+          txt(176, 125, "Weather regions only \u00b7 24\u00d73 = 72", anchor="end", size=6.0),
+          # 미래 기상은 출력이 아니라 FC 에서 합류한다(2026-10-08, 70 지적).
+          path("M148,129 L148,137", sw=0.8, dash="2.5 1.8")]
+    # 마지막 은닉 상태 h(64) 가 FC 로 간다 — FC 입력이 64+72 라는 것을 라벨로 말한다.
+    L += [arr(24, 148, 132, 148, 0.9),
+          f'<text x="76" y="144" text-anchor="middle" font-size="6.0">'
+          f'<tspan font-style="italic">h</tspan> (64)</text>',
+          box(134, 138, 26, 20, sw=0.8),
+          txt(147, 152, "FC", anchor="middle", bold=True, size=FT)]
+    L.append(fat_arrow(98, 165, 98, 177, w=5))
 
-    # ── 출력 ──
-    L += [box(302, 18, 86, 74, sw=1.0),
-          f'<text x="308" y="40" font-size="{FT}"><tspan font-weight="bold">Output  Ĉ</tspan>'
-          f'<tspan font-size="6.0" dy="1.5">r</tspan><tspan dy="-1.5"> (t … t+24)</tspan></text>',
-          spark(310, 52, 70, 28, n=24)]
+    # ── ③ 출력 ──
+    L += [box(12, 181, 172, 20, sw=1.0),
+          f'<text x="20" y="194" font-size="{FT}"><tspan font-weight="bold">Output  \u0108</tspan>'
+          f'<tspan font-size="6.0" dy="1.5">r</tspan><tspan dy="-1.5"> (t \u2026 t+24)</tspan></text>',
+          spark(116, 184, 62, 14, n=24)]
 
     L.append("</svg>")
     return "\n".join(L)

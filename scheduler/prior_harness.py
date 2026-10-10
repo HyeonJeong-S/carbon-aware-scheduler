@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """선행 연구 정책을 **원문 수식·코드 그대로** 구현해 비교하기 위한 공용 하네스.
 
 왜 이 파일이 따로 있나
@@ -16,12 +15,10 @@
 score() 는 capacity.py 의 _Windows.actual_mean 을 그대로 쓴다 — 즉 Algorithm 1,
 표1, 그리고 모든 선행 정책 재현이 문자 그대로 같은 함수로 채점된다.
 """
-import math
 
-import numpy as np
 
 from interface import carbon_2025
-from interface.regions import REGIONS, LB_TO_REGION
+from interface.regions import REGIONS
 from load_balancer.framework.config import JOBS_CSV, RESULTS_DIR, load_latency_matrix
 
 from . import capacity, data_loader

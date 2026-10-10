@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """2d 지시(2026-09-24) — l_i 올림 부풀림이 식(5)(용량, 하드제약)를 얼마나
 자주 "실제로는 안 묶였을 걸 묶인 것처럼" 만드는지 측정한다.
 
@@ -29,7 +28,7 @@ def analyze(decisions, jobs, cap=12, regions=None):
         j = by_id[jid]
         d = j["duration"]
         l_i = max(1, math.ceil(d - 1e-9))
-        s = int(math.floor(start))
+        s = math.floor(start)
         for h in range(s, s + l_i):
             ceil_occ[region][h] += 1
         real_iv[region].append((start, start + d))

@@ -33,7 +33,7 @@ WIDE_READY = True                  # 쪽 규격을 JOK 로 바꾼 뒤 True 로
 #  docx 안 이름 → (새 파일, 전단인가)
 REPLACE = {
     "word/media/image1.png":  ("fig1_architecture.png",   True),   # 그림 1  파이프라인
-    "word/media/image2.png":  ("fig2_forecast.png",       True),   # 그림 2  LSTM 구조
+    "word/media/image2.png":  ("fig2_forecast.png",       False),  # 그림 2  LSTM 구조(2026-10-10 단내로 전환)
     "word/media/image3.png":  ("fig3_forecast_curve.png", False),  # 그림 3  예측 곡선
     "word/media/image4.png":  ("fig3_loadbalancer.png",   False),  # 그림 4  무릎점 산점도
     "word/media/image5.png":  ("fig4_routing.png",        False),  # 그림 5  리전 간 흐름

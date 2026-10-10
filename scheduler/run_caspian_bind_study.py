@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """2d 지시(2026-09-24) l_i 올림 부풀림 진단 — 축소 규모(60일) 대조 실행.
 
 전체 146,000건/8,760시간 스윕 5개가 이미 코어를 쓰고 있어, 이 진단은
@@ -20,7 +19,7 @@ DAYS = 60
 
 def main():
     OUT_DIR.mkdir(exist_ok=True)
-    jobs, actual, pred24, W, latency = H.load_all()
+    jobs, _actual, _pred24, W, latency = H.load_all()
     sub = [dict(j) for j in jobs if j["submit_time"] < DAYS * 24]
     print(f"부분집합(첫 {DAYS}일): {len(sub):,}건", flush=True)
 

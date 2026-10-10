@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """prior_caspian.py를 ω1 스윕으로 돌려 harness.score()로 채점하고 JSON에 쓴다.
 
 사용법: ./.venv/bin/python -m scheduler.run_caspian_sweep <omega1> [fractional]
@@ -25,7 +24,7 @@ def main():
     out_path = OUT_DIR / f"omega1_{omega1}_{mode}.json"
 
     print(f"[omega1={omega1},{mode}] 데이터 로딩...", flush=True)
-    jobs, actual, pred24, W, latency = H.load_all()
+    jobs, _actual, _pred24, W, latency = H.load_all()
     print(f"[omega1={omega1},{mode}] {len(jobs):,}건 시작", flush=True)
 
     t0 = time.time()
