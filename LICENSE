@@ -1,0 +1,61 @@
+이 저장소는 두 가지 조건이 함께 적용됩니다.
+
+  · 소스 코드  → 아래 MIT License
+  · paper/ 디렉터리 → MIT 적용 대상이 아님 (저작권 유보, 아래 "예외" 참조)
+
+════════════════════════════════════════════════════════════════════════
+MIT License — 소스 코드에 한함
+════════════════════════════════════════════════════════════════════════
+
+Copyright (c) 2026 CAST contributors
+  강희진 (carbon_forecast_lstm) · 이종하 (load_balancer)
+  강동규 (scheduler) · 김현정 (interface)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+════════════════════════════════════════════════════════════════════════
+예외 — paper/ 디렉터리 (학술 저작물)
+════════════════════════════════════════════════════════════════════════
+
+paper/ 아래의 모든 파일은 위 MIT License의 적용을 받지 않습니다.
+여기에는 다음이 포함됩니다.
+
+  · 논문 원고 (.docx, .pdf) 및 그 모든 판본
+  · paper/diagram/ 의 그림 파일과 생성 스크립트가 만든 산출물
+  · paper/문서/ 의 작업 문서, 설계 노트, 검증 기록
+  · paper/참고/ 에 포함된 제3자 저작물
+
+Copyright (c) 2026 저자. All rights reserved.
+저작권은 논문 저자에게 있으며 모든 권리를 보유합니다.
+
+열람은 자유이나, 저자의 사전 서면 허락 없이 다음을 금합니다.
+
+  · 전부 또는 일부의 복제·배포·공중송신·2차적저작물 작성
+  · 학술지·학술대회·프리프린트 서버 등에 제출하거나 게재하는 행위
+  · 본문·그림·표·수치를 출처 표시 없이 사용하는 행위
+
+인용은 통상의 학술 관행(출처 표시)에 따릅니다.
+
+이 논문은 정보과학회논문지(Journal of KIISE)에 투고 예정이며, 게재가 확정되면
+해당 부분의 저작권은 학회 저작권 위임서에 따라 한국정보과학회로 이전됩니다.
+
+paper/참고/ 에 포함된 제3자 논문과 규정 문서는 각 원저작권자에게 권리가 있으며,
+연구 참고 목적으로만 보관합니다.
+
+문의: https://github.com/bell-ha
