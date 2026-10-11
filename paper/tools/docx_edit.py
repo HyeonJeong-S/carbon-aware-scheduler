@@ -427,8 +427,23 @@ def insert_at(xml, head, after, segments):
         f"{head[:24]!r}: {after!r} 가 {whole.count(after)}번 나온다 (1번이어야 함)"
     j = whole.find(after) + len(after)
 
+    # 2026-10-12 사고: 스타일 "" 는 rPr 없는 run 을 만든다. 본문 문단은 원래 run 도
+    # rPr 이 없어 똑같이 찍히지만, ** 제목처럼 run 에 크기·굵기가 박힌 문단 ** 에 넣으면
+    # 그 글자만 본문 크기로 떨어진다(5절 제목 "결론 및 향후 연구"가 9.12 → 7.92pt 로
+    # 찍혔다). 그래서 "" 는 이제 ** 그 문단에서 글자 수가 가장 많은 run 의 서식 ** 을
+    # 따른다 — 본문에서는 전과 같고, 제목에서는 제목 서식이 된다.
+    def _rpr_of(r):
+        m = re.search(r'<w:rPr\b.*?</w:rPr>', r, re.DOTALL)
+        return m.group(0) if m else ""
+
+    best, blen = "", -1
+    for r in runs:
+        tx = "".join(re.findall(r'<w:t\b[^>]*>(.*?)</w:t>', r.group(0), re.DOTALL))
+        if len(tx) > blen:
+            best, blen = _rpr_of(r.group(0)), len(tx)
+
     new_runs = "".join(
-        f'<w:r>{STYLES[st]}<w:t xml:space="preserve">{_esc(tx)}</w:t></w:r>'
+        f'<w:r>{best if st == "" else STYLES[st]}<w:t xml:space="preserve">{_esc(tx)}</w:t></w:r>'
         for st, tx in segments)
 
     # 끼울 자리가 어느 run 에 걸리는지 — 경계면 그 뒤에, 한가운데면 쪼갠다.
