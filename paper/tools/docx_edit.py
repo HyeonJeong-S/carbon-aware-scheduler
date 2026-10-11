@@ -391,3 +391,60 @@ def delete_substring(xml, head, target):
             new_rf = rf[:t.start()] + f'<w:t xml:space="preserve">{_esc(keep)}</w:t>' + rf[t.end():]
             new_frag = new_frag[:r.start()] + new_rf + new_frag[r.end():]
     return xml[:s] + new_frag + xml[e:], len(target)
+
+
+# 본문 안에서 기호를 찍을 때 Word 가 쓰는 서식 (문서에서 그대로 떠 왔다).
+MATH_RPR = '<w:rPr><w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/><w:i/></w:rPr>'
+SUB_RPR = ('<w:rPr><w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>'
+           '<w:i/><w:vertAlign w:val="subscript"/></w:rPr>')
+STYLES = {"": "", "math": MATH_RPR, "sub": SUB_RPR}
+
+
+def insert_at(xml, head, after, segments):
+    """문단 안 `after` 가 끝나는 자리 뒤에 run 을 끼운다 — 기존 run 은 안 건드린다.
+
+    2026-10-12: replace_text 는 문단의 run 을 전부 버리고 새로 만든다. 서식이
+    섞인 문단(기호가 Cambria Math 기울임, 아래첨자까지 있는 곳)에서 그걸 쓰면
+    아래첨자가 통째로 날아간다 — 3.2 절 표기 문단이 정확히 그 모양이라 과거에
+    사고가 났다. 글을 **보태기만** 할 때는 이 함수를 쓴다.
+
+    segments 는 [(스타일, 글), …] 이고 스타일은 "" (본문) · "math" (기호
+    기울임) · "sub" (아래첨자) 셋이다. 끼우는 자리가 run 한가운데면 그 run 만
+    둘로 쪼갠다.
+    """
+    s, e, frag, _ = find_one(xml, head)
+    runs = list(RUN.finditer(frag))
+    assert runs, f"{head[:24]!r}: run 이 없음"
+
+    texts, spans, pos = [], [], 0
+    for r in runs:
+        t = "".join(re.findall(r'<w:t\b[^>]*>(.*?)</w:t>', r.group(0), re.DOTALL))
+        texts.append(t)
+        spans.append((pos, pos + len(t)))
+        pos += len(t)
+    whole = "".join(texts)
+    assert whole.count(after) == 1, \
+        f"{head[:24]!r}: {after!r} 가 {whole.count(after)}번 나온다 (1번이어야 함)"
+    j = whole.find(after) + len(after)
+
+    new_runs = "".join(
+        f'<w:r>{STYLES[st]}<w:t xml:space="preserve">{_esc(tx)}</w:t></w:r>'
+        for st, tx in segments)
+
+    # 끼울 자리가 어느 run 에 걸리는지 — 경계면 그 뒤에, 한가운데면 쪼갠다.
+    for k, r in enumerate(runs):
+        a, b = spans[k]
+        if j == b:                                  # run 경계 — 그대로 뒤에 붙인다
+            return xml[:s] + frag[:r.end()] + new_runs + frag[r.end():] + xml[e:]
+        if a < j < b:                               # run 한가운데 — 둘로 쪼갠다
+            rf = r.group(0)
+            ts = list(re.finditer(r'(<w:t\b[^>]*>)(.*?)(</w:t>)', rf, re.DOTALL))
+            assert len(ts) == 1, f"{head[:24]!r}: run 안 <w:t> 가 {len(ts)}개"
+            rpr = re.search(r'<w:rPr\b.*?</w:rPr>', rf, re.DOTALL)
+            rpr = rpr.group(0) if rpr else ""
+            left, right = texts[k][:j - a], texts[k][j - a:]
+            two = (f'<w:r>{rpr}<w:t xml:space="preserve">{_esc(left)}</w:t></w:r>'
+                   + new_runs
+                   + f'<w:r>{rpr}<w:t xml:space="preserve">{_esc(right)}</w:t></w:r>')
+            return xml[:s] + frag[:r.start()] + two + frag[r.end():] + xml[e:]
+    raise AssertionError(f"{head[:24]!r}: 끼울 자리를 못 찾음 (j={j})")

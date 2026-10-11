@@ -34,6 +34,16 @@ DROP_PARTS = ("word/comments.xml", "word/commentsExtended.xml",
               "word/commentsIds.xml", "word/commentsExtensible.xml")
 
 
+def count_comments(path):
+    """메모 개수만 센다 — 파일을 건드리지 않는다."""
+    z = zipfile.ZipFile(path)
+    try:
+        doc = z.read("word/document.xml").decode("utf-8")
+    finally:
+        z.close()
+    return len(re.findall(r'<w:commentRangeStart\b', doc))
+
+
 def strip_comments(src, dst):
     """메모를 뺀 사본을 만든다. 지운 메모 수를 돌려준다."""
     z = zipfile.ZipFile(src)
@@ -68,10 +78,20 @@ def main():
     out = os.path.abspath(sys.argv[2]) if len(sys.argv) > 2 \
         else os.path.splitext(src)[0] + ".pdf"
     tmp = os.path.splitext(src)[0] + "__nocomment.docx"
+    # 2026-10-12 사고: 메모가 0개인데도 사본을 다시 묶었더니 Word 가 제목 앞에
+    # 'ㄴ' 한 글자를 찍어 내보냈다(투고 직전 1쪽 제목에서 발견). 원인은 특정
+    # 못 했으나 zip 을 다시 쓰는 것 자체가 범인이고, Word 로 직접 내보내면
+    # 깨끗하다. ** 메모가 없으면 손대지 않고 원본을 그대로 넘긴다. **
     try:
-        n = strip_comments(src, tmp)
-        print(f"  메모 {n}개를 뺀 사본으로 내보낸다 (원본은 그대로)")
-        r = subprocess.run(["osascript", SCRIPT, tmp, out],
+        n = count_comments(src)
+        if n:
+            strip_comments(src, tmp)
+            target = tmp
+            print(f"  메모 {n}개를 뺀 사본으로 내보낸다 (원본은 그대로)")
+        else:
+            target = src
+            print("  메모가 없다 — 원본을 그대로 내보낸다")
+        r = subprocess.run(["osascript", SCRIPT, target, out],
                            capture_output=True, text=True)
         if r.returncode:
             print(r.stdout, r.stderr)
