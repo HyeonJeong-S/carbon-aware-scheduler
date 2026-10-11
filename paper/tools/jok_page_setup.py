@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""CAST_JOK_본문.docx 의 쪽 규격을 정보과학회논문지(JOK) 실물에 맞춘다.
+"""CAST_JOK_투고본.docx 의 쪽 규격을 정보과학회논문지(JOK) 실물에 맞춘다.
 
 값의 출처: 5d 가 JOK e-journal 세 편(108120·108121·108123)의 **가운데 쪽 25개**를
 pymupdf 로 직접 재어 얻었다. 규정 문구(182×257mm, 단 69mm, 거터 4.4mm)는 반올림된
@@ -18,7 +18,7 @@ pymupdf 로 직접 재어 얻었다. 규정 문구(182×257mm, 단 69mm, 거터 
 import re, shutil, zipfile
 import xml.etree.ElementTree as ET
 
-DOC = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/CAST_JOK_본문.docx"
+DOC = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/CAST_JOK_투고본.docx"
 TW = lambda pt: int(round(pt * 20))
 PG = f'<w:pgSz w:w="{TW(515.0)}" w:h="{TW(728.0)}"/>'
 MAR = (f'<w:pgMar w:top="{TW(83.8)}" w:right="{TW(53.2)}" w:bottom="{TW(75.1)}" '

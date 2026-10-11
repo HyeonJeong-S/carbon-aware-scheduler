@@ -30,7 +30,7 @@ import docx
 from docx.oxml.ns import qn
 
 PAPER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-DOC = os.path.join(PAPER, "CAST_본문.docx")
+DOC = os.path.join(PAPER, "CAST_A4본.docx")
 TWIP_PER_MM = 1440 / 25.4
 
 
@@ -98,7 +98,7 @@ def main():
         return
 
     snap = os.path.join(PAPER, "versions",
-                        f"CAST_본문_{datetime.now():%Y%m%d_%H%M%S}_before_여백.docx")
+                        f"CAST_A4본_{datetime.now():%Y%m%d_%H%M%S}_before_여백.docx")
     os.makedirs(os.path.dirname(snap), exist_ok=True)
     shutil.copy2(DOC, snap)
     print("\n스냅샷:", os.path.basename(snap))

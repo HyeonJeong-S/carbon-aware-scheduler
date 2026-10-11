@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""CAST_JOK_본문.docx 의 글꼴·크기를 정보과학회논문지(JOK) 실물에 맞춘다.
+"""CAST_JOK_투고본.docx 의 글꼴·크기를 정보과학회논문지(JOK) 실물에 맞춘다.
 
 크기 출처: 5d 가 JOK e-journal 세 편(108120·108121·108123)을 pymupdf span 단위로
 직접 재어 얻었다. 세 편이 소수점까지 수렴한 값들이다.
@@ -19,7 +19,7 @@
 import re, shutil, zipfile
 import xml.etree.ElementTree as ET
 
-DOC = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/CAST_JOK_본문.docx"
+DOC = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/CAST_JOK_투고본.docx"
 PARA = re.compile(r'<w:p\b[^>]*?/>|<w:p\b[^>]*?(?<!/)>.*?</w:p>', re.DOTALL)
 TBL = re.compile(r'<w:tbl>.*?</w:tbl>', re.DOTALL)
 RUN = re.compile(r'<w:r\b(?:(?!</w:r>).)*?</w:r>', re.DOTALL)

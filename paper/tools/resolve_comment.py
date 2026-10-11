@@ -28,8 +28,8 @@ PAPER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 # 2026-09-28: 파일 이름이 CAST_압축본 → CAST_본문 으로 바뀌었다(교수님께 보내는 이름).
 # 옛 별칭 "압축본"도 그대로 받는다 — 손가락이 기억하는 이름을 끊지 않는다.
 # 2026-10-10: JOK 투고본이 생겼다. 사용자가 메모를 이 파일에 단다.
-FILES = {"본문": "CAST_본문.docx", "압축본": "CAST_본문.docx",
-         "JOK": "CAST_JOK_본문.docx", "jok": "CAST_JOK_본문.docx",
+FILES = {"본문": "CAST_A4본.docx", "압축본": "CAST_A4본.docx",
+         "JOK": "CAST_JOK_투고본.docx", "jok": "CAST_JOK_투고본.docx",
          "추가자료": "CAST_추가자료.docx",
          "인용포함": "CAST_인용포함.docx"}
 

@@ -16,7 +16,7 @@ AppleScript 로 메모 표시를 끄는 것(show comments false)은 Mac Word 에
 (resolve_comment.py 주석과 같은 목록).
 
 실행:
-  ./.venv/bin/python paper/tools/export_pdf.py paper/CAST_JOK_본문.docx
+  ./.venv/bin/python paper/tools/export_pdf.py paper/CAST_JOK_투고본.docx
   ./.venv/bin/python paper/tools/export_pdf.py <docx> [출력.pdf]
 """
 import os

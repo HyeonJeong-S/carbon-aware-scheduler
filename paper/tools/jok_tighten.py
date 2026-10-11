@@ -11,7 +11,7 @@
 import re, shutil, zipfile
 import xml.etree.ElementTree as ET
 
-DOC = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/CAST_JOK_본문.docx"
+DOC = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/CAST_JOK_투고본.docx"
 PARA = re.compile(r'<w:p\b[^>]*?/>|<w:p\b[^>]*?(?<!/)>.*?</w:p>', re.DOTALL)
 TBL = re.compile(r'<w:tbl>.*?</w:tbl>', re.DOTALL)
 
