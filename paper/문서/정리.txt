@@ -2809,3 +2809,34 @@ PDF 가 docx 보다 14초 뒤 = 최신 확인 · Word 메모 0개(배율 사고 
 전체에 5만원이 붙고 8쪽은 3만원 구간). 누진이면 그 절벽은 4만원이다.
 → 분량을 줄일 값어치가 해석에 따라 네 배 달라진다. 물어보고 정할 것.
 비회원이 저자에 있으면 +50% 별도.
+
+― CI 가 14개 커밋째 빨간불이었다 (2026-10-12, 논문과 무관한 코드 문제)
+사용자가 "투고 위해 정리"(e48a315) 커밋 후 CI 실패를 물었다. 이번 커밋 탓이
+아니었다 — ** #120(9/24)부터 #133 까지 14연속 실패, 마지막 성공은 #119(9/23). **
+
+원인: ** PuLP 4.0.0 이 LpVariable(cat=...) 을 없앴다. **
+    load_balancer/framework/simulator.py:148,150  cat="Binary"
+    → TypeError: LpVariable.__init__() got an unexpected keyword argument 'cat'
+pyproject 가 "pulp>=2.9" 로 ** 상한이 없었고 ** PuLP 4.0.0 은
+requires-python >=3.12 다. 그래서 CI 의 3.12 잡만 4.0.0 을 받아 죽고,
+3.11 잡은 PuLP 3.x 라 멀쩡했다. 로컬(3.14)도 옛 PuLP 3.3.2 가 깔려 있어 통과 —
+** 로컬 통과·3.11 통과·3.12 실패라는 모양이 여기서 나왔다. **
+
+찾은 길: gh 가 없고 Actions 로그는 admin 권한이라 못 받았다. 대신
+  ① runs API 로 연속 실패 구간과 마지막 성공 커밋을 찾고
+  ② 그 경계 diff 에서 tests/ 와 대상 모듈이 ** 한 줄도 안 바뀐 것 ** 을 확인해
+     코드가 아니라 환경임을 좁히고
+  ③ PyPI 에서 requires_python 을 훑어 >=3.12 인 패키지 둘(numpy 2.5.4,
+     PuLP 4.0.0)을 추리고
+  ④ PuLP 4.0.0 을 임시 디렉터리에 받아 PYTHONPATH 로 끼워 재현했다.
+     → 1 failed, 58 passed (test_lb_simulator.py::test_capacity_forces_ilp_path)
+
+고친 것: pyproject.toml "pulp>=2.9" → ** "pulp>=2.9,<4" **
+코드를 PuLP 4 에 맞추지 ** 않은 ** 이유 — 논문 수치가 PuLP 3.x 로 낸 결과다.
+투고 직전에 ILP 솔버를 메이저 올리면 수치가 흔들릴 수 있다. PuLP 3.3.2 는
+requires-python >=3.10 범용 wheel 이라 3.11·3.12·로컬이 전부 같은 버전이 된다.
+검증: ruff 통과 · pytest 59 passed · dash import smoke 통과 (CI 3단계 전부).
+
+** 남은 위험 ** numpy 도 최신(2.5.4)이 >=3.12 라 3.11 과 3.12 가 서로 다른
+numpy 를 받는다. 지금은 안 깨지지만 같은 유형의 지뢰다. 논문 수치의 재현성을
+생각하면 언젠가 핵심 의존성 버전을 묶어 두는 게 맞다.

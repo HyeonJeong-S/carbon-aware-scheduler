@@ -14,7 +14,12 @@ dependencies = [
     "pandas>=2.2",
     "plotly>=5.24",
     "dash>=2.18",
-    "pulp>=2.9",
+    # 2026-10-12: 상한을 건다. PuLP 4.0.0 이 LpVariable(cat=...) 을 없애
+    # load_balancer/framework/simulator.py 의 ILP 가 TypeError 로 죽는다.
+    # 4.0.0 은 requires-python >=3.12 라 CI 의 3.12 잡만 그걸 받아 9/24 부터
+    # 14개 커밋 연속 실패했다(3.11 은 PuLP 3.x 라 통과). 논문 수치는 PuLP 3.x
+    # 로 낸 결과이므로 재현성을 위해서도 그 계열에 묶는다.
+    "pulp>=2.9,<4",
     "simpy>=4.0",
     "matplotlib>=3.8",
     "scikit-learn>=1.3",
