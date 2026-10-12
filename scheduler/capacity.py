@@ -309,7 +309,8 @@ def _over_cap_admissions(out, regions, cap):
 
 # ───────────────────────────── Algorithm 1 ─────────────────────────────
 def run_rolling(jobs, actual, pred24, capacity, regions,
-                n_hours=None, horizon=HORIZON, home_region=False):
+                n_hours=None, horizon=HORIZON, home_region=False,
+                hard_capacity=False):
     """슬롯 단위 온라인 용량 인지 시간 이동.
 
     jobs      : scheduler.data_loader 형식 dict 목록
@@ -317,6 +318,15 @@ def run_rolling(jobs, actual, pred24, capacity, regions,
     pred24    : {리전: 배열[발행시각][24]}        예측 (판단)
     capacity  : 유효 상한 ⌊η·cap_r⌋ (전 리전 균일 — LB 의 auto_capacity 규약)
     home_region : True 면 로드밸런서 배정을 무시하고 출발 리전을 쓴다(B3 대조군)
+    hard_capacity : True 면 용량을 하드 제약으로, 마감을 소프트로 뒤집는다.
+        기본값 False 가 본 논문의 CAST 다(마감이 하드, 용량이 소프트). True 는
+        2026-10-12 교수님 지적 1("용량 제약 스케줄러가 아니라 소프트 상한을 쓰는
+        마감 우선 정책 아니냐")에 답하기 위한 대조군이다 — 두 제약을 동시에
+        만족시키는 것이 애초에 불가능함을 보이려고, 선택을 반대로 한 판을 만든다.
+        켜지면 (가) 즉시실행 우회가 용량 검사를 받고 (나) 마감 임박 작업도
+        빈자리까지만 편입된다. 들어가지 못한 작업은 큐에 남아 다음 슬롯에 다시
+        시도하므로 용량 위반 대신 마감 위반으로 나타나며, 끝까지 자리를 못 얻은
+        작업은 unplaced 로 집계된다.
 
     반환 (results, stats)
     """
@@ -361,8 +371,11 @@ def run_rolling(jobs, actual, pred24, capacity, regions,
             # 이 경로는 용량 검사를 받지 않는다(미룰 수 없는 작업이라 막을 수 없음,
             # 정리.txt [26] 항목3) — 그래서 emit()에서 over_cap 여부만 별도로 집계한다.
             if math.floor(j["deadline"] - j["duration"]) <= math.floor(j["submit_time"]):
-                emit(j, r, j["submit_time"], False, True)
-                immediate += 1
+                if hard_capacity and led.avail(r, t) <= 0:
+                    Q[r].append(j)          # 자리가 없으면 못 보낸다 → 마감을 어긴다
+                else:
+                    emit(j, r, j["submit_time"], False, True)
+                    immediate += 1
             else:
                 Q[r].append(j)
 
@@ -411,9 +424,17 @@ def run_rolling(jobs, actual, pred24, capacity, regions,
 
             # 식 (15) : 남은 여유 오름차순 (EDF)
             P.sort(key=lambda j: (j["deadline"] - j["duration"]) - t)
-            room = max(a - len(F), 0)
-            S = F + P[:room]
-            forced += len(F)
+            if hard_capacity:
+                # 용량이 하드면 마감 임박이라도 빈자리까지만 넣는다(급한 순).
+                F.sort(key=lambda j: (j["deadline"] - j["duration"]) - t)
+                F_adm = F[:max(a, 0)]
+                room = max(a - len(F_adm), 0)
+                S = F_adm + P[:room]
+                forced += len(F_adm)
+            else:
+                room = max(a - len(F), 0)
+                S = F + P[:room]
+                forced += len(F)
 
             picked = {id(j) for j in S}
             F_ids = {id(j) for j in F}
@@ -443,8 +464,10 @@ def run_rolling(jobs, actual, pred24, capacity, regions,
     # 정확히 재현한다(2026-09-21 확인).
     over_cap_forced, over_cap_immediate, over_cap_normal = _over_cap_admissions(out, regions, capacity)
     over_cap_admissions = over_cap_forced + over_cap_immediate + over_cap_normal
+    unplaced = sum(len(v) for v in Q.values())
     stats = dict(
         n=len(out),
+        unplaced=unplaced,
         total_carbon_kg=sum(v["carbon_emitted"] for v in out.values()) / 1000.0,
         slo_violations=sum(1 for v in out.values() if not v["slo_satisfied"]),
         forced_admissions=forced,
