@@ -11,7 +11,7 @@ JOK 실측(5d, 세 편): 본문 12.35 · 초록 10.57 · 참고문헌 10.15pt.
 import re, shutil, zipfile
 import xml.etree.ElementTree as ET
 
-DOC = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/CAST_JOK_투고본.docx"
+DOC = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/paper/CAST_JOK_v2.docx"
 PARA = re.compile(r'<w:p\b[^>]*?/>|<w:p\b[^>]*?(?<!/)>.*?</w:p>', re.DOTALL)
 TBL = re.compile(r'<w:tbl>.*?</w:tbl>', re.DOTALL)
 

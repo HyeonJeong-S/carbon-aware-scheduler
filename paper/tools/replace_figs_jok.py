@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""CAST_JOK_투고본.docx 의 그림 10장을 지금 판으로 교체하고 삽입 폭을 JOK 규격에 맞춘다.
+"""CAST_JOK_v2.docx 의 그림 10장을 지금 판으로 교체하고 삽입 폭을 JOK 규격에 맞춘다.
 
 replace_figs.py 와 다른 점
 --------------------------
- · 대상이 CAST_JOK_투고본.docx 다 (CAST_A4본.docx 는 A4 판본으로 그대로 둔다).
+ · 대상이 CAST_JOK_v2.docx 다 (CAST_A4본.docx 는 A4 판본으로 그대로 둔다).
  · 폭을 **지정한다**. 옛 도구는 폭을 유지하고 높이만 다시 냈는데, 지금 docx 의
    삽입 폭이 167~215pt 로 제각각이라(옛 조판의 흔적) 그대로 두면 JOK 단 폭과
    안 맞는다. 단내 그림은 69mm(195.6pt), 전단 그림은 142.4mm(403.7pt)로 박는다.
@@ -22,7 +22,7 @@ import xml.etree.ElementTree as ET
 from PIL import Image
 
 REPO = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler/"
-DOC = REPO + "paper/CAST_JOK_투고본.docx"
+DOC = REPO + "paper/CAST_JOK_v2.docx"
 DIA = REPO + "paper/diagram/"
 
 COL_PT = 69.0 * 72 / 25.4          # 195.59 — JOK 단 폭

@@ -463,3 +463,163 @@ def insert_at(xml, head, after, segments):
                    + f'<w:r>{rpr}<w:t xml:space="preserve">{_esc(right)}</w:t></w:r>')
             return xml[:s] + frag[:r.start()] + two + frag[r.end():] + xml[e:]
     raise AssertionError(f"{head[:24]!r}: 끼울 자리를 못 찾음 (j={j})")
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# 표 만들기 — 2026-10-12 추가 (교수님 피드백 대응으로 새 표가 필요해졌다)
+#
+# 새 표를 맨땅에서 쓰면 서식이 본문과 어긋난다. JOK 본문의 표는 넷 다 같은
+# 규격이다 — 단폭 3912 dxa, 글자 6.5pt(sz 13), 머리행만 굵게·가운데·아래 테두리,
+# 자료행은 첫 칸 왼쪽 나머지 오른쪽 정렬. 그래서 **기존 표를 본으로 복제**하고
+# 글자만 갈아끼운다. 열 수는 본과 같아야 한다(4열).
+#
+# w14:paraId / w14:textId 는 문서 안에서 유일해야 하므로 복제본에서 지운다 —
+# Word 가 다음 저장 때 다시 매긴다.
+
+def _strip_ids(frag):
+    return re.sub(r'\s+w14:(?:paraId|textId)="[^"]*"', '', frag)
+
+
+def _set_cell_text(tc, text):
+    """칸 하나의 글을 바꾼다 — 첫 run 의 서식만 남기고 run 들을 하나로 합친다."""
+    runs = list(RUN.finditer(tc))
+    assert runs, "칸에 run 이 없음"
+    m = re.search(r'<w:rPr\b.*?</w:rPr>', runs[0].group(0), re.DOTALL)
+    rpr = m.group(0) if m else ""
+    new_run = f'<w:r>{rpr}<w:t xml:space="preserve">{_esc(text)}</w:t></w:r>'
+    return tc[:runs[0].start()] + new_run + tc[runs[-1].end():]
+
+
+def set_table_widths(tbl, widths):
+    """<w:tbl> 문자열의 열 폭을 바꾼다. 합이 tblW 와 같아야 한다(단폭 3912 dxa).
+
+    clone_table 은 본 표의 tblGrid 를 그대로 물려받는데, 본과 글자 길이가 다른
+    표(예: 부록의 설명형 표)는 그 폭으로는 칸마다 줄이 접힌다. 폭만 따로 고친다.
+    """
+    assert len(widths) >= 1
+    grid = "".join(f'<w:gridCol w:w="{w}"/>' for w in widths)
+    tbl = re.sub(r'<w:tblGrid>.*?</w:tblGrid>', f'<w:tblGrid>{grid}</w:tblGrid>', tbl, flags=re.DOTALL)
+    out, pos = "", 0
+    for tr in TR.finditer(tbl):
+        out += tbl[pos:tr.start()]
+        row, rpos, i = "", 0, 0
+        frag = tr.group(0)
+        for tc in TC.finditer(frag):
+            row += frag[rpos:tc.start()]
+            row += re.sub(r'<w:tcW w:w="\d+"', f'<w:tcW w:w="{widths[i % len(widths)]}"', tc.group(0), count=1)
+            rpos = tc.end(); i += 1
+        out += row + frag[rpos:]
+        pos = tr.end()
+    return out + tbl[pos:]
+
+
+def clone_table(xml, src_index, rows):
+    """기존 표(0부터 센 src_index)를 본으로 같은 서식의 새 <w:tbl> 문자열을 만든다.
+
+    rows[0] 이 머리행, 나머지가 자료행이다. 본의 첫 행을 머리 틀로, 둘째 행을
+    자료 틀로 쓴다. 자료행 수는 본과 달라도 된다(틀을 반복해 찍는다).
+    """
+    s, e = table_spans(xml)[src_index]
+    frag = xml[s:e]
+    trs = TR.findall(frag)
+    assert len(trs) >= 2, "본 표에 머리행과 자료행이 둘 다 있어야 한다"
+    pre = frag[: frag.index(trs[0])]          # <w:tbl> + tblPr + tblGrid
+    ncol = len(re.findall(r'<w:gridCol\b[^>]*/>', frag))
+    assert all(len(r) == ncol for r in rows), f"모든 행이 {ncol}칸이어야 한다"
+
+    body = []
+    for i, row in enumerate(rows):
+        tpl = _strip_ids(trs[0] if i == 0 else trs[1])
+        tcs = TC.findall(tpl)
+        assert len(tcs) == ncol, f"틀 행의 칸이 {len(tcs)}개 (열 {ncol})"
+        new_tr, pos = "", 0
+        for tc, txt in zip(tcs, row):
+            k = tpl.index(tc, pos)
+            new_tr += tpl[pos:k] + _set_cell_text(tc, txt)
+            pos = k + len(tc)
+        body.append(new_tr + tpl[pos:])
+    return pre + "".join(body) + "</w:tbl>"
+
+
+def _clone_para(xml, head, text):
+    """기존 문단을 본으로 글만 바꾼 새 <w:p> 문자열을 만든다 (문서에는 안 넣는다)."""
+    _, _, frag, _ = find_one(xml, head)
+    frag = _strip_ids(frag)
+    runs = list(RUN.finditer(frag))
+    assert runs, f"{head[:24]!r}: run 이 없음"
+    m = re.search(r'<w:rPr\b.*?</w:rPr>', runs[0].group(0), re.DOTALL)
+    rpr = m.group(0) if m else ""
+    new_run = f'<w:r>{rpr}<w:t xml:space="preserve">{_esc(text)}</w:t></w:r>'
+    return frag[: runs[0].start()] + new_run + frag[runs[-1].end():]
+
+
+def insert_table_after(xml, head, caption_ko, caption_en, rows,
+                       src_index=2, ko_tpl="표 3 다섯 방식의", en_tpl="Table 3 Total emissions",
+                       widths=None):
+    """head 문단 바로 뒤에 [국문 캡션, 영문 캡션, 표] 를 끼운다.
+
+    JOK 10항이 표 제목을 표 위에 두라고 하므로 캡션이 앞선다. 캡션 서식은
+    표 3 의 것을 본뜬다(국문은 rPr 없이 본문 크기, 영문은 sz 15 = 7.5pt).
+    """
+    ko = _clone_para(xml, ko_tpl, caption_ko)
+    en = _clone_para(xml, en_tpl, caption_en)
+    tbl = clone_table(xml, src_index, rows)
+    if widths:
+        tbl = set_table_widths(tbl, widths)
+    s, e, _, _ = find_one(xml, head)
+    return xml[:e] + ko + en + tbl + xml[e:]
+
+
+def replace_substring(xml, head, target, repl):
+    """문단 안 특정 글자를 다른 글자로 바꾼다 — run 서식은 그대로 둔다.
+
+    delete_substring 과 같은 방식으로 run 들을 가로질러 target 을 찾되, 지우기만
+    하지 않고 **target 이 처음 걸친 run 에** repl 을 써 넣는다. 표·그림 번호를
+    다시 매길 때처럼 "한 낱말만 갈아끼우는" 일에 쓴다 (문단을 다시 쓰지 않으므로
+    기울임·메모 표식이 살아남는다).
+    """
+    s, e, frag, _ = find_one(xml, head)
+    runs = list(RUN.finditer(frag))
+    assert runs, f"{head[:24]!r}: run 이 없음"
+
+    texts, spans, pos = [], [], 0
+    for r in runs:
+        t = "".join(re.findall(r'<w:t\b[^>]*>(.*?)</w:t>', r.group(0), re.DOTALL))
+        texts.append(t)
+        spans.append((pos, pos + len(t)))
+        pos += len(t)
+    whole = "".join(texts)
+    assert whole.count(target) == 1, \
+        f"{head[:24]!r}: {target!r} 가 {whole.count(target)}번 (1번이어야 함)"
+    i = whole.find(target)
+    j = i + len(target)
+
+    hit = [(k, r) for k, r in enumerate(runs) if not (spans[k][1] <= i or spans[k][0] >= j)]
+    assert hit, "걸친 run 이 없음"
+    first_k = hit[0][0]
+    new_frag = frag
+    for k, r in reversed(hit):
+        a, b = spans[k]
+        keep = texts[k][: max(0, i - a)] + (repl if k == first_k else "") + texts[k][max(0, j - a):]
+        rf = r.group(0)
+        if keep == "":
+            new_frag = new_frag[:r.start()] + new_frag[r.end():]
+            continue
+        ts = list(re.finditer(r'(<w:t\b[^>]*>)(.*?)(</w:t>)', rf, re.DOTALL))
+        assert len(ts) == 1, f"{head[:24]!r}: run 안 <w:t> 가 {len(ts)}개"
+        t = ts[0]
+        new_rf = rf[:t.start()] + f'<w:t xml:space="preserve">{_esc(keep)}</w:t>' + rf[t.end():]
+        new_frag = new_frag[:r.start()] + new_rf + new_frag[r.end():]
+    return xml[:s] + new_frag + xml[e:]
+
+
+def insert_para_after(xml, head, text, style_from):
+    """head 문단 뒤에, style_from 문단의 서식을 입은 새 문단을 끼운다.
+
+    insert_after 는 **앵커와 같은 서식** 을 쓴다. 부록처럼 "참고문헌 항목 뒤에
+    본문 서식 문단을 넣어야" 하는 자리에서는 그게 맞지 않아, 서식을 다른
+    문단에서 따로 떠 온다.
+    """
+    para = _clone_para(xml, style_from, text)
+    s, e, _, _ = find_one(xml, head)
+    return xml[:e] + para + xml[e:]

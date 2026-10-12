@@ -13,9 +13,13 @@
 -- 쓰기:
 --   osascript paper/tools/word_to_pdf.applescript <입력.docx 절대경로> <출력.pdf 절대경로>
 
+-- 2026-10-12: AppleEvent 기본 제한이 2분이라 그림 10장짜리 원고에서
+-- -1712(시간 초과)로 끊겼다. 내보내기가 실패했는데도 returncode 는 0 이라
+-- 조용히 지나갔다. with timeout 으로 10분까지 기다린다.
 on run argv
   set p to item 1 of argv
   set o to item 2 of argv
+  with timeout of 600 seconds
   tell application "Microsoft Word"
     activate
     repeat while (count of documents) > 0
@@ -38,4 +42,5 @@ on run argv
     delay 3
     close document 1 saving no
   end tell
+  end timeout
 end run

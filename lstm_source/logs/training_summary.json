@@ -1,0 +1,42 @@
+{
+  "KR": {
+    "best_epoch": 53,
+    "best_val_mae": 15.021398544311523,
+    "training_time": 321.72019720077515
+  },
+  "US-CAL-CISO": {
+    "best_epoch": 148,
+    "best_val_mae": 19.597314834594727,
+    "training_time": 701.4923989772797
+  },
+  "US-TEX-ERCO": {
+    "best_epoch": 62,
+    "best_val_mae": 38.81840133666992,
+    "training_time": 427.76493525505066
+  },
+  "US-NY-NYIS": {
+    "best_epoch": 87,
+    "best_val_mae": 12.007172584533691,
+    "training_time": 447.17835116386414
+  },
+  "FR": {
+    "best_epoch": 104,
+    "best_val_mae": 4.531612873077393,
+    "training_time": 514.6786150932312
+  },
+  "DE": {
+    "best_epoch": 90,
+    "best_val_mae": 40.506996154785156,
+    "training_time": 560.0475227832794
+  },
+  "IN": {
+    "best_epoch": 147,
+    "best_val_mae": 9.785979270935059,
+    "training_time": 577.5134418010712
+  },
+  "JP": {
+    "best_epoch": 77,
+    "best_val_mae": 23.697486877441406,
+    "training_time": 384.96975111961365
+  }
+}
