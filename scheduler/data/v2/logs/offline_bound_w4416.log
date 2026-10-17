@@ -1,0 +1,5 @@
+창 4416~4584h 작업 2,800 기준 558.1 kg
+변수 144,600 + 초과 1,552, 제약 4,352
+LP 하한: 10.9 kg (98.05%)  초과 0.00  분수변수 126  2.7s
+MILP: 10.9 kg  초과 0.00  status 0  117.9s
+저장: /Users/jongha/Desktop/GitHub/carbon-aware-scheduler/scheduler/data/v2/offline/bound_4416_7d_cap17_a1.0.json

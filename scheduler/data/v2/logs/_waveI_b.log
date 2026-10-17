@@ -1,0 +1,8 @@
+[0] rho0_joint_oracle 3095s | [rho0/joint_oracle] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 9,413.3 kg  절감 67.12%  위반 0  초과 0.0h  마감위반 0  지연 40.4/38.6ms  cap 17 ρ 0  벽시계 51.5분  → /Users/jongha/Deskt
+[0] rho0_joint_sn24 3305s | [rho0/joint_sn24] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 10,211.7 kg  절감 64.33%  위반 0  초과 0.0h  마감위반 0  지연 39.0/36.5ms  cap 17 ρ 0  벽시계 55.0분  → /Users/jongha/Deskto
+[0] rho0_decoupled 786s | [rho0/decoupled] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 14,686.4 kg  절감 48.69%  위반 0  초과 0.0h  마감위반 0  지연 23.2/20.2ms  cap 17 ρ 0  벽시계 13.0분  → /Users/jongha/Desktop
+[0] rho0_decoupled_sn24 940s | [rho0/decoupled_sn24] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 16,154.4 kg  절감 43.57%  위반 0  초과 0.0h  마감위반 0  지연 19.4/15.4ms  cap 17 ρ 0  벽시계 15.6분  → /Users/jongha/De
+[0] main_2stage_eta083 13s | [main/2stage_eta083] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 10,215.4 kg  절감 64.31%  위반 6  초과 0.5h  마감위반 0  지연 36.2/49.6ms  cap 17 ρ 3  벽시계 0.1분  → /Users/jongha/Desk
+[0] main_2stage_eta083_oracle 15s | [main/2stage_eta083_oracle] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 10,040.8 kg  절감 64.92%  위반 31  초과 1.0h  마감위반 0  지연 36.2/49.6ms  cap 17 ρ 3  벽시계 0.1분  → /Users/jon
+[0] rho0_decoupled_oracle 805s | [rho0/decoupled_oracle] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 15,292.3 kg  절감 46.58%  위반 0  초과 0.0h  마감위반 0  지연 19.8/15.9ms  cap 17 ρ 0  벽시계 13.3분  → /Users/jongha/
+ALL DONE

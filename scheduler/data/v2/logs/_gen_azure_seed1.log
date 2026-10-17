@@ -1,0 +1,71 @@
+저장: load_balancer/data/variants/jobs_azure_seed1.csv  (145,962 rows)
+
+source  : vmtable.csv.gz  sha256=e8c9a0ab0e06b4322747147b49f8b44c07cf017327a150a92b6fb95aab8de3e5
+rules   : unknown=prior  region=uniform  seed=1
+raw rows 2,695,548 | T=2591400 s (29.993 d) | left-censored 227,316 | right-censored 224,509 (both 179,241) | last-day(>=29d) 49,369 | pool 2,373,595
+tiles 13 x 29 d, 11,600/tile = 150,800 drawn, 145,962 kept (<365 d)  | subsample rate per tile 0.489%  | target 146,000 (-0.03%)
+
+tier mix (k=1..5)  count  share%   [synthetic 30/10/10/20/30]
+  k1:  44,015  30.16
+  k2:  14,705  10.07
+  k3:  14,446   9.90
+  k4:  29,201  20.01
+  k5:  43,595  29.87
+  deferrable (L_max>=1h = k1,k2): 40.23%  [synthetic 40%]
+
+vmcategory of sampled jobs: Unknown=145,174, Delay-insensitive=521, Interactive=267
+category x k:
+k                      1      2      3      4      5
+vmcategory                                          
+Delay-insensitive    391    130      0      0      0
+Interactive            0      0      0    107    160
+Unknown            43624  14575  14446  29094  43435
+
+duration quantiles [s] per tier (p5/p25/p50/p75/p90/p95/p99/max) + mean
+  k1:       150       600      1500      5400     36600     80700    517116   2590500  mean=24921
+  k2:       150       600      1500      5100     36900     84900    494988    721500  mean=19539
+  k3:       150       600      1500      4800     30300     60225    251985   1137600  mean=13119
+  k4:       150       600      1500      5100     34800     72900    320700   2589000  mean=19883
+  k5:       150       600      1500      5100     34200     71100    291618   1054500  mean=16557
+  kall:       150       600      1500      5100     34800     74100    345417   2590500  mean=19705
+  total job-hours = 798,938 h  (mean 5.47 h/job)
+
+jobs per region per day: mean / sd / min / max  [synthetic 50 exact]
+  US_West      49.39   9.04   22   75   total 18,029
+  US_Central   50.18   9.62   24   76   total 18,315
+  US_East      49.92   9.24   26   75   total 18,221
+  France       49.98   9.72   24   74   total 18,242
+  Germany      50.15  10.29   21   78   total 18,304
+  Korea        50.02   9.52   26   77   total 18,256
+  India        50.31  10.03   18   79   total 18,364
+  Japan        49.95   9.37   23   76   total 18,231
+
+arrivals by hour-of-day: local (trace clock) / UTC
+  00h   6,491   6,109
+  01h   5,984   5,863
+  02h   5,495   5,930
+  03h   5,096   6,272
+  04h   6,020   6,012
+  05h   5,731   5,972
+  06h   5,701   5,997
+  07h   5,601   6,126
+  08h   5,768   5,852
+  09h   5,588   6,095
+  10h   5,668   5,930
+  11h   5,694   6,230
+  12h   6,182   6,142
+  13h   5,492   6,260
+  14h   6,154   6,142
+  15h   6,070   6,311
+  16h   6,823   6,113
+  17h   6,350   6,001
+  18h   6,990   5,817
+  19h   6,299   6,124
+  20h   6,743   6,251
+  21h   7,011   6,006
+  22h   6,728   6,194
+  23h   6,252   6,213
+band day share: 50.07%
+
+sampled jobs per source trace day (0..28):
+  5587 4528 4099 5395 5963 5564 5317 5014 4531 4650 5822 5815 5565 5782 5678 3968 4553 5183 4676 4660 5323 5310 3396 3083 5529 5080 5582 5131 5178

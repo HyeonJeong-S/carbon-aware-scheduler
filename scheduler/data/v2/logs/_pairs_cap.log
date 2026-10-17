@@ -1,0 +1,2 @@
+[cap0.75] 과녁 44.60 ms, 구간 [0.5, 0.6] (점 4개) → scheduler.match_alpha --target 44.60 --lo 0.5000 --hi 0.6000 --prefix cap/0.75x_m --extra --cap 0.75 --max-runs 4
+[cap0.5] 과녁 38.46 ms, 구간 [0.5, 0.6] (점 4개) → scheduler.match_alpha --target 38.46 --lo 0.5000 --hi 0.6000 --prefix cap/0.50x_m --extra --cap 0.50 --max-runs 4

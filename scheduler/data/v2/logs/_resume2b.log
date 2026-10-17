@@ -1,0 +1,92 @@
+resume2 start Sat Oct 17 21:11:34 KST 2026
+[skip] alpha_0.0 (이미 있음)
+[skip] alpha_0.1 (이미 있음)
+[skip] alpha_0.2 (이미 있음)
+[skip] alpha_0.3 (이미 있음)
+[skip] alpha_0.5 (이미 있음)
+[skip] alpha_0.4 (이미 있음)
+[skip] alpha_0.8 (이미 있음)
+[skip] alpha_0.7 (이미 있음)
+[skip] alpha_0.6 (이미 있음)
+[skip] alpha_0.9 (이미 있음)
+[skip] alpha_decoupled_0.3 (이미 있음)
+[skip] alpha_decoupled_0.0 (이미 있음)
+[skip] alpha_decoupled_0.1 (이미 있음)
+[skip] alpha_decoupled_0.2 (이미 있음)
+[skip] alpha_decoupled_0.4 (이미 있음)
+[skip] alpha_decoupled_0.9 (이미 있음)
+[skip] alpha_decoupled_0.5 (이미 있음)
+[skip] alpha_decoupled_0.6 (이미 있음)
+[skip] alpha_decoupled_0.7 (이미 있음)
+[skip] alpha_decoupled_0.8 (이미 있음)
+[skip] main_decoupled_a1_oracle (이미 있음)
+[skip] main_decoupled_a1_sn24 (이미 있음)
+[skip] alpha_0.5_oracle (이미 있음)
+[skip] alpha_0.5_sn24 (이미 있음)
+ALL DONE
+[skip] herd_decoupled_lstm_daily (이미 있음)
+[skip] herd_decoupled_mix025 (이미 있음)
+[skip] herd_decoupled_noisy_oracle (이미 있음)
+[skip] herd_decoupled_mix075 (이미 있음)
+[skip] herd_decoupled_mix05 (이미 있음)
+[skip] herd_joint_lstm_daily (이미 있음)
+[skip] herd_joint_noisy_oracle (이미 있음)
+[skip] herd_joint_mix05 (이미 있음)
+[skip] herd_2stage_eta10_sn24 (이미 있음)
+[skip] herd_joint_mix025 (이미 있음)
+[skip] herd_2stage_eta10_lstm_daily (이미 있음)
+[skip] herd_joint_mix075 (이미 있음)
+[skip] herd_2stage_eta10_noisy_oracle (이미 있음)
+ALL DONE
+[skip] cap_0.50x (이미 있음)
+[skip] cap_0.75x (이미 있음)
+[skip] cap_1.50x (이미 있음)
+[skip] cap_1.00x (이미 있음)
+[skip] cap_2.00x (이미 있음)
+[skip] cap_0.50x_a1 (이미 있음)
+[skip] cap_3.00x (이미 있음)
+[skip] cap_0.75x_decoupled (이미 있음)
+[skip] cap_1.00x_decoupled (이미 있음)
+[skip] cap_2.00x_decoupled (이미 있음)
+[skip] hetero_clean_small (이미 있음)
+[skip] hetero_clean_large (이미 있음)
+[skip] hetero_own_1.25x (이미 있음)
+[skip] hetero_clean_small_ignore (이미 있음)
+[skip] hetero_clean_large_ignore (이미 있음)
+[skip] cap_0.75x_a1 (이미 있음)
+[skip] cap_2.00x_a1 (이미 있음)
+[skip] rho_0 (이미 있음)
+[skip] cap_1.50x_a1 (이미 있음)
+[skip] rho_2 (이미 있음)
+[skip] rho_4 (이미 있음)
+[skip] rho_6 (이미 있음)
+[skip] horizon_6 (이미 있음)
+[skip] cap_3.00x_a1 (이미 있음)
+[skip] cap_1.00x_a1 (이미 있음)
+[skip] lnet_100 (이미 있음)
+[skip] lnet_150 (이미 있음)
+[skip] horizon_12 (이미 있음)
+[skip] lnet_50 (이미 있음)
+[skip] lnet_150_a1 (이미 있음)
+[skip] lnet_50_a1 (이미 있음)
+[skip] lnet_100_a1 (이미 있음)
+[0] cap_1.00x_decoupled_a1 526s | [cap/1.00x_decoupled_a1] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 1,920.0 kg  절감 93.29%  위반 0  초과 0.0h  마감위반 0  지연 118.8/121.0ms  cap 13 ρ 3  벽시계 8.7분  → /Users/jongha
+[0] cap_0.75x_decoupled_a1 823s | [cap/0.75x_decoupled_a1] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 3,450.0 kg  절감 87.95%  위반 0  초과 0.0h  마감위반 0  지연 117.4/119.1ms  cap 10 ρ 3  벽시계 13.6분  → /Users/jongh
+[0] cap_0.50x_a0.4 1162s | [cap/0.50x_a0.4] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 18,592.0 kg  절감 35.05%  위반 0  초과 0.0h  마감위반 0  지연 12.2/7.8ms  cap 7 ρ 3  벽시계 19.2분  → /Users/jongha/Desktop/G
+[0] cap_0.50x_decoupled_a1 1355s | [cap/0.50x_decoupled_a1] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 7,655.7 kg  절감 73.26%  위반 0  초과 0.0h  마감위반 0  지연 117.3/119.3ms  cap 7 ρ 3  벽시계 22.5분  → /Users/jongha
+[0] cap_0.50x_decoupled 1421s | [cap/0.50x_decoupled] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 14,691.8 kg  절감 48.68%  위반 0  초과 0.0h  마감위반 0  지연 28.7/24.7ms  cap 7 ρ 3  벽시계 23.6분  → /Users/jongha/Des
+[0] cap_0.75x_a0.4 630s | [cap/0.75x_a0.4] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 17,969.6 kg  절감 37.23%  위반 0  초과 0.0h  마감위반 0  지연 11.9/8.2ms  cap 10 ρ 3  벽시계 10.4분  → /Users/jongha/Desktop/
+[0] cap_0.75x_a0.5 994s | [cap/0.75x_a0.5] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 11,211.9 kg  절감 60.83%  위반 0  초과 0.0h  마감위반 0  지연 33.3/30.5ms  cap 10 ρ 3  벽시계 16.4분  → /Users/jongha/Desktop
+[0] cap_0.50x_a0.5 2573s | [cap/0.50x_a0.5] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 12,874.8 kg  절감 55.02%  위반 0  초과 0.0h  마감위반 0  지연 31.5/26.8ms  cap 7 ρ 3  벽시계 42.8분  → /Users/jongha/Desktop/
+[0] cap_0.75x_a0.6 1559s | [cap/0.75x_a0.6] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 7,184.5 kg  절감 74.90%  위반 0  초과 0.0h  마감위반 0  지연 55.3/51.6ms  cap 10 ρ 3  벽시계 25.9분  → /Users/jongha/Desktop/
+[0] cap_0.50x_a0.6 4315s | HighsMipSolverData::transformNewIntegerFeasibleSolution tmpSolver.run();
+[0] cap_0.75x_a0.7 3074s | [cap/0.75x_a0.7] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 4,014.5 kg  절감 85.98%  위반 0  초과 0.0h  마감위반 0  지연 81.8/77.0ms  cap 10 ρ 3  벽시계 51.1분  → /Users/jongha/Desktop/
+[0] cap_0.75x_rho0 2540s | [cap/0.75x_rho0] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 9,488.4 kg  절감 66.85%  위반 0  초과 0.0h  마감위반 0  지연 45.2/41.1ms  cap 10 ρ 0  벽시계 42.2분  → /Users/jongha/Desktop/
+[0] cap_0.50x_rho0 3694s | [cap/0.50x_rho0] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 11,937.5 kg  절감 58.30%  위반 0  초과 0.0h  마감위반 0  지연 38.8/31.4ms  cap 7 ρ 0  벽시계 61.5분  → /Users/jongha/Desktop/
+[0] cap_0.50x_a0.7 5235s | [cap/0.50x_a0.7] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 8,212.0 kg  절감 71.31%  위반 0  초과 0.0h  마감위반 0  지연 72.6/57.4ms  cap 7 ρ 3  벽시계 87.2분  → /Users/jongha/Desktop/G
+ALL DONE
+[0] azure_decoupled 1163s | [azure/decoupled] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 117,398.2 kg  절감 45.02%  위반 0  초과 0.0h  마감위반 0  지연 34.8/36.9ms  cap 43 ρ 13  벽시계 19.3분  → /Users/jongha/Des
+[0] azure_decoupled_oracle 1278s | [azure/decoupled_oracle] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 119,613.4 kg  절감 43.98%  위반 0  초과 0.0h  마감위반 0  지연 33.0/35.2ms  cap 43 ρ 13  벽시계 21.2분  → /Users/jon
+[0] azure_time_only 567s | [azure/time_only] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 210,244.0 kg  절감 1.53%  위반 0  초과 0.0h  마감위반 0  지연 0.0/0.0ms  cap 43 ρ 13  벽시계 9.3분  → /Users/jongha/Desktop
+[0] azure_spatial_only 327s | [azure/spatial_only] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 115,914.8 kg  절감 45.71%  위반 0  초과 0.0h  마감위반 0  지연 46.3/45.8ms  cap 43 ρ 13  벽시계 5.3분  → /Users/jongha/D
+[0] azure_joint_a1 1024s | [azure/joint_a1] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 76,678.9 kg  절감 64.09%  위반 0  초과 0.0h  마감위반 0  지연 117.6/115.4ms  cap 43 ρ 13  벽시계 17.0분  → /Users/jongha/Des

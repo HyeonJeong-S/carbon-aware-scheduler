@@ -1,0 +1,72 @@
+resume2 start Sat Oct 17 09:23:44 KST 2026
+[skip] alpha_0.0 (이미 있음)
+[skip] alpha_0.1 (이미 있음)
+[skip] alpha_0.2 (이미 있음)
+[skip] alpha_0.3 (이미 있음)
+[skip] alpha_0.4 (이미 있음)
+[skip] alpha_0.6 (이미 있음)
+[skip] alpha_0.8 (이미 있음)
+[skip] alpha_0.5 (이미 있음)
+[skip] alpha_decoupled_0.0 (이미 있음)
+[skip] alpha_decoupled_0.1 (이미 있음)
+[skip] alpha_decoupled_0.2 (이미 있음)
+[skip] alpha_decoupled_0.3 (이미 있음)
+[skip] alpha_decoupled_0.4 (이미 있음)
+[skip] alpha_decoupled_0.5 (이미 있음)
+[skip] alpha_0.7 (이미 있음)
+[skip] alpha_decoupled_0.7 (이미 있음)
+[skip] alpha_decoupled_0.8 (이미 있음)
+[skip] alpha_decoupled_0.9 (이미 있음)
+[skip] main_decoupled_a1_oracle (이미 있음)
+[skip] main_decoupled_a1_sn24 (이미 있음)
+[skip] alpha_0.5_oracle (이미 있음)
+[skip] alpha_0.5_sn24 (이미 있음)
+[skip] alpha_decoupled_0.6 (이미 있음)
+[skip] alpha_0.9 (이미 있음)
+ALL DONE
+[skip] herd_decoupled_lstm_daily (이미 있음)
+[skip] herd_decoupled_mix05 (이미 있음)
+[skip] herd_decoupled_noisy_oracle (이미 있음)
+[skip] herd_joint_lstm_daily (이미 있음)
+[skip] herd_decoupled_mix075 (이미 있음)
+[skip] herd_joint_mix025 (이미 있음)
+[skip] herd_2stage_eta10_lstm_daily (이미 있음)
+[skip] herd_decoupled_mix025 (이미 있음)
+[skip] herd_2stage_eta10_sn24 (이미 있음)
+[skip] herd_joint_mix075 (이미 있음)
+[skip] herd_2stage_eta10_noisy_oracle (이미 있음)
+[skip] herd_joint_noisy_oracle (이미 있음)
+[skip] herd_joint_mix05 (이미 있음)
+ALL DONE
+[skip] cap_0.50x (이미 있음)
+[skip] cap_1.00x (이미 있음)
+[skip] cap_1.50x (이미 있음)
+[skip] cap_0.75x (이미 있음)
+[skip] cap_2.00x (이미 있음)
+[skip] cap_1.50x_a1 (이미 있음)
+[skip] cap_1.00x_a1 (이미 있음)
+[skip] cap_3.00x_a1 (이미 있음)
+[skip] cap_2.00x_a1 (이미 있음)
+[skip] cap_3.00x (이미 있음)
+[skip] cap_0.75x_decoupled (이미 있음)
+[skip] cap_2.00x_decoupled (이미 있음)
+[skip] cap_1.00x_decoupled (이미 있음)
+[0] hetero_clean_small_ignore 2407s | [hetero/clean_small_ignore] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 7,616.1 kg  절감 73.39%  위반 49223  초과 2981.2h  마감위반 0  지연 47.8/49.3ms  cap {'US-CAL-CISO': 10, 'US-T
+[0] hetero_clean_large 3038s | [hetero/clean_large] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 7,714.9 kg  절감 73.05%  위반 0  초과 0.0h  마감위반 0  지연 48.1/49.0ms  cap {'US-CAL-CISO': 21, 'US-TEX-ERCO': 10, 
+[0] hetero_own_1.25x 3140s | [hetero/own_1.25x] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 8,576.5 kg  절감 70.04%  위반 0  초과 0.0h  마감위반 0  지연 46.5/45.2ms  cap {'US-CAL-CISO': 14, 'US-TEX-ERCO': 13, 'U
+[0] hetero_clean_small 4017s | [hetero/clean_small] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 10,376.5 kg  절감 63.75%  위반 0  초과 0.0h  마감위반 0  지연 41.9/37.2ms  cap {'US-CAL-CISO': 10, 'US-TEX-ERCO': 15,
+[0] hetero_clean_large_ignore 1613s | [hetero/clean_large_ignore] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 7,616.1 kg  절감 73.39%  위반 21497  초과 917.8h  마감위반 0  지연 47.8/49.3ms  cap {'US-CAL-CISO': 21, 'US-TE
+[0] rho_0 2018s | [rho/0] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 7,998.5 kg  절감 72.06%  위반 0  초과 0.0h  마감위반 0  지연 47.9/47.5ms  cap 17 ρ 0  벽시계 33.5분  → /Users/jongha/Desktop/GitHub/ca
+[0] cap_0.75x_a1 5160s | [cap/0.75x_a1] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 2,944.5 kg  절감 89.71%  위반 0  초과 0.0h  마감위반 0  지연 115.6/119.8ms  cap 10 ρ 3  벽시계 70.5분  → /Users/jongha/Desktop/
+[0] rho_2 2027s | [rho/2] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 7,969.2 kg  절감 72.16%  위반 0  초과 0.0h  마감위반 0  지연 48.0/47.8ms  cap 17 ρ 2  벽시계 33.7분  → /Users/jongha/Desktop/GitHub/ca
+[0] horizon_6 925s | [horizon/6] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 8,120.7 kg  절감 71.63%  위반 0  초과 0.0h  마감위반 0  지연 47.4/50.0ms  cap 17 ρ 3  벽시계 15.3분  → /Users/jongha/Desktop/GitHu
+[0] cap_0.50x_a1 6116s | [cap/0.50x_a1] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 6,784.5 kg  절감 76.30%  위반 0  초과 0.0h  마감위반 0  지연 115.3/117.9ms  cap 7 ρ 3  벽시계 86.4분  → /Users/jongha/Desktop/G
+[0] rho_4 2538s | [rho/4] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 8,016.4 kg  절감 72.00%  위반 0  초과 0.0h  마감위반 0  지연 47.9/47.7ms  cap 17 ρ 4  벽시계 42.1분  → /Users/jongha/Desktop/GitHub/ca
+[0] rho_6 3246s | [rho/6] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 8,149.8 kg  절감 71.53%  위반 0  초과 0.0h  마감위반 0  지연 47.7/47.3ms  cap 17 ρ 6  벽시계 53.9분  → /Users/jongha/Desktop/GitHub/ca
+[0] lnet_150_a1 4715s | [lnet/150_a1] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 2,905.3 kg  절감 89.85%  위반 0  초과 0.0h  마감위반 0  지연 92.0/93.2ms  cap 17 ρ 3  벽시계 13.0분  → /Users/jongha/Desktop/Git
+[0] lnet_100_a1 4155s | [lnet/100_a1] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 15,219.9 kg  절감 46.83%  위반 0  초과 0.0h  마감위반 0  지연 21.9/21.4ms  cap 17 ρ 3  벽시계 3.7분  → /Users/jongha/Desktop/Git
+[0] lnet_50_a1 153s | [lnet/50_a1] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 17,721.2 kg  절감 38.09%  위반 0  초과 0.0h  마감위반 0  지연 11.7/11.4ms  cap 17 ρ 3  벽시계 2.4분  → /Users/jongha/Desktop/GitH
+[0] horizon_12 6322s | [horizon/12] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 8,290.0 kg  절감 71.04%  위반 0  초과 0.0h  마감위반 0  지연 46.7/47.0ms  cap 17 ρ 3  벽시계 39.9분  → /Users/jongha/Desktop/GitH
+[0] lnet_50 5487s | [lnet/50] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 20,493.9 kg  절감 28.41%  위반 0  초과 0.0h  마감위반 0  지연 3.0/2.3ms  cap 17 ρ 3  벽시계 25.9분  → /Users/jongha/Desktop/GitHub/c
+[0] lnet_150 6521s | [lnet/150] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 9,627.1 kg  절감 66.37%  위반 0  초과 0.0h  마감위반 0  지연 40.3/38.7ms  cap 17 ρ 3  벽시계 43.2분  → /Users/jongha/Desktop/GitHub
+[0] lnet_100 5777s | [lnet/100] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 19,183.6 kg  절감 32.98%  위반 0  초과 0.0h  마감위반 0  지연 5.7/5.3ms  cap 17 ρ 3  벽시계 30.8분  → /Users/jongha/Desktop/GitHub/

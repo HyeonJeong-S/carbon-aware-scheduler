@@ -1,0 +1,7 @@
+[sn24] 과녁 39.18 ms, 구간 [0.5, 0.7] (점 1개) → scheduler.match_alpha --target 39.18 --lo 0.5000 --hi 0.7000 --prefix alpha/sn24_m --extra --forecast sn24 --max-runs 4
+[oracle] 과녁 40.70 ms, 구간 [0.5, 0.7] (점 1개) → scheduler.match_alpha --target 40.70 --lo 0.5000 --hi 0.7000 --prefix alpha/oracle_m --extra --forecast oracle --max-runs 4
+[oracle] 끝 → /Users/jongha/Desktop/GitHub/carbon-aware-scheduler/scheduler/data/v2/logs/pair_alpha_oracle_m.log
+BEST α=0.5375 lat 39.40 (target 40.7) save 69.40% kg 8,759.4 viol 0
+[sn24] 끝 → /Users/jongha/Desktop/GitHub/carbon-aware-scheduler/scheduler/data/v2/logs/pair_alpha_sn24_m.log
+BEST α=0.5375 lat 39.65 (target 39.18) save 67.95% kg 9,173.6 viol 0
+PAIRS DONE

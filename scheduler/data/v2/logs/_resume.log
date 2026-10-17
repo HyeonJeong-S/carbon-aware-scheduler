@@ -1,0 +1,27 @@
+resume start Fri Oct 16 21:10:31 KST 2026
+[skip] main_joint (이미 있음)
+[skip] main_decoupled (이미 있음)
+[skip] main_decoupled_oracle (이미 있음)
+[skip] main_joint_a1 (이미 있음)
+[skip] main_decoupled_sn24 (이미 있음)
+[0] main_joint_a1_sn24 5947s | [main/joint_a1_sn24] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 1,261.4 kg  절감 95.59%  위반 0  초과 0.0h  마감위반 0  지연 120.0/121.3ms  cap 17 ρ 3  벽시계 28.5분  → /Users/jongha/De
+[0] main_joint_a1_oracle 5968s | [main/joint_a1_oracle] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 1,182.5 kg  절감 95.87%  위반 0  초과 0.0h  마감위반 0  지연 119.9/121.3ms  cap 17 ρ 3  벽시계 28.8분  → /Users/jongha/
+[0] main_decoupled_a1 246s | [main/decoupled_a1] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 1,335.1 kg  절감 95.34%  위반 0  초과 0.0h  마감위반 0  지연 120.0/121.4ms  cap 17 ρ 3  벽시계 4.0분  → /Users/jongha/Desk
+[0] main_spatial_only 214s | [main/spatial_only] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 10,999.8 kg  절감 61.57%  위반 0  초과 0.0h  마감위반 0  지연 40.4/47.3ms  cap 17 ρ 3  벽시계 3.5분  → /Users/jongha/Deskt
+[0] main_time_only 465s | [main/time_only] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 23,248.5 kg  절감 18.78%  위반 0  초과 0.0h  마감위반 0  지연 0.0/0.0ms  cap 17 ρ 3  벽시계 7.7분  → /Users/jongha/Desktop/Gi
+[0] main_spatial_only_a1 33s | [main/spatial_only_a1] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 1,729.7 kg  절감 93.96%  위반 0  초과 0.0h  마감위반 0  지연 120.1/121.3ms  cap 17 ρ 3  벽시계 0.5분  → /Users/jongha/D
+[0] main_ignore_a1 225s | [main/ignore_a1] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 1,154.5 kg  절감 95.97%  위반 46354  초과 1638.0h  마감위반 0  지연 120.4/121.3ms  cap 17 ρ 3  벽시계 3.6분  → /Users/jongha/
+[0] main_joint_oracle 7002s | [main/joint_oracle] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 9,387.8 kg  절감 67.20%  위반 0  초과 0.0h  마감위반 0  지연 40.7/38.8ms  cap 17 ρ 3  벽시계 46.0분  → /Users/jongha/Deskt
+[0] main_joint_sn24 7305s | [main/joint_sn24] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 10,179.5 kg  절감 64.44%  위반 0  초과 0.0h  마감위반 0  지연 39.2/36.7ms  cap 17 ρ 3  벽시계 51.1분  → /Users/jongha/Deskto
+[0] main_ignore_decoupled 744s | [main/ignore_decoupled] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 14,764.9 kg  절감 48.42%  위반 13845  초과 615.2h  마감위반 0  지연 22.9/20.0ms  cap 17 ρ 3  벽시계 12.3분  → /Users/j
+[0] main_2stage_eta08 15s | [main/2stage_eta08] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 10,368.4 kg  절감 63.78%  위반 6  초과 0.3h  마감위반 0  지연 36.2/49.6ms  cap 17 ρ 3  벽시계 0.1분  → /Users/jongha/Deskt
+[0] main_2stage_eta08_oracle 16s | [main/2stage_eta08_oracle] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 10,195.2 kg  절감 64.38%  위반 19  초과 0.8h  마감위반 0  지연 36.2/49.6ms  cap 17 ρ 3  벽시계 0.2분  → /Users/jong
+[0] main_2stage_eta10 14s | [main/2stage_eta10] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 9,945.2 kg  절감 65.26%  위반 18  초과 1.4h  마감위반 0  지연 36.2/49.6ms  cap 17 ρ 3  벽시계 0.1분  → /Users/jongha/Deskt
+[0] main_2stage_eta10_oracle 15s | [main/2stage_eta10_oracle] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 9,727.0 kg  절감 66.02%  위반 152  초과 9.2h  마감위반 0  지연 36.2/49.6ms  cap 17 ρ 3  벽시계 0.2분  → /Users/jong
+[0] main_ignore 1610s | [main/ignore] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 7,616.1 kg  절감 73.39%  위반 24993  초과 1103.9h  마감위반 0  지연 47.8/49.3ms  cap 17 ρ 3  벽시계 26.7분  → /Users/jongha/Desk
+[0] main_ignore_decoupled_oracle 759s | [main/ignore_decoupled_oracle] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 15,335.0 kg  절감 46.43%  위반 17326  초과 749.1h  마감위반 0  지연 19.6/15.7ms  cap 17 ρ 3  벽시계 12.6분  → /
+[0] main_ignore_oracle 1948s | [main/ignore_oracle] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 8,801.0 kg  절감 69.25%  위반 33964  초과 1382.9h  마감위반 0  지연 41.5/41.5ms  cap 17 ρ 3  벽시계 32.4분  → /Users/jong
+[0] main_joint_cap13_rho0 2436s | [main/joint_cap13_rho0] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 8,558.8 kg  절감 70.10%  위반 0  초과 0.0h  마감위반 0  지연 47.0/45.1ms  cap 13 ρ 0  벽시계 40.5분  → /Users/jongha/D
+[0] main_greedy 10254s | [main/greedy] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 8,278.0 kg  절감 71.08%  위반 0  초과 0.0h  마감위반 0  지연 47.6/46.7ms  cap 17 ρ 3  벽시계 100.3분  → /Users/jongha/Desktop/Gi
+[0] main_greedy_oracle 12070s | [main/greedy_oracle] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 9,938.4 kg  절감 65.28%  위반 0  초과 0.0h  마감위반 0  지연 40.2/37.1ms  cap 17 ρ 3  벽시계 130.5분  → /Users/jongha/Des
+ALL DONE

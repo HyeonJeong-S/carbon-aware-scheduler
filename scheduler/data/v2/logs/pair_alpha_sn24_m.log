@@ -1,0 +1,6 @@
+[1] α=0.6000  mean 53.36 ms (dw 51.74)  save 76.49%  kg 6,729.3  viol 0
+[2] α=0.5500  mean 42.30 ms (dw 41.73)  save 70.02%  kg 8,581.2  viol 0
+[3] α=0.5250  mean 37.13 ms (dw 35.98)  save 65.77%  kg 9,798.7  viol 0
+[4] α=0.5375  mean 39.65 ms (dw 38.87)  save 67.95%  kg 9,173.6  viol 0
+MATCHED
+BEST α=0.5375 lat 39.65 (target 39.18) save 67.95% kg 9,173.6 viol 0
