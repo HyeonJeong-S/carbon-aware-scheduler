@@ -1,0 +1,116 @@
+{
+ "name": "baseline",
+ "at_cap": {
+  "n": 143200,
+  "n_all": 146000,
+  "total_carbon_kg": 28625.461808413354,
+  "slo_violations": 0,
+  "forced_admissions": 0,
+  "immediate": 0,
+  "capacity_violations": 0,
+  "over_cap_forced": 0,
+  "over_cap_immediate": 0,
+  "over_cap_normal": 0,
+  "scored_cap": {
+   "US-CAL-CISO": 17,
+   "US-TEX-ERCO": 17,
+   "US-NY-NYIS": 17,
+   "FR": 17,
+   "DE": 17,
+   "KR": 17,
+   "IN": 17,
+   "JP": 17
+  },
+  "peak_by_region": {
+   "US-CAL-CISO": 11,
+   "US-TEX-ERCO": 10,
+   "US-NY-NYIS": 10,
+   "FR": 10,
+   "DE": 11,
+   "KR": 12,
+   "IN": 13,
+   "JP": 12
+  },
+  "hours_over_by_region": {
+   "US-CAL-CISO": 0.0,
+   "US-TEX-ERCO": 0.0,
+   "US-NY-NYIS": 0.0,
+   "FR": 0.0,
+   "DE": 0.0,
+   "KR": 0.0,
+   "IN": 0.0,
+   "JP": 0.0
+  },
+  "avg_delay_h": 0.0,
+  "p95_delay_h": 0.0,
+  "avg_latency_ms": 0.0,
+  "p95_latency_ms": 0.0,
+  "dw_latency_ms": 0.0,
+  "home_share": 1.0,
+  "by_k": {
+   "1": {
+    "n": 42974,
+    "carbon_kg": 25300.06552741399,
+    "avg_delay_h": 0.0,
+    "p95_delay_h": 0.0,
+    "avg_latency_ms": 0.0,
+    "forced": 0,
+    "over_cap": 0
+   },
+   "2": {
+    "n": 14200,
+    "carbon_kg": 2975.0891542995814,
+    "avg_delay_h": 0.0,
+    "p95_delay_h": 0.0,
+    "avg_latency_ms": 0.0,
+    "forced": 0,
+    "over_cap": 0
+   },
+   "3": {
+    "n": 14455,
+    "carbon_kg": 252.4301208699188,
+    "avg_delay_h": 0.0,
+    "p95_delay_h": 0.0,
+    "avg_latency_ms": 0.0,
+    "forced": 0,
+    "over_cap": 0
+   },
+   "4": {
+    "n": 28656,
+    "carbon_kg": 79.46757558333965,
+    "avg_delay_h": 0.0,
+    "p95_delay_h": 0.0,
+    "avg_latency_ms": 0.0,
+    "forced": 0,
+    "over_cap": 0
+   },
+   "5": {
+    "n": 42915,
+    "carbon_kg": 18.4094302465759,
+    "avg_delay_h": 0.0,
+    "p95_delay_h": 0.0,
+    "avg_latency_ms": 0.0,
+    "forced": 0,
+    "over_cap": 0
+   }
+  },
+  "required_capacity": 13,
+  "p999_by_region": {
+   "US-CAL-CISO": 8,
+   "US-TEX-ERCO": 8,
+   "US-NY-NYIS": 7,
+   "FR": 8,
+   "DE": 8,
+   "KR": 8,
+   "IN": 8,
+   "JP": 8
+  },
+  "p999": 8,
+  "min_cap_0.1pct_hours_over": 8,
+  "label": "baseline",
+  "violations_at_cap12": 1,
+  "wall_s": 3.8975368329993216,
+  "baseline_kg": 28625.461808413354,
+  "savings_pct": 0.0
+ }
+}

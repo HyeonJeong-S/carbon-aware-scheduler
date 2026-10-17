@@ -1,0 +1,116 @@
+{
+ "name": "suk_st",
+ "at_cap": {
+  "n": 143200,
+  "n_all": 146000,
+  "total_carbon_kg": 965.6264095902814,
+  "slo_violations": 0,
+  "forced_admissions": 0,
+  "immediate": 0,
+  "capacity_violations": 61539,
+  "over_cap_forced": 0,
+  "over_cap_immediate": 0,
+  "over_cap_normal": 61539,
+  "scored_cap": {
+   "US-CAL-CISO": 17,
+   "US-TEX-ERCO": 17,
+   "US-NY-NYIS": 17,
+   "FR": 17,
+   "DE": 17,
+   "KR": 17,
+   "IN": 17,
+   "JP": 17
+  },
+  "peak_by_region": {
+   "US-CAL-CISO": 10,
+   "US-TEX-ERCO": 0,
+   "US-NY-NYIS": 0,
+   "FR": 129,
+   "DE": 0,
+   "KR": 0,
+   "IN": 0,
+   "JP": 0
+  },
+  "hours_over_by_region": {
+   "US-CAL-CISO": 0.0,
+   "US-TEX-ERCO": 0.0,
+   "US-NY-NYIS": 0.0,
+   "FR": 1834.7159999999874,
+   "DE": 0.0,
+   "KR": 0.0,
+   "IN": 0.0,
+   "JP": 0.0
+  },
+  "avg_delay_h": 2.1759856381905642,
+  "p95_delay_h": 13.45605000000003,
+  "avg_latency_ms": 120.36700418994414,
+  "p95_latency_ms": 238.0,
+  "dw_latency_ms": 121.3392011845663,
+  "home_share": 0.12548882681564247,
+  "by_k": {
+   "1": {
+    "n": 42974,
+    "carbon_kg": 830.9048044845015,
+    "avg_delay_h": 6.7935250726537495,
+    "p95_delay_h": 17.826429166667364,
+    "avg_latency_ms": 120.86145110997347,
+    "forced": 0,
+    "over_cap": 35473
+   },
+   "2": {
+    "n": 14200,
+    "carbon_kg": 116.22156217889429,
+    "avg_delay_h": 1.3829756377151774,
+    "p95_delay_h": 5.2367180555555475,
+    "avg_latency_ms": 120.33640845070423,
+    "forced": 0,
+    "over_cap": 7037
+   },
+   "3": {
+    "n": 14455,
+    "carbon_kg": 13.35355606959878,
+    "avg_delay_h": 0.0012175736961448271,
+    "p95_delay_h": 0.0,
+    "avg_latency_ms": 120.33607748184019,
+    "forced": 0,
+    "over_cap": 3287
+   },
+   "4": {
+    "n": 28656,
+    "carbon_kg": 4.1678518352213265,
+    "avg_delay_h": 1.1848400955317292e-05,
+    "p95_delay_h": 0.0,
+    "avg_latency_ms": 120.19629396984925,
+    "forced": 0,
+    "over_cap": 6399
+   },
+   "5": {
+    "n": 42915,
+    "carbon_kg": 0.9786350220867682,
+    "avg_delay_h": 7.702564502544288e-08,
+    "p95_delay_h": 0.0,
+    "avg_latency_ms": 120.00640801584528,
+    "forced": 0,
+    "over_cap": 9343
+   }
+  },
+  "required_capacity": 129,
+  "p999_by_region": {
+   "US-CAL-CISO": 2,
+   "US-TEX-ERCO": 0,
+   "US-NY-NYIS": 0,
+   "FR": 107,
+   "DE": 0,
+   "KR": 0,
+   "IN": 0,
+   "JP": 0
+  },
+  "p999": 107,
+  "min_cap_0.1pct_hours_over": 107,
+  "label": "suk_st",
+  "violations_at_cap12": 72551,
+  "wall_s": 24.69181275000301,
+  "baseline_kg": 28625.461808413354,
+  "savings_pct": 96.62668705206191
+ }
+}

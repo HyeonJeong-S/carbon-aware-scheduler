@@ -1,0 +1,14 @@
+{
+ "start_h": 5544,
+ "days": 1,
+ "cap": 17,
+ "alpha": 1.0,
+ "n_jobs": 400,
+ "baseline_kg": 92.87940369086719,
+ "lp_kg": 1.6940541413199042,
+ "lp_savings_pct": 98.1760712558424,
+ "lp_overflow": 0.0,
+ "lp_fractional_vars": 10,
+ "lp_wall_s": 0.09737779100396438,
+ "n_vars": 20304
+}

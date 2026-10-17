@@ -1,0 +1,19 @@
+{
+ "start_h": 4416,
+ "days": 7,
+ "cap": 17,
+ "alpha": 1.0,
+ "n_jobs": 2800,
+ "baseline_kg": 558.1240710845522,
+ "lp_kg": 10.880791090157443,
+ "lp_savings_pct": 98.05047091607896,
+ "lp_overflow": 0.0,
+ "lp_fractional_vars": 126,
+ "lp_wall_s": 2.7254932499999995,
+ "n_vars": 144600,
+ "milp_kg": 10.880878814769734,
+ "milp_overflow": 0.0,
+ "milp_status": 0,
+ "milp_gap": 1.7854392061900162e-06,
+ "milp_wall_s": 117.87410695799917
+}
