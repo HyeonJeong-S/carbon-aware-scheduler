@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """v2 실행 결과(stats.json) 를 한 줄씩 표로 뽑는다 — 브리프에 손 전사하지 않기 위한 도구.
 
 사용:
@@ -40,7 +39,6 @@ HDR = ("name", "sav%", "kg", "viol", "over_h", "forced", "lat_ms", "dw_ms", "del
 
 
 def row(name, d):
-    h = d.get("herding") or {}
     return (
         name,
         f"{d['savings_pct']:.2f}",

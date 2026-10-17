@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """v2 선행 정책 재현 — t=0 부터 전 작업을 돌리고 day 8+ 제출 작업만 채점. 물리 상한(기본 17)으로 센다.
 
 v1 표 4 와 다른 점(정리.txt [80], 2026-10-16 감사):
@@ -15,16 +14,15 @@ import argparse
 import csv
 import gzip
 import json
-import math
 import os
 import time
-
-import numpy as np
 
 from interface import carbon_2025
 from interface.regions import REGIONS
 from load_balancer.framework.config import JOBS_CSV, load_latency_matrix
-from . import capacity, data_loader, joint, prior_harness as H
+
+from . import capacity, data_loader, joint
+from . import prior_harness as H
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 OUT_DIR = os.path.join(_HERE, "data", "v2", "priors")
@@ -109,8 +107,8 @@ def main(argv=None):
     W = capacity._Windows(actual, pred24)
     latency = load_latency_matrix()
     lat_d = joint.latency_dict(REGIONS)
-    cap_d = {r: args.cap for r in REGIONS}
-    cap12 = {r: 12 for r in REGIONS}
+    cap_d = dict.fromkeys(REGIONS, args.cap)
+    cap12 = dict.fromkeys(REGIONS, 12)
     t_hi = len(next(iter(actual.values())))
     print(f"시뮬 {len(jobs):,}건, 채점 day {args.score_from // 24}+, 상한 {args.cap}", flush=True)
 

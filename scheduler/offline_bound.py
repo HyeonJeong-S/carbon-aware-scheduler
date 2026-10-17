@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """M3 — 1주 창의 오프라인 최적해(하한). 완전예지·물리 상한·초과 변수 포함으로 식 (7)~(10)을
 그 주의 모든 작업에 대해 **한 번에** 푼다. 후보 시작 슬롯은 각 작업의 전체 창 [s_j, D_j − d_j]
 (지평 24h 제한 없음). LP 완화가 곧 하한이고, 가능하면 MILP 로 정수해도 구한다.
@@ -15,12 +14,13 @@ import os
 import time
 
 import numpy as np
-from scipy.optimize import linprog, milp, LinearConstraint, Bounds
+from scipy.optimize import Bounds, LinearConstraint, linprog, milp
 from scipy.sparse import coo_matrix
 
 from interface import carbon_2025
 from interface.regions import REGIONS
 from load_balancer.framework.config import JOBS_CSV
+
 from . import capacity, data_loader, joint
 
 _HERE = os.path.dirname(os.path.abspath(__file__))

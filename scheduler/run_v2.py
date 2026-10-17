@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """v2 실험 러너 — 한 실행 = 한 프로세스. 결과: scheduler/data/v2/<name>/{jobs.csv.gz, stats.json, alpha.csv}
 
     ./.venv/bin/python -m scheduler.run_v2 --name main/knee --engine joint --alpha knee
@@ -21,11 +20,10 @@ import math
 import os
 import time
 
-import numpy as np
-
 from interface import carbon_2025
 from interface.regions import REGIONS
 from load_balancer.framework.config import JOBS_CSV
+
 from . import capacity, data_loader, forecasters, herding, joint, reproduce
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -44,7 +42,7 @@ def baseline_out(jobs):
 def nondeferrable_peak(jobs):
     nd = {j["id"]: dict(region=j["region"], scheduled_start=j["submit_time"], duration=j["duration"])
           for j in jobs if math.floor(j["deadline"] - j["duration"]) <= math.floor(j["submit_time"])}
-    return joint.peak_ends_first(nd, REGIONS) if nd else {r: 0 for r in REGIONS}
+    return joint.peak_ends_first(nd, REGIONS) if nd else dict.fromkeys(REGIONS, 0)
 
 
 def dump(out, stats, name, extra):

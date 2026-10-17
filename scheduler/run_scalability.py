@@ -30,7 +30,8 @@ import pandas as pd
 from load_balancer.framework import simulator as sim
 from load_balancer.framework.config import JOBS_CSV, load_latency_matrix
 from load_balancer.framework.simulator import CarbonSeries, SimConfig, run_sim
-from scheduler import capacity, reproduce as R
+from scheduler import capacity
+from scheduler import reproduce as R
 
 OUT_DIR = os.path.join(os.path.dirname(__file__), "data", "scalability")
 FACTORS = [("0.5x", 0.5), ("1x", 1.0), ("2x", 2.0)]
@@ -120,8 +121,8 @@ def main():
 
         rows.append(dict(
             label=label, factor=factor, window_days=WINDOW_D, warmup_days=WARMUP_D,
-            n_jobs_window=int(len(sj)), jobs_per_slot=len(sj)/(WINDOW_D*24),
-            n_slots=int(len(ms)), n_slots_stat=int(len(keep)),
+            n_jobs_window=len(sj), jobs_per_slot=len(sj)/(WINDOW_D*24),
+            n_slots=len(ms), n_slots_stat=len(keep),
             slot_mean_ms=float(keep.mean()), slot_median_ms=float(np.median(keep)),
             slot_p95_ms=float(np.percentile(keep, 95)), slot_max_ms=float(keep.max()),
             batch_mean=float(np.mean(sizes)),

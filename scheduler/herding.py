@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """쏠림(herding) 지표 — 작업별 결과(out dict 또는 DataFrame)와 실측 탄소에서 계산.
 
 주 지표   dip_occ_mean / dip_occ_p90 : 리전-일마다 실측 탄소가 가장 낮은 1시간의 최대 동시 실행
@@ -44,7 +43,7 @@ def concurrency_per_hour(recs, region, n_hours):
 def herding(recs, actual, regions, cap, t_lo, t_hi):
     """cap 은 정수 또는 {리전: 정수}."""
     recs = list(recs)
-    cap_d = cap if isinstance(cap, dict) else {r: cap for r in regions}
+    cap_d = cap if isinstance(cap, dict) else dict.fromkeys(regions, cap)
     n_hours = int(math.ceil(max(v["scheduled_start"] + v["duration"] for v in recs))) + 1
     delayed = [v for v in recs if v["delay"] > 1e-9]
     cnt = {}

@@ -1,10 +1,14 @@
-# -*- coding: utf-8 -*-
 """무릎점과 같은 평균 지연을 내는 고정 α 를 이분법으로 찾아 실제로 돌린다(92 제안 10-17: 보간 없는 비교).
     ./.venv/bin/python -m scheduler.match_alpha --engine decoupled --target 23.4 --lo 0.4 --hi 0.5 --prefix alpha/decoupled_m
     (--extra 로 run_v2 추가 인자, 예: --extra "--cap 0.75" / --extra "--jobs load_balancer/data/jobs_azure.csv")
 결과: 실행마다 scheduler/data/v2/<prefix><α>/stats.json; 끝나면 표 한 줄씩 출력. 지연 단조 증가(α↑ → 지연↑)를 가정.
 """
-import argparse, json, os, shlex, subprocess, sys
+import argparse
+import json
+import os
+import shlex
+import subprocess
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def run(name, engine, alpha, extra):

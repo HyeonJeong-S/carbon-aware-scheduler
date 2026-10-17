@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """C2 검정 — 슬롯별 무릎점 vs 고정 α 11점의 하부 볼록 껍질 (통계 감사 2026-10-16 규약).
 
   점 = (지연, 실측 kg) 연간 합산. x축 둘: (a) 작업당 평균 지연, (b) 실행 시간 가중 Σd·ℓ/Σd.
@@ -11,7 +10,6 @@
 Azure: --prefix azure/ --knee azure/joint --fixed azure/alpha_0.0,...,azure/joint_a1
 """
 import argparse
-import glob
 import json
 import os
 

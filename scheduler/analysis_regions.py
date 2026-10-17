@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """C3 — 용량이 어디서 무는가. 리전별 귀속을 설계 감사 11번 규약대로 계산한다.
 
   시간 이동의 이득(리전별) = 시간만(홈 고정) − 기준(홈·즉시), 출발 리전 기준 → 공간 이동이 섞이지 않는다
@@ -10,11 +9,10 @@
 출력: <root>/analysis/regions_<prefix>.json
 """
 import argparse
-import gzip
 import json
 import math
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import numpy as np
@@ -22,13 +20,14 @@ import pandas as pd
 
 from interface import carbon_2025
 from interface.regions import REGIONS
+
 from . import capacity, joint
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 V2 = os.path.join(_HERE, "data", "v2")
 TZ = {"US-CAL-CISO": "America/Los_Angeles", "US-TEX-ERCO": "America/Chicago", "US-NY-NYIS": "America/New_York",
       "FR": "Europe/Paris", "DE": "Europe/Berlin", "KR": "Asia/Seoul", "IN": "Asia/Kolkata", "JP": "Asia/Tokyo"}
-T0 = datetime(2025, 1, 1, tzinfo=timezone.utc)
+T0 = datetime(2025, 1, 1, tzinfo=UTC)
 
 
 def load(path, score_from):
@@ -101,7 +100,7 @@ def main(argv=None):
     actual = carbon_2025.load_2025()["actual"]
     t_hi = len(next(iter(actual.values())))
     W = capacity._Windows(actual, joint.sn24_pred24(actual))
-    cap_d = {r: args.cap for r in REGIONS}
+    cap_d = dict.fromkeys(REGIONS, args.cap)
     P = lambda n: os.path.join(args.root, args.prefix + n, "jobs.csv.gz")
 
     time_only = load(P("time_only"), args.score_from)

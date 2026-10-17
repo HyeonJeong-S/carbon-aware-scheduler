@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """예측기 변형 — 전부 capacity._Windows 의 pred24 규약(열 j = 실측(h+1+j))을 따른다.
 
   oracle(actual)                 완전예지
@@ -60,7 +59,7 @@ def lstm_mae(actual, pred, horizon=HORIZON):
         a = actual[r]
         n = min(len(a), p.shape[0])
         T = np.arange(n)[:, None] + 1 + np.arange(horizon)[None, :]
-        ok = T < len(a)
+        ok = len(a) > T
         out[r] = float(np.mean(np.abs(p[:n][ok] - a[np.minimum(T, len(a) - 1)][ok])))
     return out
 

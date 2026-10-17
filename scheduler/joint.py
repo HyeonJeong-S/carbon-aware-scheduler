@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """결합 롤링 스케줄러 — v2 의 CAST.  (2026-10-16 코드·설계·통계 감사 반영판)
 
 매 슬롯 t 마다 아직 시작하지 않은 작업 전부에 대해 (리전 r, 시작 오프셋 i) 를 한 문제로 푼다.
@@ -36,7 +35,7 @@ import math
 import time
 
 import numpy as np
-from scipy.optimize import linprog, milp, LinearConstraint, Bounds
+from scipy.optimize import Bounds, LinearConstraint, linprog, milp
 from scipy.sparse import coo_matrix
 
 from . import capacity
@@ -56,7 +55,7 @@ def covered_slots(start, d):
 def _as_region_dict(v, regions, default=None):
     if isinstance(v, dict):
         return {r: v.get(r, default) for r in regions}
-    return {r: v for r in regions}
+    return dict.fromkeys(regions, v)
 
 
 def over_cap_flags(out, regions, cap_d):
@@ -450,8 +449,8 @@ def sn24_pred24(actual, horizon=HORIZON):
 
 
 def latency_dict(regions_std):
-    from load_balancer.framework import config as C
     from interface.regions import to_region
+    from load_balancer.framework import config as C
     M = C.load_latency_matrix()
     lb = [to_region(r) for r in C.REGIONS]
     return {o: {d: float(M[lb.index(o)][lb.index(d)]) for d in regions_std} for o in regions_std}

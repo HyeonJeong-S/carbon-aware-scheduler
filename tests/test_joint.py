@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
 """결합 롤링 스케줄러(scheduler.joint) 단위 시험 — 데이터 파일 없이 작은 합성 사례로."""
 import numpy as np
-import pytest
 
 from scheduler import capacity, joint
 

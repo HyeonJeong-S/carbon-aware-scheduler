@@ -59,6 +59,24 @@ ignore = [
     "SIM108",  # 삼항 연산자 강제 안 함 (가독성 우선)
 ]
 
+[tool.ruff.lint.per-file-ignores]
+# v2 실험 스크립트(2026-10): 한 줄에 여러 문장·루프 안 클로저(슬롯마다 새로 정의해 그 안에서만 씀)·열린 파일 등 문체 규칙만 끈다. F 계열(미정의 이름 등)은 그대로 검사한다.
+"scheduler/joint.py" = ["B023", "E702", "E701", "RUF046", "B007", "F841", "SIM115", "C420"]
+"scheduler/run_v2.py" = ["E702", "E701", "E401", "B007", "F841", "SIM115", "RUF005", "RUF046", "C420"]
+"scheduler/run_priors_v2.py" = ["E702", "E701", "E401", "B007", "F841", "SIM115", "RUF005", "RUF046", "C420", "E731", "RUF013", "I001"]
+"scheduler/offline_bound.py" = ["E702", "E701", "E401", "B007", "F841", "SIM115", "RUF005", "RUF046", "C420"]
+"scheduler/match_alpha.py" = ["E702", "E701", "E401", "B007", "F841", "SIM115", "RUF005", "RUF046", "C420"]
+"scheduler/forecast_shape.py" = ["E702", "E701", "E401", "B007", "F841", "SIM115", "RUF005", "RUF046", "C420"]
+"scheduler/transfer_sensitivity.py" = ["E702", "E701", "E401", "B007", "F841", "SIM115", "RUF005", "RUF046", "C420"]
+"scheduler/analysis_alpha.py" = ["E702", "E701", "E401", "B007", "F841", "SIM115", "RUF005", "RUF046", "C420", "RUF007"]
+"scheduler/analysis_regions.py" = ["E702", "E701", "E401", "B007", "F841", "SIM115", "RUF005", "RUF046", "C420", "E731"]
+"scheduler/herding.py" = ["E702", "E701", "E401", "B007", "F841", "SIM115", "RUF005", "RUF046", "C420", "B023"]
+"scheduler/run_scalability.py" = ["E702", "E701", "E401", "B007", "F841", "SIM115", "RUF005", "RUF046", "C420", "UP017", "B023", "RUF059"]
+"scheduler/tabulate_v2.py" = ["E702", "E701", "RUF005"]
+"scheduler/forecasters.py" = ["E702", "E701"]
+"scheduler/prior_sukprasert.py" = ["E702", "E701", "B007", "F841", "RUF005"]
+"tests/test_joint.py" = ["E702", "E701", "F841", "RUF059", "B007"]
+
 [tool.ruff.lint.isort]
 known-first-party = ["interface", "scheduler", "load_balancer", "carbon_forecast_lstm"]
 

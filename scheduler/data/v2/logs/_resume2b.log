@@ -90,3 +90,15 @@ ALL DONE
 [0] azure_time_only 567s | [azure/time_only] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 210,244.0 kg  절감 1.53%  위반 0  초과 0.0h  마감위반 0  지연 0.0/0.0ms  cap 43 ρ 13  벽시계 9.3분  → /Users/jongha/Desktop
 [0] azure_spatial_only 327s | [azure/spatial_only] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 115,914.8 kg  절감 45.71%  위반 0  초과 0.0h  마감위반 0  지연 46.3/45.8ms  cap 43 ρ 13  벽시계 5.3분  → /Users/jongha/D
 [0] azure_joint_a1 1024s | [azure/joint_a1] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 76,678.9 kg  절감 64.09%  위반 0  초과 0.0h  마감위반 0  지연 117.6/115.4ms  cap 43 ρ 13  벽시계 17.0분  → /Users/jongha/Des
+[0] azure_ignore_decoupled 816s | [azure/ignore_decoupled] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 107,338.0 kg  절감 49.73%  위반 30599  초과 3211.5h  마감위반 0  지연 34.4/37.2ms  cap 43 ρ 13  벽시계 13.5분  → /Us
+[0] azure_joint 3143s | [azure/joint] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 114,995.5 kg  절감 46.14%  위반 0  초과 0.0h  마감위반 0  지연 43.6/39.8ms  cap 43 ρ 13  벽시계 52.3분  → /Users/jongha/Desktop
+[0] azure_joint_oracle 3286s | [azure/joint_oracle] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 114,118.3 kg  절감 46.55%  위반 0  초과 0.0h  마감위반 0  지연 43.6/40.0ms  cap 43 ρ 13  벽시계 54.7분  → /Users/jongha/
+[0] azure_joint_sn24 3621s | [azure/joint_sn24] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 115,848.8 kg  절감 45.74%  위반 0  초과 0.0h  마감위반 0  지연 43.8/39.8ms  cap 43 ρ 13  벽시계 60.2분  → /Users/jongha/De
+[0] azure_alpha_0.6 653s | [azure/alpha_0.6] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 100,947.7 kg  절감 52.72%  위반 0  초과 0.0h  마감위반 0  지연 57.1/53.8ms  cap 43 ρ 13  벽시계 10.8분  → /Users/jongha/Des
+[0] azure_alpha_0.7 822s | [azure/alpha_0.7] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 84,526.3 kg  절감 60.41%  위반 0  초과 0.0h  마감위반 0  지연 78.2/81.9ms  cap 43 ρ 13  벽시계 13.6분  → /Users/jongha/Desk
+[0] azure_ignore 1888s | [azure/ignore] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 79,642.7 kg  절감 62.70%  위반 61400  초과 6000.1h  마감위반 0  지연 49.8/50.9ms  cap 43 ρ 13  벽시계 31.4분  → /Users/jongha/
+[0] azure_alpha_0.5 489s | [azure/alpha_0.5] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 128,359.0 kg  절감 39.88%  위반 0  초과 0.0h  마감위반 0  지연 33.7/26.4ms  cap 43 ρ 13  벽시계 8.1분  → /Users/jongha/Desk
+[0] azure_alpha_0.0 88s | [azure/alpha_0.0] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 213,513.4 kg  절감 -0.00%  위반 0  초과 0.0h  마감위반 0  지연 0.0/0.0ms  cap 43 ρ 13  벽시계 1.4분  → /Users/jongha/Deskto
+[0] azure_alpha_0.8 881s | [azure/alpha_0.8] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 78,738.7 kg  절감 63.12%  위반 0  초과 0.0h  마감위반 0  지연 93.5/99.0ms  cap 43 ρ 13  벽시계 14.6분  → /Users/jongha/Desk
+[0] azure_alpha_0.25 345s | [azure/alpha_0.25] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 186,118.4 kg  절감 12.83%  위반 0  초과 0.0h  마감위반 0  지연 1.5/1.5ms  cap 43 ρ 13  벽시계 5.7분  → /Users/jongha/Deskt
+[0] azure_alpha_0.9 1783s | [azure/alpha_0.9] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 76,921.2 kg  절감 63.97%  위반 0  초과 0.0h  마감위반 0  지연 105.6/107.6ms  cap 43 ρ 13  벽시계 14.6분  → /Users/jongha/De

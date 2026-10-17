@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """모의 심사 [11]: 예측기별 '곡선 모양' 지표 — 배정이 보는 것은 값의 오차가 아니라 순서라는 주장의 수치 근거.
 각 발행 시각 h(채점 창 day 8+)와 리전에 대해 향후 24시간 창에서
   (a) 스피어만 순위상관 ρ_s(예측, 실측)
@@ -7,11 +6,15 @@
 를 재고 리전 평균·전체 평균을 낸다. 예측기: lstm, sn24, oracle(=1, 검산), lstm_daily, noisy_oracle:0, mix0.25/0.5/0.75.
     ./.venv/bin/python scheduler/forecast_shape.py [--forecasts lstm,sn24,oracle] [--score-from 168]
 """
-import argparse, json
+import argparse
+import json
+
 import numpy as np
 from scipy.stats import spearmanr
+
 from interface import carbon_2025
 from scheduler import forecasters
+
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--forecasts", default="lstm,sn24,oracle,lstm_daily,noisy_oracle:0,mix0.25,mix0.5,mix0.75"); ap.add_argument("--score-from", type=int, default=168)

@@ -1,10 +1,13 @@
-# -*- coding: utf-8 -*-
 """심사 M10(회계 단순화) 민감도 — 리전을 옮긴 작업마다 전송 에너지 E_tx(kWh) 를 더했을 때 절감률과 순위가 어떻게 움직이는지.
 전송 탄소 = E_tx × 목적지 리전의 그 작업 평균 탄소집약도(g/kWh; 1 kW 상수 회계라 carbon_emitted/duration 이 곧 그 값).
     ./.venv/bin/python scheduler/transfer_sensitivity.py [--etx 0.006,0.06] [runs ...]
 """
-import argparse, gzip, io, json, os
+import argparse
+import json
+import os
+
 import pandas as pd
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 V2 = os.path.join(ROOT, "scheduler/data/v2")
 DEFAULT = ["main/joint", "main/joint_a1", "main/decoupled", "main/decoupled_a1", "main/spatial_only", "main/spatial_only_a1", "main/time_only", "main/ignore", "main/ignore_a1"]
