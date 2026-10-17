@@ -1,0 +1,29 @@
+# 시드 1~4 (42 = main) — 주표 행 전부
+--name seed/1_joint --engine joint --alpha knee --jobs load_balancer/data/variants/jobs_seed1.csv
+--name seed/1_joint_a1 --engine joint --alpha 1.0 --jobs load_balancer/data/variants/jobs_seed1.csv
+--name seed/1_decoupled --engine decoupled --alpha knee --jobs load_balancer/data/variants/jobs_seed1.csv
+--name seed/1_time_only --engine joint --alpha knee --home-region --jobs load_balancer/data/variants/jobs_seed1.csv
+--name seed/1_spatial_only --engine joint --alpha knee --spatial-only --jobs load_balancer/data/variants/jobs_seed1.csv
+--name seed/1_ignore --engine ignore --alpha knee --jobs load_balancer/data/variants/jobs_seed1.csv
+--name seed/2_joint --engine joint --alpha knee --jobs load_balancer/data/variants/jobs_seed2.csv
+--name seed/2_joint_a1 --engine joint --alpha 1.0 --jobs load_balancer/data/variants/jobs_seed2.csv
+--name seed/2_decoupled --engine decoupled --alpha knee --jobs load_balancer/data/variants/jobs_seed2.csv
+--name seed/2_time_only --engine joint --alpha knee --home-region --jobs load_balancer/data/variants/jobs_seed2.csv
+--name seed/2_spatial_only --engine joint --alpha knee --spatial-only --jobs load_balancer/data/variants/jobs_seed2.csv
+--name seed/2_ignore --engine ignore --alpha knee --jobs load_balancer/data/variants/jobs_seed2.csv
+--name seed/3_joint --engine joint --alpha knee --jobs load_balancer/data/variants/jobs_seed3.csv
+--name seed/3_joint_a1 --engine joint --alpha 1.0 --jobs load_balancer/data/variants/jobs_seed3.csv
+--name seed/3_decoupled --engine decoupled --alpha knee --jobs load_balancer/data/variants/jobs_seed3.csv
+--name seed/3_time_only --engine joint --alpha knee --home-region --jobs load_balancer/data/variants/jobs_seed3.csv
+--name seed/3_spatial_only --engine joint --alpha knee --spatial-only --jobs load_balancer/data/variants/jobs_seed3.csv
+--name seed/3_ignore --engine ignore --alpha knee --jobs load_balancer/data/variants/jobs_seed3.csv
+--name seed/4_joint --engine joint --alpha knee --jobs load_balancer/data/variants/jobs_seed4.csv
+--name seed/4_joint_a1 --engine joint --alpha 1.0 --jobs load_balancer/data/variants/jobs_seed4.csv
+--name seed/4_decoupled --engine decoupled --alpha knee --jobs load_balancer/data/variants/jobs_seed4.csv
+--name seed/4_time_only --engine joint --alpha knee --home-region --jobs load_balancer/data/variants/jobs_seed4.csv
+--name seed/4_spatial_only --engine joint --alpha knee --spatial-only --jobs load_balancer/data/variants/jobs_seed4.csv
+--name seed/4_ignore --engine ignore --alpha knee --jobs load_balancer/data/variants/jobs_seed4.csv
+--name seed/1_alpha0.7 --engine joint --alpha 0.7 --jobs load_balancer/data/variants/jobs_seed1.csv
+--name seed/1_alpha0.8 --engine joint --alpha 0.8 --jobs load_balancer/data/variants/jobs_seed1.csv
+--name seed/2_alpha0.7 --engine joint --alpha 0.7 --jobs load_balancer/data/variants/jobs_seed2.csv
+--name seed/2_alpha0.8 --engine joint --alpha 0.8 --jobs load_balancer/data/variants/jobs_seed2.csv

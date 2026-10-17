@@ -1,0 +1,50 @@
+# 스윕 — 용량비(1.25 = main), 비대칭, 자기피크, ρ(3 = main), 지평, SLO
+--name cap/0.50x --engine joint --alpha knee --cap 0.50
+--name cap/0.75x --engine joint --alpha knee --cap 0.75
+--name cap/1.00x --engine joint --alpha knee --cap 1.00
+--name cap/1.50x --engine joint --alpha knee --cap 1.50
+--name cap/2.00x --engine joint --alpha knee --cap 2.00
+--name cap/3.00x --engine joint --alpha knee --cap 3.00
+--name cap/0.50x_a1 --engine joint --alpha 1.0 --cap 0.50
+--name cap/0.75x_a1 --engine joint --alpha 1.0 --cap 0.75
+--name cap/1.00x_a1 --engine joint --alpha 1.0 --cap 1.00
+--name cap/1.50x_a1 --engine joint --alpha 1.0 --cap 1.50
+--name cap/2.00x_a1 --engine joint --alpha 1.0 --cap 2.00
+--name cap/3.00x_a1 --engine joint --alpha 1.0 --cap 3.00
+--name cap/0.75x_decoupled --engine decoupled --alpha knee --cap 0.75
+--name cap/1.00x_decoupled --engine decoupled --alpha knee --cap 1.00
+--name cap/2.00x_decoupled --engine decoupled --alpha knee --cap 2.00
+--name hetero/clean_small --engine joint --alpha knee --cap-json scheduler/data/v2/scenarios.json:synthetic.cap_clean_small
+--name hetero/clean_large --engine joint --alpha knee --cap-json scheduler/data/v2/scenarios.json:synthetic.cap_clean_large
+--name hetero/own_1.25x --engine joint --alpha knee --cap 1.25 --cap-mode x-own-peak
+--name hetero/clean_small_ignore --engine ignore --alpha knee --cap-json scheduler/data/v2/scenarios.json:synthetic.cap_clean_small
+--name hetero/clean_large_ignore --engine ignore --alpha knee --cap-json scheduler/data/v2/scenarios.json:synthetic.cap_clean_large
+--name rho/0 --engine joint --alpha knee --rho 0
+--name rho/2 --engine joint --alpha knee --rho 2
+--name rho/4 --engine joint --alpha knee --rho 4
+--name rho/6 --engine joint --alpha knee --rho 6
+--name horizon/6 --engine joint --alpha knee --horizon 6
+--name horizon/12 --engine joint --alpha knee --horizon 12
+--name lnet/150 --engine joint --alpha knee --l-net-max 150
+--name lnet/100 --engine joint --alpha knee --l-net-max 100
+--name lnet/50 --engine joint --alpha knee --l-net-max 50
+--name lnet/150_a1 --engine joint --alpha 1.0 --l-net-max 150
+--name lnet/100_a1 --engine joint --alpha 1.0 --l-net-max 100
+--name lnet/50_a1 --engine joint --alpha 1.0 --l-net-max 50
+# 32 추가(10-16 22:58): 분리형을 같은 상한에서 — 상한을 조였을 때 설계 차이가 나는지(무릎점 0.50x 보완, α=1 셋)
+--name cap/0.50x_decoupled --engine decoupled --alpha knee --cap 0.50
+--name cap/0.50x_decoupled_a1 --engine decoupled --alpha 1.0 --cap 0.50
+--name cap/0.75x_decoupled_a1 --engine decoupled --alpha 1.0 --cap 0.75
+--name cap/1.00x_decoupled_a1 --engine decoupled --alpha 1.0 --cap 1.00
+# 32 추가(10-17 01:30): 조인 상한에서 고정 α 0.4~0.7 — 무릎점의 "후회"(같은 지연에서 껍질까지 거리)가 조건마다 어떤지(92 갈래 1)
+--name cap/0.50x_a0.4 --engine joint --alpha 0.4 --cap 0.50
+--name cap/0.50x_a0.5 --engine joint --alpha 0.5 --cap 0.50
+--name cap/0.50x_a0.6 --engine joint --alpha 0.6 --cap 0.50
+--name cap/0.50x_a0.7 --engine joint --alpha 0.7 --cap 0.50
+--name cap/0.75x_a0.4 --engine joint --alpha 0.4 --cap 0.75
+--name cap/0.75x_a0.5 --engine joint --alpha 0.5 --cap 0.75
+--name cap/0.75x_a0.6 --engine joint --alpha 0.6 --cap 0.75
+--name cap/0.75x_a0.7 --engine joint --alpha 0.7 --cap 0.75
+# 32 추가(10-17 10:50): 조인 상한에서 ρ 0 — 상한 효과와 예약 비중 효과를 가른다(92 지적)
+--name cap/0.50x_rho0 --engine joint --alpha knee --cap 0.50 --rho 0
+--name cap/0.75x_rho0 --engine joint --alpha knee --cap 0.75 --rho 0

@@ -1,0 +1,13 @@
+# φ(미룰 수 있는 비율) 20/30/50/60 (40 = main) — 결합·분리형·용량무시
+--name phi/20_joint --engine joint --alpha knee --jobs load_balancer/data/variants/jobs_phi20.csv
+--name phi/30_joint --engine joint --alpha knee --jobs load_balancer/data/variants/jobs_phi30.csv
+--name phi/50_joint --engine joint --alpha knee --jobs load_balancer/data/variants/jobs_phi50.csv
+--name phi/60_joint --engine joint --alpha knee --jobs load_balancer/data/variants/jobs_phi60.csv
+--name phi/20_decoupled --engine decoupled --alpha knee --jobs load_balancer/data/variants/jobs_phi20.csv
+--name phi/30_decoupled --engine decoupled --alpha knee --jobs load_balancer/data/variants/jobs_phi30.csv
+--name phi/50_decoupled --engine decoupled --alpha knee --jobs load_balancer/data/variants/jobs_phi50.csv
+--name phi/60_decoupled --engine decoupled --alpha knee --jobs load_balancer/data/variants/jobs_phi60.csv
+--name phi/20_ignore --engine ignore --alpha knee --jobs load_balancer/data/variants/jobs_phi20.csv
+--name phi/30_ignore --engine ignore --alpha knee --jobs load_balancer/data/variants/jobs_phi30.csv
+--name phi/50_ignore --engine ignore --alpha knee --jobs load_balancer/data/variants/jobs_phi50.csv
+--name phi/60_ignore --engine ignore --alpha knee --jobs load_balancer/data/variants/jobs_phi60.csv

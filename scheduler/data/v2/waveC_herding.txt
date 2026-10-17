@@ -1,0 +1,14 @@
+# 역설 대조 — 예측 품질 다이얼·골 모양 통제, {분리형, 결합}
+--name herd/decoupled_lstm_daily --engine decoupled --alpha knee --forecast lstm_daily
+--name herd/decoupled_noisy_oracle --engine decoupled --alpha knee --forecast noisy_oracle:0
+--name herd/decoupled_mix025 --engine decoupled --alpha knee --forecast mix0.25
+--name herd/decoupled_mix05 --engine decoupled --alpha knee --forecast mix0.5
+--name herd/decoupled_mix075 --engine decoupled --alpha knee --forecast mix0.75
+--name herd/joint_lstm_daily --engine joint --alpha knee --forecast lstm_daily
+--name herd/joint_noisy_oracle --engine joint --alpha knee --forecast noisy_oracle:0
+--name herd/joint_mix025 --engine joint --alpha knee --forecast mix0.25
+--name herd/joint_mix05 --engine joint --alpha knee --forecast mix0.5
+--name herd/joint_mix075 --engine joint --alpha knee --forecast mix0.75
+--name herd/2stage_eta10_sn24 --engine 2stage --eta 1.0 --forecast sn24
+--name herd/2stage_eta10_lstm_daily --engine 2stage --eta 1.0 --forecast lstm_daily
+--name herd/2stage_eta10_noisy_oracle --engine 2stage --eta 1.0 --forecast noisy_oracle:0

@@ -1,0 +1,13 @@
+# H파(10-17 낮, 7b): 피드백 점검표의 [32-선택] 둘. 상한·ρ 는 그 워크로드 자기 기준 피크에서 자동(x-peak 1.25, warmup).
+# 도착률 2배(리전당 하루 100건, 292,000건) — 교수님 P2 "여러 부하 수준", 심사 M5 "정수 단위 효과"
+--name rate/100_joint --engine joint --alpha knee --jobs load_balancer/data/variants/jobs_rate100.csv
+--name rate/100_joint_a1 --engine joint --alpha 1.0 --jobs load_balancer/data/variants/jobs_rate100.csv
+--name rate/100_decoupled --engine decoupled --alpha knee --jobs load_balancer/data/variants/jobs_rate100.csv
+--name rate/100_ignore --engine ignore --alpha knee --jobs load_balancer/data/variants/jobs_rate100.csv
+# 캘리포니아만 SN-24(기상 입력 없음), 나머지 LSTM — 심사 M6 "기상 실측 입력 누수" 대조
+--name forecast/cal_sn24 --engine joint --alpha knee --forecast lstm|US-CAL-CISO=sn24
+--name forecast/cal_sn24_a1 --engine joint --alpha 1.0 --forecast lstm|US-CAL-CISO=sn24
+# 리전별 비대칭 발생률(미국 셋 80/70/70, 나머지 40/40/30/40/30; 하루 합 400 = 기본과 같음) — 교수님 P2 "리전별 동일 발생률" (94 검증 N1)
+--name skew/joint --engine joint --alpha knee --jobs load_balancer/data/variants/jobs_skew.csv
+--name skew/joint_a1 --engine joint --alpha 1.0 --jobs load_balancer/data/variants/jobs_skew.csv
+--name skew/ignore --engine ignore --alpha knee --jobs load_balancer/data/variants/jobs_skew.csv

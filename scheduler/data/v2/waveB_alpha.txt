@@ -1,0 +1,28 @@
+# α 전선 — 합성, 고정 α 0.0~0.9 (1.0 은 main/joint_a1)
+--name alpha/0.0 --engine joint --alpha 0.0
+--name alpha/0.1 --engine joint --alpha 0.1
+--name alpha/0.2 --engine joint --alpha 0.2
+--name alpha/0.3 --engine joint --alpha 0.3
+--name alpha/0.4 --engine joint --alpha 0.4
+--name alpha/0.5 --engine joint --alpha 0.5
+--name alpha/0.6 --engine joint --alpha 0.6
+--name alpha/0.7 --engine joint --alpha 0.7
+--name alpha/0.8 --engine joint --alpha 0.8
+--name alpha/0.9 --engine joint --alpha 0.9
+# 32 추가(10-16 22:58): 분리형 고정 α 전선 — 결합 전선과 같은 α 에서 설계 효과를 본다(92 반론 3: 무릎점끼리는 α·지연이 달라 교란). 1.0 은 main/decoupled_a1
+--name alpha/decoupled_0.0 --engine decoupled --alpha 0.0
+--name alpha/decoupled_0.1 --engine decoupled --alpha 0.1
+--name alpha/decoupled_0.2 --engine decoupled --alpha 0.2
+--name alpha/decoupled_0.3 --engine decoupled --alpha 0.3
+--name alpha/decoupled_0.4 --engine decoupled --alpha 0.4
+--name alpha/decoupled_0.5 --engine decoupled --alpha 0.5
+--name alpha/decoupled_0.6 --engine decoupled --alpha 0.6
+--name alpha/decoupled_0.7 --engine decoupled --alpha 0.7
+--name alpha/decoupled_0.8 --engine decoupled --alpha 0.8
+--name alpha/decoupled_0.9 --engine decoupled --alpha 0.9
+# 분리형 α=1 예측기 변형 — 4.3 표의 같은 α 짝(결합 α=1 셋과 대응)
+--name main/decoupled_a1_oracle --engine decoupled --alpha 1.0 --forecast oracle
+--name main/decoupled_a1_sn24 --engine decoupled --alpha 1.0 --forecast sn24
+# 32 추가(10-16 23:40): 결합 무릎점 오라클 67.20 < LSTM 71.93 — 예측기 효과와 무릎점의 α 선택을 떼어 보려고 고정 α=0.5 에서 예측기만 바꾼다
+--name alpha/0.5_oracle --engine joint --alpha 0.5 --forecast oracle
+--name alpha/0.5_sn24 --engine joint --alpha 0.5 --forecast sn24

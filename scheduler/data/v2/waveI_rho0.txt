@@ -1,0 +1,9 @@
+# I파(10-17 14:30, 7b): 모의 심사 [1] 치명 — 위반 0 의 원인이 공유 제약인지 예약 ρ 인지 가르기. 상한 17, ρ=0, 예측기 셋, 결합·분리형.
+--name rho0/joint_sn24 --engine joint --alpha knee --rho 0 --forecast sn24
+--name rho0/joint_oracle --engine joint --alpha knee --rho 0 --forecast oracle
+--name rho0/decoupled --engine decoupled --alpha knee --rho 0
+--name rho0/decoupled_sn24 --engine decoupled --alpha knee --rho 0 --forecast sn24
+--name rho0/decoupled_oracle --engine decoupled --alpha knee --rho 0 --forecast oracle
+# 2단계에 CAST 의 유효 내부 상한(17−3=14)을 준 짝: ⌊0.83×17⌋ = 14 (모의 심사 [1][27])
+--name main/2stage_eta083 --engine 2stage --eta 0.83
+--name main/2stage_eta083_oracle --engine 2stage --eta 0.83 --forecast oracle

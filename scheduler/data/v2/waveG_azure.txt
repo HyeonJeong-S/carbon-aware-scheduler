@@ -1,0 +1,34 @@
+# Azure — cap ⌈1.25×피크⌉=43, ρ 준비구간=13
+--name azure/joint --engine joint --alpha knee --jobs load_balancer/data/jobs_azure.csv
+--name azure/joint_sn24 --engine joint --alpha knee --forecast sn24 --jobs load_balancer/data/jobs_azure.csv
+--name azure/joint_oracle --engine joint --alpha knee --forecast oracle --jobs load_balancer/data/jobs_azure.csv
+--name azure/decoupled --engine decoupled --alpha knee --jobs load_balancer/data/jobs_azure.csv
+--name azure/decoupled_oracle --engine decoupled --alpha knee --forecast oracle --jobs load_balancer/data/jobs_azure.csv
+--name azure/greedy --engine greedy --alpha knee --jobs load_balancer/data/jobs_azure.csv
+--name azure/joint_a1 --engine joint --alpha 1.0 --jobs load_balancer/data/jobs_azure.csv
+--name azure/time_only --engine joint --alpha knee --home-region --jobs load_balancer/data/jobs_azure.csv
+--name azure/spatial_only --engine joint --alpha knee --spatial-only --jobs load_balancer/data/jobs_azure.csv
+--name azure/ignore --engine ignore --alpha knee --jobs load_balancer/data/jobs_azure.csv
+--name azure/ignore_decoupled --engine ignore_decoupled --alpha knee --jobs load_balancer/data/jobs_azure.csv
+--name azure/alpha_0.6 --engine joint --alpha 0.6 --jobs load_balancer/data/jobs_azure.csv
+--name azure/alpha_0.7 --engine joint --alpha 0.7 --jobs load_balancer/data/jobs_azure.csv
+--name azure/alpha_0.8 --engine joint --alpha 0.8 --jobs load_balancer/data/jobs_azure.csv
+--name azure/alpha_0.9 --engine joint --alpha 0.9 --jobs load_balancer/data/jobs_azure.csv
+--name azure/alpha_0.5 --engine joint --alpha 0.5 --jobs load_balancer/data/jobs_azure.csv
+--name azure/alpha_0.25 --engine joint --alpha 0.25 --jobs load_balancer/data/jobs_azure.csv
+--name azure/alpha_0.0 --engine joint --alpha 0.0 --jobs load_balancer/data/jobs_azure.csv
+--name azure/cap_0.75x --engine joint --alpha knee --cap 0.75 --jobs load_balancer/data/jobs_azure.csv
+--name azure/cap_1.00x --engine joint --alpha knee --cap 1.00 --jobs load_balancer/data/jobs_azure.csv
+--name azure/cap_1.50x --engine joint --alpha knee --cap 1.50 --jobs load_balancer/data/jobs_azure.csv
+--name azure/cap_2.00x --engine joint --alpha knee --cap 2.00 --jobs load_balancer/data/jobs_azure.csv
+--name azure/rho_6 --engine joint --alpha knee --rho 6 --jobs load_balancer/data/jobs_azure.csv
+--name azure/rho_19 --engine joint --alpha knee --rho 19 --jobs load_balancer/data/jobs_azure.csv
+--name azure/rho_25 --engine joint --alpha knee --rho 25 --jobs load_balancer/data/jobs_azure.csv
+--name azure/seed1_joint --engine joint --alpha knee --jobs load_balancer/data/variants/jobs_azure_seed1.csv
+--name azure/seed1_joint_a1 --engine joint --alpha 1.0 --jobs load_balancer/data/variants/jobs_azure_seed1.csv
+--name azure/seed1_decoupled --engine decoupled --alpha knee --jobs load_balancer/data/variants/jobs_azure_seed1.csv
+--name azure/seed2_joint --engine joint --alpha knee --jobs load_balancer/data/variants/jobs_azure_seed2.csv
+--name azure/seed2_joint_a1 --engine joint --alpha 1.0 --jobs load_balancer/data/variants/jobs_azure_seed2.csv
+--name azure/seed2_decoupled --engine decoupled --alpha knee --jobs load_balancer/data/variants/jobs_azure_seed2.csv
+# 32 추가(10-17 01:30): Azure 고정 α 0.4~0.7 — 무릎점의 후회를 워크로드 바꿔서도 본다(92 갈래 1)
+--name azure/alpha_0.4 --engine joint --alpha 0.4 --jobs load_balancer/data/jobs_azure.csv

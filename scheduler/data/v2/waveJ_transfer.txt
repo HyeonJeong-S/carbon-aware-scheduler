@@ -1,0 +1,3 @@
+# J파(10-17 저녁): 무릎점 어필 — LSTM 에서 찾은 사후 최선 고정 α(0.5687)를 다른 예측기에 그대로 이식하면?
+--name transfer/sn24_a0.5687 --engine joint --alpha 0.5687 --forecast sn24
+--name transfer/oracle_a0.5687 --engine joint --alpha 0.5687 --forecast oracle

@@ -1,0 +1,19 @@
+{
+  "_설명": "2026-10-16 설계 감사 반영. 대표 상한 = ceil(1.25 x 자기 기준 피크, day8+). rho = 준비 구간(0~167h) 미룰 수 없는 작업의 리전 최대 동시 실행(전 리전 최악). 비대칭 = 총용량 114 고정, 깨끗한 셋 = FR, US-CAL-CISO, US-NY-NYIS.",
+  "synthetic": {
+    "baseline_peak_day8": {"US-CAL-CISO": 11, "US-TEX-ERCO": 10, "US-NY-NYIS": 10, "FR": 10, "DE": 11, "KR": 12, "IN": 13, "JP": 12},
+    "cap_uniform": 17,
+    "rho_warmup": 3,
+    "rho_hindsight": 4,
+    "cap_own_1.25": {"US-CAL-CISO": 14, "US-TEX-ERCO": 13, "US-NY-NYIS": 13, "FR": 13, "DE": 14, "KR": 15, "IN": 17, "JP": 15},
+    "cap_clean_small": {"US-CAL-CISO": 10, "US-TEX-ERCO": 15, "US-NY-NYIS": 9, "FR": 9, "DE": 16, "KR": 18, "IN": 19, "JP": 18},
+    "cap_clean_large": {"US-CAL-CISO": 21, "US-TEX-ERCO": 10, "US-NY-NYIS": 19, "FR": 19, "DE": 10, "KR": 11, "IN": 12, "JP": 11}
+  },
+  "azure": {
+    "baseline_peak_day8": {"US-CAL-CISO": 31, "US-TEX-ERCO": 28, "US-NY-NYIS": 29, "FR": 34, "DE": 32, "KR": 29, "IN": 27, "JP": 27},
+    "cap_uniform": 43,
+    "rho_warmup": 13,
+    "rho_hindsight": 19
+  },
+  "region_mean_gco2_day8": {"FR": 13.6, "US-CAL-CISO": 149.2, "US-NY-NYIS": 239.2, "DE": 278.1, "US-TEX-ERCO": 298.4, "JP": 353.9, "KR": 357.3, "IN": 543.2}
+}

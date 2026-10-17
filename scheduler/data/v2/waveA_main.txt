@@ -1,0 +1,26 @@
+# 주표·역설 — 합성, cap ⌈1.25×피크⌉=17, ρ 준비구간=3, 채점 day 8+
+--name main/joint --engine joint --alpha knee
+--name main/joint_sn24 --engine joint --alpha knee --forecast sn24
+--name main/joint_oracle --engine joint --alpha knee --forecast oracle
+--name main/decoupled --engine decoupled --alpha knee
+--name main/decoupled_sn24 --engine decoupled --alpha knee --forecast sn24
+--name main/decoupled_oracle --engine decoupled --alpha knee --forecast oracle
+--name main/greedy --engine greedy --alpha knee
+--name main/greedy_oracle --engine greedy --alpha knee --forecast oracle
+--name main/joint_a1 --engine joint --alpha 1.0
+--name main/joint_a1_sn24 --engine joint --alpha 1.0 --forecast sn24
+--name main/joint_a1_oracle --engine joint --alpha 1.0 --forecast oracle
+--name main/decoupled_a1 --engine decoupled --alpha 1.0
+--name main/time_only --engine joint --alpha knee --home-region
+--name main/spatial_only --engine joint --alpha knee --spatial-only
+--name main/spatial_only_a1 --engine joint --alpha 1.0 --spatial-only
+--name main/ignore --engine ignore --alpha knee
+--name main/ignore_a1 --engine ignore --alpha 1.0
+--name main/ignore_oracle --engine ignore --alpha knee --forecast oracle
+--name main/ignore_decoupled --engine ignore_decoupled --alpha knee
+--name main/ignore_decoupled_oracle --engine ignore_decoupled --alpha knee --forecast oracle
+--name main/2stage_eta08 --engine 2stage --eta 0.8
+--name main/2stage_eta08_oracle --engine 2stage --eta 0.8 --forecast oracle
+--name main/2stage_eta10 --engine 2stage --eta 1.0
+--name main/2stage_eta10_oracle --engine 2stage --eta 1.0 --forecast oracle
+--name main/joint_cap13_rho0 --engine joint --alpha knee --cap 13 --cap-mode abs --rho 0
