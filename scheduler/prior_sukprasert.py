@@ -64,19 +64,21 @@ def _search(jobs, W, regions):
     """(리전, 시작시각) 격자 전수 탐색 — 원본 rolling(job).sum().min()의
     실수-시간·다중-리전 버전. regions가 한 개짜리 dict-getter면 시간 이동
     단독(리전 고정), REGIONS 전체면 공간+시간 결합이 된다."""
+    # 시작 후보 = "지금(s)" + 그 뒤의 정수 시각들 [⌈s⌉, ⌊dl−d⌋].
+    # 2026-10-16 정정: 예전엔 t0=⌊s⌋ 부터 정수 격자만 써서 146,000 건 중 101,378 건이
+    # 제출 **전**(최대 59분 전)에 시작했다. 회계가 ⌊start⌋ 만 보므로 kg 는 같지만 동시
+    # 실행 수(위반·피크)는 부풀었다(49,356 → 34,455). 원문은 정시 자료라 이 문제가
+    # 없었다 — 분수 제출시각인 우리 자료에 원문을 옮길 때 생긴 규약 차이다.
     out = {}
     for j in jobs:
         s, d, dl = j["submit_time"], j["duration"], j["deadline"]
-        t0 = int(np.floor(s))
-        t1 = int(np.floor(dl - d))
-        if t1 < t0:
-            t1 = t0
+        cands = [s] + list(range(int(np.ceil(s)), int(np.floor(dl - d)) + 1))
         cand_regions = regions(j)
         best_val, best_r, best_t = None, None, None
         for r in cand_regions:
-            for t in range(t0, t1 + 1):
+            for t in cands:
                 val = W.actual_mean(r, t, d) * d
-                if best_val is None or val < best_val:
+                if best_val is None or val < best_val - 1e-12:
                     best_val, best_r, best_t = val, r, t
         out[j["id"]] = (best_r, best_t)
     return out
@@ -87,6 +89,15 @@ def temporal_decisions(jobs, actual):
     정한 실행 리전)으로 고정, 그 리전 안에서만 원 논문의 창 탐색을 한다."""
     W = _windows(actual)
     return _search(jobs, W, lambda j: (j.get("carbon_region") or j["region"],))
+
+
+def temporal_home_decisions(jobs, actual):
+    """시간 이동 단독 — 리전을 **홈(출발) 리전**으로 고정. 원 논문의 "temporal shifting"
+    (같은 리전 안에서 시각만 옮김)에 글자 그대로 대응하는 행. temporal_decisions 는
+    CAST 의 공간 배정을 물려받은 리전 위에서 돌므로 공간 이득(45%p)이 섞여 있다
+    (정리.txt [80]) — v2 표에는 둘 다 이름을 분명히 적어 싣는다."""
+    W = _windows(actual)
+    return _search(jobs, W, lambda j: (j["region"],))
 
 
 def spatiotemporal_decisions(jobs, actual):

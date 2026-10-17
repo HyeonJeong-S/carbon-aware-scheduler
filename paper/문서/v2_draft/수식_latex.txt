@@ -1,0 +1,42 @@
+v2 수식 — LaTeX 원자재 (32 작성). 번호·순서는 92 의 3장 본문에 맞춰 최종 확정. 초과 변수는 z (B5).
+변환: latex2mathml → Word.app mathml2omml.xsl → <m:oMath> (시험 완료). 식마다 "여기서 ~는 ~다" 해설은 본문.
+
+[목적·제약 — 3.2]
+(1) 사전식 목적 첫째 — 총 초과 시간:
+    \min \sum_{r \in R} \int z_{r}(t)\,dt, \qquad z_{r}(t) = \max\{0,\, n_{r}(t) - \mathrm{cap}_{r}\}
+(2) 둘째 — 배출과 지연의 가중합 (α 는 슬롯마다, 3.4):
+    E = \sum_{j \in J} P \int_{\tau_{j}}^{\tau_{j}+d_{j}} C_{r(j)}(t)\,dt, \qquad \Lambda = \sum_{j \in J} d_{j}\,\ell(o_{j}, r(j))
+(3) 제출 뒤 시작, 마감 안 완료 (하드):
+    s_{j} \le \tau_{j}, \quad \tau_{j} + d_{j} \le D_{j} \qquad \forall j \in J
+(4) 지연 예산 (정의역; 본 자료에서는 한 번도 안 걸림):
+    \ell(o_{j}, r(j)) \le L_{j} \qquad \forall j \in J
+(5) 용량 — 초과는 변수:
+    n_{r}(t) \le \mathrm{cap}_{r} + z_{r}(t), \quad z_{r}(t) \ge 0 \qquad \forall r \in R,\ \forall t
+    n_{r}(t) = \left|\{\, j : r(j) = r,\ \tau_{j} \le t < \tau_{j} + d_{j} \,\}\right|
+
+[비용 — 3.3]
+(6) 후보 (r, i) 의 비용:
+    c_{j}(r,i) = d_{j}\left[\alpha\,\tilde{C}(r,t,i) + (1-\alpha)\,\tilde{\ell}(o_{j},r)\right]
+    \tilde{C}(r,t,i) = \frac{\hat{C}_{r}^{(t)}(i,\,d_{j})}{\max_{r',i'} \hat{C}_{r'}^{(t)}(i',1)}, \qquad \tilde{\ell}(o,r) = \frac{\ell(o,r)}{244\ \mathrm{ms}}
+
+[슬롯 t 의 배정 문제 — 3.3]
+(7) \min \sum_{j \in Q_{t}} \sum_{(r,i)} c_{j}(r,i)\,x_{jri} \;+\; M_{A}\sum_{(r,\tau)} z^{A}_{r\tau} \;+\; M_{B}\sum_{(r,\tau)} z^{B}_{r\tau}
+(8) \sum_{(r,i)} x_{jri} = 1 \qquad \forall j \in Q_{t}
+(9) \sum_{(j,r,i)\,\ni\,(r,\tau)} x_{jri} + n_{r}(\tau) \le \mathrm{cap}_{r} + z^{A}_{r\tau} \qquad \forall r,\ \tau \in [t,\, t+H]
+(10) \sum_{(j,r,i)\,\ni\,(r,\tau),\ j\ \text{deferrable}} x_{jri} + n_{r}(\tau) \le \mathrm{cap}_{r} - \rho_{r} + z^{B}_{r\tau} \qquad \forall r,\ \tau \in [t+1,\, t+H]
+     0 \le x_{jri} \le 1, \quad z^{A}_{r\tau},\, z^{B}_{r\tau} \ge 0
+   (덮음 (j,r,i) ∋ (r,τ): 시작 max(t, s_j) 또는 t+i 에서 d_j 동안의 구간이 [τ, τ+1) 과 겹침. τ = t 는 시작 순간 단위 — 본문 설명.)
+
+[무릎점 — 3.4]
+(11) \alpha^{*} = \arg\min_{\alpha \in A} \sqrt{\tilde{\lambda}_{\alpha}^{2} + \tilde{e}_{\alpha}^{2}}, \qquad
+     \tilde{\lambda}_{\alpha} = \frac{\bar{\lambda}_{\alpha} - \min_{\alpha'} \bar{\lambda}_{\alpha'}}{\max_{\alpha'} \bar{\lambda}_{\alpha'} - \min_{\alpha'} \bar{\lambda}_{\alpha'}}
+     \bar{\lambda}_{\alpha} = \frac{\sum_{j} d_{j}\,\ell(o_{j}, r_{\alpha}(j))}{\sum_{j} d_{j}}, \qquad \bar{e}_{\alpha} = \sum_{j} \hat{C}_{r_{\alpha}(j)}^{(t)}(i_{\alpha}(j),\, d_{j})\, d_{j}
+     A = \{0, 0.1, \ldots, 1\}
+
+[예약 — 3.5]  ρ_r = 준비 구간에서 잰 미룰 수 없는 작업만의 리전별 최대 동시 실행(전 리전 최악) = 3 (Azure 13). 식은 (10)에 포함.
+
+[회계 — 3.6]
+(12) e_{j} = P \int_{\tau_{j}}^{\tau_{j}+d_{j}} C_{r(j)}(t)\,dt \;\approx\; P\, d_{j}\, \bar{C}_{r(j)}[\tau_{j},\, \tau_{j}+d_{j})
+
+[보장 — 3.3 끝 한 문단, 식 없음] 마감은 후보 i ≤ ⌊D_j − d_j − t⌋ 와 여유 < 1 이면 i = 0 만 → 구성상. 무한 연기 없음. (7)~(10)은 z 덕에 항상 해 있음.
+   LP 완화: 덮음 제약 없으면 이분 b-매칭(TU, Schrijver Thm 19.1); 실측 분수해 슬롯 341/8,760(무릎점), 1,421/8,764(α=1).

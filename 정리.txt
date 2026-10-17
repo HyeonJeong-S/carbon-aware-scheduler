@@ -1,0 +1,17 @@
+
+― 인수인계 (18:35, 사용자 18:50 퇴근)
+실험: scheduler/data/v2/launch_all.sh 가 A 웨이브를 돌리는 중(6개 동시). 세션이 닫혀도 이어지도록
+resume_detached.sh 를 nohup 으로 띄움 — launch_all 이 사라지면 A~G 전부를 다시 훑되 stats.json 있는 건
+건너뜀, 끝에 Caspian(상한 17). 진행은 logs/_launch_all.log, logs/_resume.log, 각 실행 logs/<name>.log.
+끝나면 할 일(순서):
+  1. ./.venv/bin/python scheduler/data/v2/aggregate.py --md      → summary.md (전 실행 한 표)
+  2. ./.venv/bin/python -m scheduler.analysis_alpha               → 무릎점 껍질·CI·판정 (합성); --prefix azure 로 Azure
+  3. ./.venv/bin/python -m scheduler.analysis_regions             → 리전별 귀속·CA 현지시각·σ
+  4. 피크 주 고르기(main/joint 의 CA 동시 실행 최대 주) → scheduler.offline_bound --start-h <그 주 시작> --days 7 --cap 17 --milp
+     + run_v2 --name week/joint_oracle_a1 --engine joint --alpha 1.0 --forecast oracle --score-from <시작> --days 7 (격차 비교)
+  5. ./.venv/bin/python paper/diagram/gen_v2_figs.py all          → 그림 6종, 하나씩 렌더해 400% 검수 (그림_검수규약.txt)
+  6. 숫자 검증 에이전트 1명: 표에 들어갈 숫자를 jobs.csv.gz 에서 정본 회계로 재계산해 stats.json 과 대조 (짧게 보고)
+  7. 본문 숫자 채우기(v2_본문_초안.txt 의 [ ]), 무릎점 문구는 analysis_alpha 판정대로(통계 감사 문장 세 벌)
+  8. docx 조립은 v1 서식 틀 재사용(단폭 195.6pt, 캡션 국·영, 표 영문) — Word 는 이 세션만
+미결: 인도 존 코드(IN-WE/IN-NO), 중간 커밋 여부, 그림·표 16→12 합치기, 무릎점이 껍질 위가 아닐 때의 기여 2 문구.
+그림 1 확정본 paper/diagram/v2_fig1_pipeline.*. 선행 정책 6행(상한 17) scheduler/data/v2/priors/*.json 확정.

@@ -1,0 +1,134 @@
+<!-- 그림 1 CAST v2 전체 구조 (전단) · gen_v2_fig1.py 로 생성 (직접 편집 금지)
+     1단위 = 1pt, 폭 404pt. 100% 크기로 삽입할 것. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 404 150" width="404pt" height="150pt"
+     xml:space="preserve"
+     font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif"
+     font-size="9" fill="#000000">
+<defs>
+  <marker id="a" viewBox="0 0 10 10" refX="9.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#000000"/></marker>
+</defs>
+<rect width="404" height="150" fill="#fff"/>
+<g transform="translate(8,5) scale(0.68)">
+<path d="M6,0 h18 l5,5 v19 h-23 z" fill="#fff" stroke="#000000" stroke-width="1.3"/>
+<path d="M3,3 h18 l5,5 v19 h-23 z" fill="#fff" stroke="#000000" stroke-width="1.3"/>
+<path d="M0,6 h18 l5,5 v19 h-23 z" fill="#fff" stroke="#000000" stroke-width="1.3"/>
+<line x1="4" y1="12" x2="17" y2="12" stroke="#000000" stroke-width="0.9"/>
+<line x1="4" y1="16" x2="17" y2="16" stroke="#000000" stroke-width="0.9"/>
+<line x1="4" y1="20" x2="17" y2="20" stroke="#000000" stroke-width="0.9"/>
+</g>
+<text x="32" y="18" font-size="8">Jobs · deadlines</text>
+<g transform="translate(27,56) scale(0.7)">
+<path d="M12,14 a7,7 0 0,1 13,-4 a6,6 0 0,1 10,5 a5.5,5.5 0 0,1 -1,11 L10,26 a6,6 0 0,1 2,-12 z" fill="#000000"/>
+<circle cx="8" cy="9" r="5" fill="#000000"/>
+<text x="21" y="24" font-size="7" fill="#fff" text-anchor="middle" font-weight="bold">CO₂</text>
+</g>
+<text x="41.7" y="82.6" text-anchor="middle" font-size="8">Carbon intensity</text>
+<text x="41.7" y="90" text-anchor="middle" font-size="6.5">History · per region · 1 h</text>
+<rect x="256.0" y="3.0" width="4.2" height="4.2" fill="#fff" stroke="#000000" stroke-width="0.5"/>
+<rect x="260.2" y="3.0" width="4.2" height="4.2" fill="#f0f0f0" stroke="#000000" stroke-width="0.5"/>
+<rect x="264.4" y="3.0" width="4.2" height="4.2" fill="#bfbfbf" stroke="#000000" stroke-width="0.5"/>
+<rect x="268.6" y="3.0" width="4.2" height="4.2" fill="#8c8c8c" stroke="#000000" stroke-width="0.5"/>
+<rect x="256.0" y="7.2" width="4.2" height="4.2" fill="#f0f0f0" stroke="#000000" stroke-width="0.5"/>
+<rect x="260.2" y="7.2" width="4.2" height="4.2" fill="#fff" stroke="#000000" stroke-width="0.5"/>
+<rect x="264.4" y="7.2" width="4.2" height="4.2" fill="#f0f0f0" stroke="#000000" stroke-width="0.5"/>
+<rect x="268.6" y="7.2" width="4.2" height="4.2" fill="#bfbfbf" stroke="#000000" stroke-width="0.5"/>
+<rect x="256.0" y="11.4" width="4.2" height="4.2" fill="#bfbfbf" stroke="#000000" stroke-width="0.5"/>
+<rect x="260.2" y="11.4" width="4.2" height="4.2" fill="#f0f0f0" stroke="#000000" stroke-width="0.5"/>
+<rect x="264.4" y="11.4" width="4.2" height="4.2" fill="#fff" stroke="#000000" stroke-width="0.5"/>
+<rect x="268.6" y="11.4" width="4.2" height="4.2" fill="#f0f0f0" stroke="#000000" stroke-width="0.5"/>
+<rect x="256.0" y="15.6" width="4.2" height="4.2" fill="#8c8c8c" stroke="#000000" stroke-width="0.5"/>
+<rect x="260.2" y="15.6" width="4.2" height="4.2" fill="#bfbfbf" stroke="#000000" stroke-width="0.5"/>
+<rect x="264.4" y="15.6" width="4.2" height="4.2" fill="#f0f0f0" stroke="#000000" stroke-width="0.5"/>
+<rect x="268.6" y="15.6" width="4.2" height="4.2" fill="#fff" stroke="#000000" stroke-width="0.5"/>
+<text x="277" y="14" font-size="6.5">Latency <tspan font-family="'Times New Roman','STIX Two Text','STIXGeneral',serif" font-style="italic">ℓ</tspan>(<tspan font-family="'Times New Roman','STIX Two Text','STIXGeneral',serif" font-style="italic">o</tspan>, <tspan font-family="'Times New Roman','STIX Two Text','STIXGeneral',serif" font-style="italic">r</tspan>)</text>
+<rect x="84" y="24" width="232" height="112" rx="10" fill="#fff" stroke="#000000" stroke-width="1.1"/>
+<text x="92" y="37" font-size="10" font-weight="bold">CAST</text>
+<rect x="94" y="48" width="96" height="34" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<text x="142" y="62" text-anchor="middle" font-size="8" font-weight="bold">Forecast</text>
+<text x="142" y="73" text-anchor="middle" font-size="6.5">LSTM · 168 h → 24 h</text>
+<rect x="206" y="48" width="94" height="64" fill="#fff" stroke="#bfbfbf" stroke-width="1.0"/>
+<text x="253.0" y="56.5" font-size="6.5" text-anchor="middle">One LP per slot · knee <tspan font-family="'Times New Roman','STIX Two Text','STIXGeneral',serif" font-style="italic">α</tspan></text>
+<rect x="211" y="60" width="84" height="23" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<g transform="translate(215,65.5) scale(0.5)"><circle cx="11" cy="11" r="10" fill="#fff" stroke="#000000" stroke-width="1.6"/><ellipse cx="11" cy="11" rx="4.2" ry="10" fill="none" stroke="#000000" stroke-width="1"/><line x1="1" y1="11" x2="21" y2="11" stroke="#000000" stroke-width="1"/><line x1="3" y1="5.5" x2="19" y2="5.5" stroke="#000000" stroke-width="0.8"/><line x1="3" y1="16.5" x2="19" y2="16.5" stroke="#000000" stroke-width="0.8"/></g>
+<text x="229" y="69" font-size="8" font-weight="bold">Load balancer</text>
+<text x="229" y="78.5" font-size="6.5">region</text>
+<rect x="211" y="86" width="84" height="23" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<g transform="translate(215,91.5) scale(0.5)"><circle cx="11" cy="11" r="10" fill="#fff" stroke="#000000" stroke-width="1.6"/><line x1="11" y1="11" x2="11" y2="4.5" stroke="#000000" stroke-width="1.5"/><line x1="11" y1="11" x2="15.5" y2="13" stroke="#000000" stroke-width="1.5"/><circle cx="11" cy="11" r="1.3" fill="#000000"/></g>
+<text x="229" y="95" font-size="8" font-weight="bold">Scheduler</text>
+<text x="229" y="104.5" font-size="6.5">start slot · capacity</text>
+<path d="M88,16 L223.0,16 L223.0,46.5" fill="none" stroke="#000000" stroke-width="1.8" marker-end="url(#a)"/>
+<path d="M60,63 L92,63" fill="none" stroke="#000000" stroke-width="1.0" marker-end="url(#a)"/>
+<text x="76" y="59" font-size="6.5" text-anchor="middle"><tspan font-family="'Times New Roman','STIX Two Text','STIXGeneral',serif" font-style="italic">C</tspan></text>
+<path d="M264,21 L264,46.5" fill="none" stroke="#000000" stroke-width="1.0" marker-end="url(#a)"/>
+<line x1="142" y1="82" x2="142" y2="97" stroke="#000000" stroke-width="1.0" marker-end="url(#a)"/>
+<text x="146" y="92" font-size="6.5"><tspan font-family="'Times New Roman','STIX Two Text','STIXGeneral',serif" font-style="italic">Ĉ</tspan><tspan font-size="5.2" dy="1.5" font-family="'Times New Roman','STIX Two Text','STIXGeneral',serif" font-style="italic">r</tspan><tspan dy="-1.5">(</tspan><tspan font-family="'Times New Roman','STIX Two Text','STIXGeneral',serif" font-style="italic">t</tspan>)</text>
+<rect x="122" y="98" width="42" height="24" fill="#fff"/>
+<rect x="124" y="99" width="38" height="16" fill="#fff" stroke="#000000" stroke-width="0.8"/>
+<polyline points="127.0,101.0 128.4,101.2 129.8,101.9 131.2,102.9 132.6,104.2 134.0,105.8 135.3,107.4 136.7,109.0 138.1,110.5 139.5,111.7 140.9,112.5 142.3,112.9 143.7,112.9 145.1,112.5 146.5,111.7 147.9,110.5 149.3,109.0 150.7,107.4 152.0,105.8 153.4,104.2 154.8,102.9 156.2,101.9 157.6,101.2 159.0,101.0" fill="none" stroke="#000000" stroke-width="0.9" stroke-linejoin="round"/>
+<circle cx="143" cy="113" r="1.6" fill="#000000"/>
+<path d="M162,107 L204.5,107" fill="none" stroke="#000000" stroke-width="1.0" marker-end="url(#a)"/>
+<text x="143" y="127" text-anchor="middle" font-size="6.5">24 h curve</text>
+<path d="M300,84 L312,84 L312,96 L300,96" fill="none" stroke="#000000" stroke-width="0.9" stroke-dasharray="3 1.8" marker-end="url(#a)"/>
+<text x="315" y="81" font-size="6.5" text-anchor="end"><tspan font-family="'Times New Roman','STIX Two Text','STIXGeneral',serif" font-style="italic">n</tspan><tspan font-size="5.2" dy="1.5" font-family="'Times New Roman','STIX Two Text','STIXGeneral',serif" font-style="italic">r</tspan><tspan dy="-1.5">(</tspan><tspan font-family="'Times New Roman','STIX Two Text','STIXGeneral',serif" font-style="italic">τ</tspan>)</text>
+<path d="M282,112 L282,126 L226,126 L226,113.5" fill="none" stroke="#000000" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="253.0" y="121.5" font-size="6.5" text-anchor="middle"><tspan font-family="'Times New Roman','STIX Two Text','STIXGeneral',serif" font-style="italic">i</tspan> ≥ 1 → next slot</text>
+<text x="402" y="13" text-anchor="end" font-size="6.5">Execution (region, time)</text>
+<g transform="translate(338,20) scale(0.42)">
+<rect x="0" y="0" width="30" height="34" rx="2.5" fill="#fff" stroke="#000000" stroke-width="1.6"/>
+<rect x="4" y="4.0" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
+<circle cx="23" cy="6.5" r="1.0" fill="#000000"/>
+<rect x="4" y="11.5" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
+<circle cx="23" cy="14.0" r="1.0" fill="#000000"/>
+<rect x="4" y="19.0" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
+<circle cx="23" cy="21.5" r="1.0" fill="#000000"/>
+<rect x="4" y="26.5" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
+<circle cx="23" cy="29.0" r="1.0" fill="#000000"/>
+</g>
+<text x="355.6" y="30.281599999999997" font-size="8" font-weight="bold">R<tspan font-size="6.0" dy="1.5">1</tspan><tspan dy="-1.5"></tspan></text>
+<g transform="translate(338,44) scale(0.42)">
+<rect x="0" y="0" width="30" height="34" rx="2.5" fill="#fff" stroke="#000000" stroke-width="1.6"/>
+<rect x="4" y="4.0" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
+<circle cx="23" cy="6.5" r="1.0" fill="#000000"/>
+<rect x="4" y="11.5" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
+<circle cx="23" cy="14.0" r="1.0" fill="#000000"/>
+<rect x="4" y="19.0" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
+<circle cx="23" cy="21.5" r="1.0" fill="#000000"/>
+<rect x="4" y="26.5" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
+<circle cx="23" cy="29.0" r="1.0" fill="#000000"/>
+</g>
+<text x="355.6" y="54.2816" font-size="8" font-weight="bold">R<tspan font-size="6.0" dy="1.5">2</tspan><tspan dy="-1.5"></tspan></text>
+<g transform="translate(338,68) scale(0.42)">
+<rect x="0" y="0" width="30" height="34" rx="2.5" fill="#fff" stroke="#000000" stroke-width="1.6"/>
+<rect x="4" y="4.0" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
+<circle cx="23" cy="6.5" r="1.0" fill="#000000"/>
+<rect x="4" y="11.5" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
+<circle cx="23" cy="14.0" r="1.0" fill="#000000"/>
+<rect x="4" y="19.0" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
+<circle cx="23" cy="21.5" r="1.0" fill="#000000"/>
+<rect x="4" y="26.5" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
+<circle cx="23" cy="29.0" r="1.0" fill="#000000"/>
+</g>
+<text x="355.6" y="78.2816" font-size="8" font-weight="bold">R<tspan font-size="6.0" dy="1.5">3</tspan><tspan dy="-1.5"></tspan></text>
+<g transform="translate(338,106) scale(0.42)">
+<rect x="0" y="0" width="30" height="34" rx="2.5" fill="#fff" stroke="#000000" stroke-width="1.6"/>
+<rect x="4" y="4.0" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
+<circle cx="23" cy="6.5" r="1.0" fill="#000000"/>
+<rect x="4" y="11.5" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
+<circle cx="23" cy="14.0" r="1.0" fill="#000000"/>
+<rect x="4" y="19.0" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
+<circle cx="23" cy="21.5" r="1.0" fill="#000000"/>
+<rect x="4" y="26.5" width="22" height="5" fill="#fff" stroke="#000000" stroke-width="0.9"/>
+<circle cx="23" cy="29.0" r="1.0" fill="#000000"/>
+</g>
+<text x="355.6" y="116.2816" font-size="8" font-weight="bold">R<tspan font-size="6.0" dy="1.5" font-family="'Times New Roman','STIX Two Text','STIXGeneral',serif" font-style="italic">n</tspan><tspan dy="-1.5"></tspan></text>
+<circle cx="344.3" cy="90" r="1.3" fill="#000000"/>
+<circle cx="344.3" cy="95.5" r="1.3" fill="#000000"/>
+<circle cx="344.3" cy="101" r="1.3" fill="#000000"/>
+<path d="M300,106 L326,106" fill="none" stroke="#000000" stroke-width="1.8"/>
+<path d="M326,27.1 L326,113.1" fill="none" stroke="#000000" stroke-width="1.8"/>
+<line x1="326" y1="27.14" x2="336.5" y2="27.14" stroke="#000000" stroke-width="0.9" marker-end="url(#a)"/>
+<line x1="326" y1="51.14" x2="336.5" y2="51.14" stroke="#000000" stroke-width="0.9" marker-end="url(#a)"/>
+<line x1="326" y1="75.14" x2="336.5" y2="75.14" stroke="#000000" stroke-width="0.9" marker-end="url(#a)"/>
+<line x1="326" y1="113.14" x2="336.5" y2="113.14" stroke="#000000" stroke-width="0.9" marker-end="url(#a)"/>
+</svg>

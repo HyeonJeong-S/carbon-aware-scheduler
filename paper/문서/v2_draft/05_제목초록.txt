@@ -1,0 +1,40 @@
+제목·초록 — 92 초안 v1, 2026-10-17
+v1 실측: 국문 초록 공백 제외 396자(117어절), 영문 초록 188단어. 아래 초안은 그 길이에 맞췄다.
+헤드라인은 32 결정(07:40): 예측기 셋(24시간 전 값·LSTM·완전예지) — 무릎점 64.44~71.93%(39.2~47.8 ms), α=1 95.59~95.87%, 전부 위반 0.
+Azure 결과는 아직 없어 ⟦ ⟧ 한 구절로 두었다. 오면 넣고 길이를 다시 맞춘다.
+────────────────────────────────────────────────────────────────────
+
+[제목 — 두 안]
+
+안 A (용량을 넣음, v1 제목 유지 — 권장)
+  CAST: 리전 용량 제약을 고려한 탄소 인지 시공간 워크로드 스케줄링
+  CAST: Carbon-Aware Spatio-Temporal Scheduling under Capacity Constraints
+  · 권하는 까닭: 핵심 통찰("용량은 공유 제약이어야 한다")과 4.8 의 필요 용량 비교가 모두 용량에 걸려 있다. v1 심사자 M2 가 문제 삼은 것은
+    "강제"라는 동사였지 "고려한"이 아니다. 제목은 "고려한/under"라 v2 의 "초과를 첫 항으로 최소화"와 어긋나지 않는다.
+
+안 B (용량을 빼고 결합을 앞세움)
+  CAST: 리전과 시각을 함께 정하는 탄소 인지 롤링 워크로드 스케줄링
+  CAST: Joint Rolling Spatio-Temporal Scheduling for Carbon-Aware Cloud Workloads
+  · 약점: 같은 고정 α 에서 결합의 몫은 0.20~1.54%포인트다(표 5). 제목이 가장 작은 기여를 앞세우게 된다.
+
+[국문 초록 — 공백 제외 약 400자]
+
+초록  데이터센터 탄소 배출량은 실행 리전과 시각에 따라 크게 달라진다. 마감을 지키는 선행 연구는 리전 용량을 두지 않거나 작업이 들어올 때 거르는 조건으로만 둔다. 용량 없는 선행 정책을 재현하면 작업의 99.75%가 한 리전으로 몰리고, 입장 조건으로 두면 예측의 골이 뾰족할수록 상한 위반이 18건에서 152건으로 는다. 본 연구는 용량을 대기 중인 모든 작업이 함께 보는 제약으로 두는 CAST를 제안한다. LSTM 예측 위에서 로드밸런서와 스케줄러가 매 슬롯 리전과 시작 시각을 선형 계획으로 다시 정하고(분수해가 난 슬롯만 정수 계획), 상한 초과를 목적의 첫 항으로 두며, 탄소와 지연의 가중치를 슬롯마다 파레토 무릎점에서 고른다. 8개 리전 1년치 실측 탄소집약도와 합성 작업 143,200건에서 CAST는 예측기에 따라 배출을 64.44~71.93%, 탄소만 볼 때 95.59~95.87% 줄였고 마감과 상한 위반은 없었다⟦, Azure VM 트레이스에서도 …⟧. LSTM 예측 아래에서 무릎점은 사람이 정하지 않고도 같은 지연의 사후 최선 고정 가중치와 구별되지 않는 절감을 냈고, 세 예측기 모두에서 그 고정 가중치보다 작업을 덜 기다리게 했다. 상한이 걸리는 곳은 리전별 상한 배치를 바꿔도 공간 이동이 모이는 캘리포니아와 프랑스였다.
+
+주제어: 탄소 인지 스케줄링, 워크로드 이동, 리전 용량, 선형 계획법, 롤링 지평, LSTM
+
+[영문 초록 — 약 190단어]
+
+Abstract  The carbon footprint of a cloud workload depends on where and when it runs. Prior work that keeps deadlines either leaves regional capacity out or applies it only as an admission check. Reproducing a capacity-free policy on our data sends 99.75% of jobs to a single region; treating capacity as an admission check makes ceiling violations grow from 18 to 152 as the forecast trough sharpens. We present CAST, which treats capacity as a constraint shared by all waiting jobs. On top of an LSTM forecaster, a load balancer and a scheduler re-decide every waiting job's region and start slot by linear programming at each slot (integer programming only where the relaxation is fractional), minimise overflow before anything else, and choose the carbon-latency weight at each slot's Pareto knee. On one year of measured carbon intensity across eight regions and 143,200 synthetic jobs, CAST cuts emissions by 64.44–71.93% at the knee and by 95.59–95.87% when only carbon is weighed, depending on the forecaster, with no deadline misses and no ceiling violations⟦; on the Azure VM trace …⟧. Under the LSTM forecast and without a hand-set weight, the knee matches the hindsight-best fixed weight at the same latency, and under all three forecasters it makes jobs wait less than that weight. Capacity binds where spatial shifting converges, in California and France, under every regional allocation of the ceiling we tried.
+
+Keywords: Carbon-aware scheduling, Workload shifting, Regional capacity, Linear programming, Rolling horizon, LSTM
+
+────────────────────────────────────────────────────────────────────
+메모
+ · v1 심사 경미 1(초록 주체 모호)에 답해 "용량 없는 선행 정책을 재현하면"으로 주체를 박았다. "실행 불가능"이라는 말은 쓰지 않았다(경미 1 의 둘째 지적).
+ · v1 경미 12("89-fold rise") 꼴의 배수 표현을 쓰지 않았다. 18→152 는 같은 설계의 예측기 비교라 "grow from … to"가 맞다.
+ · "가장 깨끗한 한 리전"이 아니라 "한 리전"으로 썼다(프랑스를 초록에 넣으면 길어짐). 넣고 싶으면 "프랑스 한 리전".
+ · 실측: 국문 초안 공백 제외 379자(Azure 구절 빼고, '초록' 표제 포함), v1 396자. Azure 구절(약 20자)이 들어가도 v1 길이 안이다.
+ · 실측: 영문 초안 180단어(Azure 구절 빼고), v1 188단어.
+
+98 대응(15:30): [5] 핵심 셋은 서론에서, 초록은 공유 제약 한 줄 유지. [14] '마감을 지키는 선행 연구는'. [54] '(분수해가 난 슬롯만 정수 계획)'. [4] 무릎점 한 문장(사용자 결정 문장의 요약). [7] '리전별 상한 배치를 바꿔도'.

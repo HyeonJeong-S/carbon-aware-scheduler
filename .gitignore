@@ -32,3 +32,6 @@ paper/versions/
 
 # 지우기로 한 것을 모아 둔 자리 — 판단 근거는 그 안 README.md 에 있다.
 _지울것/
+
+# Azure 원자료(437 MB) — 저장소 밖, 생성기 README 의 URL 로 받는다
+load_balancer/data/generator/vmtable.csv.gz

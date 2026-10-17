@@ -27,8 +27,9 @@ import pandas as pd
 # ── CONFIG ──────────────────────────────────────────────
 SEED = 42
 JOBS_PER_REGION_PER_DAY = 50
+JOBS_PER_DAY_BY_REGION = None   # 리전별 발생률 dict 를 주면 그 리전은 이 값, 없으면 위 상수 (2026-10-17 비대칭 발생률 변형용)
 N_DAYS = 365                # 1년 통일 (개발용 축소 시에만 줄일 것)
-START_DATE = "2026-01-01"   # t=0 (UTC), 기록용
+START_DATE = "2025-01-01"   # t=0 (UTC), 기록용 — 탄소 자료(carbon_2025)와 같은 해
 OUT_PATH = str(__import__("pathlib").Path(__file__).resolve().parent.parent / "jobs.csv")  # → load_balancer/data/jobs.csv
 
 DAY_START_H, DAY_END_H = 8, 20
@@ -79,8 +80,9 @@ def generate():
     ws = np.array([K_TABLE[k]["w"] for k in ks], float); ws /= ws.sum()
     rows, jid = [], 0
     for region, off in REGIONS.items():
+        n_day = (JOBS_PER_DAY_BY_REGION or {}).get(region, JOBS_PER_REGION_PER_DAY)
         for day in range(N_DAYS):
-            for _ in range(JOBS_PER_REGION_PER_DAY):
+            for _ in range(n_day):
                 k = int(rng.choice(ks, p=ws)); cfg = K_TABLE[k]
                 local_h, band = sample_local_hour(k)
                 submit = round(day * 86400.0 + ((local_h - off) % 24.0) * 3600.0, 1)

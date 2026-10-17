@@ -68,6 +68,13 @@ def score(decisions, jobs, W, latency, cap=CAP, label=""):
             miss += 1
         recs[jid] = dict(region=r, scheduled_start=start, duration=d)
 
+    # v2: 상한과 무관한 절대값도 같이 낸다 — 정책이 암묵적으로 요구한 설비 규모(피크)와,
+    # 주어진 상한에서의 초과 시간. 둘 다 위반 정의와 같은 규약(동시각이면 종료 먼저).
+    from . import joint
+    peaks = joint.peak_ends_first(recs, REGIONS)
+    led = capacity.CapacityLedger(REGIONS, cap)
+    for v in recs.values():
+        led.reserve(v["region"], v["scheduled_start"], v["duration"])
     return dict(
         label=label,
         n=len(decisions),
@@ -75,6 +82,10 @@ def score(decisions, jobs, W, latency, cap=CAP, label=""):
         avg_latency_ms=lat_sum / len(decisions),
         deadline_misses=miss,
         capacity_violations=_over_cap(recs, cap),
+        scored_cap=cap,
+        required_capacity=max(peaks.values()),
+        peak_by_region=peaks,
+        hours_over_by_region={r: led.hours_over(r) for r in REGIONS},
     )
 
 

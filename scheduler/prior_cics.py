@@ -84,9 +84,16 @@ def solve_vcc(eta_day, n_flex, lam_ratio, delta_max=1.0):
     return np.array([(1 + d[h].value()) * avg for h in range(24)])
 
 
-def run(lam_ratio=0.0, delta_max=1.0, verbose=True):
-    """CICS 정책을 우리 데이터에 적용하고 harness 규약대로 결정만 반환한다."""
-    jobs, actual, _pred24, W, lat = H.load_all()
+def run(lam_ratio=0.0, delta_max=1.0, verbose=True, jobs=None, actual=None):
+    """CICS 정책을 우리 데이터에 적용하고 harness 규약대로 결정만 반환한다.
+    jobs/actual 을 주면 그걸 쓴다(v2: 평가 창을 잘라 넘기기 위해). 안 주면 전체를 읽는다."""
+    if jobs is None or actual is None:
+        jobs, actual, _pred24, W, lat = H.load_all()
+    else:
+        from load_balancer.framework.config import load_latency_matrix
+        dummy = {r: np.zeros((len(v), 24)) for r, v in actual.items()}
+        W = H.capacity._Windows(actual, dummy)
+        lat = load_latency_matrix()
 
     # 홈 리전 고정 (CICS 는 공간 이동을 하지 않는다)
     by_rd = defaultdict(list)          # (region, day) -> jobs

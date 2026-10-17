@@ -1,0 +1,44 @@
+[
+ [
+  "Baseline",
+  28625.5,
+  null,
+  "ok"
+ ],
+ [
+  "Temporal-only",
+  23248.5,
+  18.78,
+  "ok"
+ ],
+ [
+  "Spatial-only",
+  10999.8,
+  61.57,
+  "ok"
+ ],
+ [
+  "Decoupled",
+  14634.7,
+  48.88,
+  "ok"
+ ],
+ [
+  "CAST (knee)",
+  8036.4,
+  71.93,
+  "ours"
+ ],
+ [
+  "CAST (\u03b1=1)",
+  1244.4,
+  95.65,
+  "ours"
+ ],
+ [
+  "Capacity ignored",
+  7616.1,
+  73.39,
+  "unreach"
+ ]
+]

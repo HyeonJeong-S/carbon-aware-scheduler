@@ -1,0 +1,11 @@
+다음 세션용 — 숫자 검증 에이전트 지시문 (짧게 보고받을 것)
+저장소 /Users/jongha/Desktop/GitHub/carbon-aware-scheduler, ./.venv/bin/python, 스크래치만 쓰고 저장소 파일 수정·커밋·Word 금지.
+할 일: scheduler/data/v2/summary.csv 의 각 행(name)에 대해 jobs.csv.gz 에서 다음을 독립 재계산해 stats.json 과 대조:
+  total_carbon_kg = Σ capacity._Windows.actual_mean(region, scheduled_start, duration)·duration /1000 (submit_time ≥ 168 만)
+  baseline_kg = 같은 작업의 홈 리전 즉시 실행, savings_pct, capacity_violations(joint.over_cap_flags, 리전별 cap), slo_violations,
+  peak_by_region(joint.peak_ends_first), hours_over, avg/dw latency, by_k 의 n·carbon·avg_delay.
+허용오차 kg 0.1, 건수 0, 비율 0.01pp. 어긋난 행만 표로 보고. 전부 맞으면 "N행 전부 일치" 한 줄.
+
+[추가 규약 10-17 02:30] %포인트 차는 반올림된 % 끼리 빼지 말고 kg 차 ÷ 기준 kg(28,625.5) 으로 계산해 마지막에 반올림한다(예: 분리형 α=1 대 CAST α=1 = 90.7/28,625.5 = 0.32%p, 95.65−95.34=0.31 이 아님). 같은 지연 짝(무릎점 ±0.5 ms 고정 α, match_alpha)·같은 고정 α 설계 짝의 CI 는 analysis_alpha --pair 산출(JSON: scheduler/data/v2/analysis/design_pair_a*.json, alpha_pair_*.json)과 대조한다.
+
+[추가 규약 10-17 10:40] 본문 표의 모든 실행에 대해 stats.json 의 cap·rho·cap_mode·n_all 을 같이 뽑아 대조한다(합성: cap 17·ρ 3·n_all 146,000 이 기본; 스윕은 ⌈배수×13⌉; Azure: 43·13·146,016). --days 로 자른 실행은 상한·ρ 가 자동 재계산되는 함정이 있으므로(10-17 그 주 실행 사고) 반드시 --cap … --cap-mode abs --rho … 로 고정한 값인지 본다.

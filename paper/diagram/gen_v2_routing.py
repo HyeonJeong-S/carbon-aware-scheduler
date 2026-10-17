@@ -1,0 +1,132 @@
+# -*- coding: utf-8 -*-
+"""그림 4 — 공간 이동이 실제로 만든 리전 간 흐름 (2026-09-24 신설).
+
+사용자: "공간이동은 다른 논문들이 공간이동을 하는 그런 아키텍처를 따와서 그리는 게
+낫지 않아??"  참고 문헌(CASPER Fig.3a 'CAS Balancing')은 리전을 두 줄로 놓고 출발
+리전에서 도착 리전으로 화살표를 그어 재배치를 보인다. 그 관례를 따르되, 도식이
+아니라 **실측 배정 행렬**을 그린다 — 우리에게는 146,000건이 실제로 어디로 갔는지가
+있으므로 개념도를 그릴 이유가 없다.
+
+자료: load_balancer/framework/results/summary.json 의 alpha_auto.routing_matrix
+      (8×8, 합 146,000). 무릎점 자동 선택으로 돌린 1년치 결과다.
+
+읽는 법: 위가 출발, 아래가 도착. 선 굵기가 건수이고, 홈에 남은 몫은 굵은 세로선이다.
+        프랑스와 캘리포니아로 몰리고 인도는 거의 비는 것이 한눈에 보인다.
+"""
+import json
+import os
+import sys
+
+import numpy as np
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+
+# 2026-09-25: Mac 절대경로 → 스크립트 위치 기준(레포 루트 = paper/diagram 의 두 단계 위).
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, ROOT)
+from interface.regions import REGIONS, REGION_LABELS
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from palette import INK, AUX_GRAY  # 2026-09-24: 그림 전체 공용 회색 팔레트(palette.py)
+
+for name in ("Apple SD Gothic Neo", "AppleGothic", "Malgun Gothic", "Noto Sans KR"):
+    if any(name.lower() in f.name.lower() for f in fm.fontManager.ttflist):
+        plt.rcParams["font.family"] = name
+        break
+plt.rcParams["axes.unicode_minus"] = False
+
+SUM = os.path.join(os.path.dirname(os.path.abspath(__file__)), "v2_routing_matrix.json")
+# 2026-09-24 b6 배분(회색 팔레트 통일): "홈 유지분"은 보조·부수 정보라 AUX_GRAY.
+GRAY = AUX_GRAY
+# 2026-10-08: JOK 10항(그림 내용 영문)에 따라 영문으로. gen_figs_data.NAME 과 같은 표기.
+SHORT = {"US-CAL-CISO": "California", "US-TEX-ERCO": "Texas", "US-NY-NYIS": "New York",
+         "FR": "France", "DE": "Germany", "KR": "Korea", "IN": "India", "JP": "Japan"}
+
+
+def main():
+    M = np.array(json.load(open(SUM))["routing_matrix"], dtype=float)
+    n = len(REGIONS)
+    tot = M.sum()
+    recv = M.sum(axis=0)
+
+    fig, ax = plt.subplots(figsize=(215 / 72.0, 132 / 72.0), dpi=500)
+    xs = np.arange(n)
+    yt, yb = 1.0, 0.0
+
+    # 이동한 몫만 곡선으로 — 홈에 남은 것(대각)은 따로 표시한다
+    mx = M[~np.eye(n, dtype=bool)].max()
+    # 2026-09-25(그림 비판 검토): "400건 미만 생략"은 근거 없는 문턱이라 선이 뒤엉켰다.
+    # 옮긴 물량을 큰 흐름부터 쌓아 90% 에 이를 때까지만 그린다 — 문턱이 자료에서 나온다.
+    off = sorted(((M[i, j], i, j) for i in range(n) for j in range(n) if i != j and M[i, j] > 0),
+                 reverse=True)
+    moved, acc, keep_set = sum(v for v, _, _ in off), 0.0, set()
+    for v, i, j in off:
+        if acc >= 0.90 * moved:
+            break
+        keep_set.add((i, j)); acc += v
+    print(f"  흐름 {len(keep_set)}/{len(off)}개로 옮긴 물량의 {acc / moved * 100:.1f}% 표시")
+    for i in range(n):
+        for j in range(n):
+            if (i, j) not in keep_set:
+                continue
+            lw = 0.25 + 2.3 * (M[i, j] / mx)
+            ax.plot([xs[i], xs[j]], [yt, yb], color=INK, lw=lw,
+                    alpha=0.55, solid_capstyle="round", zorder=2)
+
+    # 홈 유지분 — 세로 막대
+    for i in range(n):
+        keep = M[i, i]
+        if keep <= 0:
+            continue
+        ax.plot([xs[i], xs[i]], [yt, yb], color=GRAY,
+                lw=0.25 + 2.3 * (keep / mx), alpha=0.9, zorder=1)
+
+    # 도착 리전 — 받은 양에 비례한 사각형
+    for j in range(n):
+        h = 0.055 + 0.20 * (recv[j] / recv.max())
+        ax.add_patch(plt.Rectangle((xs[j] - 0.34, yb - h), 0.68, h,
+                                   facecolor=INK if recv[j] > tot * 0.2 else "white",
+                                   edgecolor=INK, lw=0.8, zorder=4))
+        # 2026-09-24: 라벨을 상자마다 다른 높이에 두니 키 큰 상자에서는 글자가
+        # 상자 아래 테두리에 얹혔고, 검은 상자에서는 검은 글자가 묻혔다(지면 확인).
+        # 가장 큰 상자보다 아래의 한 줄에 모두 맞춘다 — 열 위치가 상자를 가리킨다.
+        ax.text(xs[j], yb - 0.255 - 0.05, f"{recv[j]/tot*100:.0f}%", ha="center",
+                va="top", fontsize=6.8,
+                fontweight="bold" if recv[j] > tot * 0.2 else "normal")
+
+    for i in range(n):
+        ax.add_patch(plt.Rectangle((xs[i] - 0.34, yt), 0.68, 0.055,
+                                   facecolor="white", edgecolor=INK, lw=0.8, zorder=4))
+        # 2026-10-08: 영문 지명이 한글보다 길어(California 10자 vs 캘리포니아 5자)
+        # 32도에서는 이웃 라벨끼리 가로로 4.0~5.6pt 겹쳤다(PDF 글자범위 자동검사).
+        # 각도를 쓸어 보니 55도에 0.8pt 남고 57도에서 겹침 0 이었는데, 57도로는
+        # 문제가 반만 풀린다 — 기울어진 라벨이 제 열을 벗어나 위로 뻗어 "Texas"가
+        # New York 열 위에, "France"가 Germany 열 위에 놓인다(두 안을 나란히
+        # 렌더해 확인). 겹치지만 않을 뿐 어느 열의 이름인지 모호한 건 그대로다.
+        # 90도로 세우면 라벨의 가로 폭이 글자 높이(약 7.5pt)로 줄어 **제 열 폭
+        # (0.68 데이터단위) 안에 완전히 들어간다** — 수직선이 곧 소속을 말한다.
+        # 글자 크기는 그대로 둔다(이미 6.2pt 로 작다).
+        ax.text(xs[i], yt + 0.11, SHORT[REGIONS[i]], ha="left", fontsize=6.8,
+                rotation=90, rotation_mode="anchor")
+
+    ax.text(-0.85, yt + 0.02, "Origin", fontsize=6.8, ha="right", va="bottom")
+    ax.text(-0.85, yb - 0.02, "Destination", fontsize=6.8, ha="right", va="top")
+    ax.set_xlim(-1.15, n + 0.15)
+    ax.set_ylim(-0.46, 1.62)
+    ax.axis("off")
+    # 2026-09-24 b6 배분(그림 10장 통합 점검): "선 굵기 = 옮긴 작업 수"는 캡션
+    # ("선 굵기가 옮긴 작업 수다")과 그대로 겹쳤다 — 뺀다. 회색 세로선·아래
+    # 사각형의 뜻은 캡션에 없어 남긴다.
+    # 2026-09-25: 그림 아래 각주 두 줄(회색 세로선·아래 사각형의 뜻, 생략 기준)은 캡션으로 옮겼다.
+    fig.tight_layout(pad=0.3)
+    for e in (".png", ".pdf"):
+        fig.savefig(os.path.join(HERE, "v2_fig5_routing" + e))
+    print("wrote fig4_routing — 프랑스 %.1f%%, 캘리포니아 %.1f%%, 인도 %.1f%%"
+          % (recv[3] / tot * 100, recv[0] / tot * 100, recv[6] / tot * 100))
+
+
+if __name__ == "__main__":
+    main()
