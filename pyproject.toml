@@ -47,7 +47,7 @@ packages = [
 [tool.ruff]
 line-length = 110
 target-version = "py311"
-extend-exclude = ["venv", "_codelens", "*/data/generator/*", "scheduler/data/*", "백업", "paper"]
+extend-exclude = ["venv", "_codelens", "*/data/generator/*", "scheduler/data/*", "백업", "paper", "*.ipynb"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "C4", "SIM", "RUF"]
