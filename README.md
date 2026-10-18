@@ -118,7 +118,7 @@ scheduler/
 
 ```
 paper/
-├─ CAST_JOK_v2.docx · .pdf   조립 작업 자리 (Word 내보내기는 이 경로에서만)
+├─ (CAST_JOK_v2.docx · .pdf) 조립할 때만 잠깐 생기는 작업 자리 (git 밖)
 ├─ 정리.txt                  작업 기록 · 폴더안내.txt 자세한 안내
 ├─ v2/   CAST_JOK_v2_10쪽.pdf·docx (최신) · CAST_JOK_v2_28쪽.pdf · 원고/(txt 원고·식) · 보관/(회차판·모의 심사·설계)
 ├─ v1/   CAST_JOK_v1.docx·pdf · 피드백 · 문서/ · 보관/

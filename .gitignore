@@ -36,3 +36,7 @@ _지울것/
 # Azure 원자료(437 MB) — 저장소 밖, 생성기 README 의 URL 로 받는다
 load_balancer/data/generator/vmtable.csv.gz
 scheduler/data/v2/_buggy_1018/**/jobs.csv.gz
+
+# 조립 작업 자리(10-18): 조립기·Word 내보내기가 잠깐 쓰고 v2/ 로 복사한 뒤 지운다
+paper/CAST_JOK_v2.docx
+paper/CAST_JOK_v2.pdf
