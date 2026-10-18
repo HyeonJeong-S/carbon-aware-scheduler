@@ -17,6 +17,21 @@
 
 ---
 
+## 폴더 순서
+
+데이터가 흐르는 순서대로 읽으면 됩니다. 폴더 이름은 코드가 패키지로 불러 쓰므로 바꾸지 않았습니다.
+
+| 순서 | 폴더 | 하는 일 |
+|---|---|---|
+| ① | [`lstm_source/`](lstm_source/) | LSTM 학습 노트북과 원자료 (모델을 **만든** 쪽) |
+| ② | [`carbon_forecast_lstm/`](carbon_forecast_lstm/) | 학습된 예측 모델과 추론 코드 (모델을 **쓰는** 쪽) |
+| ③ | [`interface/`](interface/) | 탄소 자료·예측을 모듈에 넘기는 공용 API, 통합 대시보드 |
+| ④ | [`load_balancer/`](load_balancer/) | 작업 생성기와 작업 자료(합성·Azure), v1 로드밸런서 |
+| ⑤ | [`scheduler/`](scheduler/) | v1 시간 이동 스케줄러, v2 CAST(`joint.py`, `run_v2.py`)와 실험 결과 `data/v2/` |
+| — | [`paper/`](paper/) · [`presentation/`](presentation/) · [`tests/`](tests/) | 논문(안내: `paper/폴더안내.txt`) · 발표 · 테스트 |
+
+---
+
 ## Impact
 
 | | |
