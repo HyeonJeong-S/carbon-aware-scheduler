@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """1회차 숫자 검증 D[26] 대응 — 원고의 예측 숫자를 저장된 스크립트로 다시 낸다(이전엔 즉석 계산이라 출처가 없었다).
   (1) 전 지평 MAE: LSTM / 직전값(persistence) / 24시간 전 값(SN-24) / 168시간 전 값(SN-168). 시험 연도 2025 전체와 평가 구간(day 8+) 두 가지.
   (2) 예측 최저 시각이 발행마다 옮겨 가는 비율: 리전마다, 연속한 두 발행 h−1, h 에서 24시간 창 안 최저 '목표 시각(절대)'이 다른 비율.
@@ -6,7 +5,9 @@
     ./.venv/bin/python scheduler/forecast_checks.py
 """
 import json
+
 import numpy as np
+
 from interface import carbon_2025
 from scheduler import forecasters
 
@@ -27,7 +28,7 @@ def mae(actual, pred, lo):
     for r, a in actual.items():
         p = pred[r]; n = min(len(a), p.shape[0])
         T = np.arange(n)[:, None] + 1 + np.arange(H)[None, :]
-        ok = (T < len(a)) & (np.arange(n)[:, None] >= lo)
+        ok = (len(a) > T) & (np.arange(n)[:, None] >= lo)
         errs.append(np.abs(p[:n] - a[np.minimum(T, len(a) - 1)])[ok])
     return float(np.mean(np.concatenate(errs)))
 
