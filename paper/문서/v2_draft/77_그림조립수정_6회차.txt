@@ -1,0 +1,40 @@
+77 그림·조립 수정 6회차 — 78_점검6_E그림조판의 [1][7][9](+[6] 일부)[14](식 6·13) 반영 (2026-10-18 16:00경)
+고친 파일: paper/diagram/gen_v2_concurrency.py · gen_figs.py · gen_v2_figs.py, paper/tools/build_omml_v2.py · build_v2_docx.py.
+다시 만든 것: v2_fig9_concurrency(그림 7) · fig2_forecast(svg·png → v1_docx_fig2.png 로 복사) · v2_capsweep(그림 10) · v2_priors(그림 11) · omml/eq13.
+원고(99_원고.txt)는 손대지 않음. 커밋 안 함. 자료 값 그대로(그림마다 이전 PNG 와 화소 차를 떠서 바뀐 곳이 고친 자리뿐인지 확인).
+확인: 조립 → export_pdf.py → paper/CAST_JOK_v2.pdf(15:27 → 16:03, 28쪽 — 쪽 수 차이는 동시 진행 중인 원고 수정 탓) → 288 dpi(400%).
+  PDF에 박힌 그림 2·7·10·11이 diagram PNG와 화소 차 0.
+
+[1] 그림 7 (v2_fig9_concurrency, 17쪽)
+  - 용량 무시 채움(#c8c8c8 그대로)에 진회색 윤곽선(#6a6a6a, 0.5 pt, 인쇄 0.46 pt). 63 봉우리는 11초(0.003 h)라 채움만으로는 털선이었다
+    → 이제 봉우리가 격자선보다 진한 선으로 꼭대기 63까지 보인다. 범례 칸에도 같은 윤곽선이 붙는다.
+  - 꼭대기에 작은 ●(2 pt), "63"은 꼭대기 오른쪽 9 pt에 두고 0.5 pt 가로 지시선으로 이음(전에는 왼쪽 아래 y≈52에 떨어져 있었음).
+    오른쪽은 비어 있다(다음 봉우리는 35 아래). 격자 60·범례와 겹침 없음(400%).
+
+[7] 그림 2 (fig2_forecast → v1_docx_fig2.png, 5쪽)
+  - "Output Ĉ_r (t … t+23)" → "Output Ĉ_r^(t) (t ⋯ t+23)". 기호는 기울임, 아래첨자 r 과 위첨자 (t)를 겹쳐 쌓음, 줄임표는 식과 같은 ⋯.
+  - 첨자 6.5 pt(설계 폭 196 = 지면 폭이라 인쇄도 6.5 pt, 다른 작은 글자와 같음). 오른쪽 곡선과 약 18 pt 떨어짐. 바뀐 화소는 이 줄뿐.
+
+[9](+[6] 일부) 그림 10·11 (v2_capsweep, v2_priors)
+  - CAST α=1 ■ 를 검정으로(선은 회색 파선 그대로) — 캡션의 "■"와 맞음. 그림 11에서는 회색 점선(용량 무시 α=1)과도 갈린다.
+  - ■ 테두리 1.0 → 0.4(겉 크기 3.8 → 3.2 pt): 1.0이면 상한 26의 ■ 와 CASPER ○ 고리 틈이 0.14 pt(500 dpi 화소 1개)라 검정끼리 붙어 보였다.
+    지금 틈 0.43 pt, 400%에서 떨어져 보인다. 그림 10 ■ 도 같은 크기.
+  - 반영 중 발견: scheduler/data/v2/priors/ 에 Caspian 가중치 민감도 실행(caspian_w0.5_frac 13:38, w2.0 13:34)이 새로 생겨,
+    다시 그리면 표 7에 없는 ○ 와 "caspian_w0.5_frac" 라벨이 Caspian 점 위에 찍혔다(지시선도 가려짐) → 표 7의 Caspian(w1.0_frac)만 그리게 함.
+
+[14] 식 (6)·(13)
+  - 식 (6): 원인은 식 문단 틀의 가운데 탭이 v1 단폭 215 pt 기준(2151 twips = 107.6 pt)이라 단 가운데(97.8 pt)보다 9.75 pt 오른쪽인 것.
+    build_v2_docx.py 에 EQ_CENTER = {6: 1956}(단 가운데)를 두어 식 (6)만 옮김. "∀t"–"(6)" 틈 약 1.5 → 13.0 pt, 번호는 같은 줄.
+    (다른 식은 그대로. 모든 식을 단 가운데로 옮기려면 EQ_CENTER 를 넓히면 됨.)
+  - 식 (13): latex2mathml→XSL 이 \, 를 지워 argmin 과 √ 가 붙었다. build_omml_v2.py SPACES 에 \medsp(U+2005, 1/4 em, Cambria Math 에 글리프 있음)를
+    더하고 식 13 에만 씀. \, 전체를 바꾸면 식 (1)(2)(7) 간격까지 바뀌어 따로 둠. 다시 만든 omml 중 바뀐 것은 eq13 뿐.
+
+원고 담당이 고칠 캡션: 없음(필수 아님).
+  - 그림 10·11: ■ 가 이제 검정이라 캡션 "■" 그대로 맞다. 그림 11은 원하면(점검 E [6]) "CAST α=1은 회색 파선과 ■" 정도로 명시.
+  - 그림 2·7: 캡션 그대로 맞다(그림 7 의 ●와 63 은 그림 안 숫자로 설명됨).
+
+다시 그리는 명령
+  ./.venv/bin/python paper/diagram/gen_v2_concurrency.py
+  ./.venv/bin/python paper/diagram/gen_figs.py && ./.venv/bin/python paper/diagram/render_svg.py fig2_forecast && cp paper/diagram/fig2_forecast.png paper/diagram/v1_docx_fig2.png
+  ./.venv/bin/python paper/diagram/gen_v2_figs.py capsweep ; ./.venv/bin/python paper/diagram/gen_v2_figs.py priors
+  ./.venv/bin/python paper/tools/build_omml_v2.py

@@ -329,12 +329,18 @@ def eq_elem(T, n):
         if tab is not None:
             pt = etree.Element(qn("w:ptab")); pt.set(qn("w:relativeTo"), "margin"); pt.set(qn("w:alignment"), "right"); pt.set(qn("w:leader"), "none")
             r.replace(tab, pt)
+    if n in EQ_CENTER:                                       # 가운데 탭 자리 바꿈(아래 EQ_CENTER 주석)
+        for tb in ppr.iter(qn("w:tab")):
+            if tb.get(qn("w:val")) == "center": tb.set(qn("w:pos"), str(EQ_CENTER[n]))
     if new.find(".//" + qn("w:br")) is not None:             # 두 줄 식: 둘째 줄을 들여 이어지는 줄로 보이게
         ind = ppr.find(qn("w:ind"))
         if ind is None: ind = etree.SubElement(ppr, qn("w:ind"))
         ind.set(qn("w:left"), str(EQ_BR_INDENT.get(n, 560)))
     return p
 
+# 식 가운데 탭(twips). 틀의 탭은 v1 단폭 215pt 기준(가운데 2151 = 107.6pt)이라 단폭 195.6pt(가운데 1956)보다 9.75pt 오른쪽이다.
+# 6회차 E [14]: 식 (6)은 폭 약 154pt 라 이 자리에 두면 "∀t" 와 번호 "(6)" 사이가 1.5pt 뿐이었다 → 식 (6)만 단 가운데(1956)로.
+EQ_CENTER = {6: 1956}
 EQ_BR_INDENT = {12: 1100}     # 둘째 줄 들여쓰기(twips). 식 12 는 첫 줄이 짧아 가운데에 놓이므로 둘째 줄을 더 들인다
 
 def eq_display(p, om, n):

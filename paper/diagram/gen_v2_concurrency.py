@@ -39,14 +39,20 @@ def main():
     xb, yb = step_xy(d["win_events_b"])
     day0 = win_lo // 24
     fig, ax = plt.subplots(figsize=(215 / 72.0, 184 / 72.0), dpi=500)
-    ax.fill_between(xa, ya, color="#c8c8c8", lw=0, zorder=1, label="Capacity ignored")
+    # 10-18(78 점검6 E [1]): 63 봉우리는 11초(0.003 h) 동안이라 채움만으로는 폭 0.1~0.4 pt·15% 회색의 털선이 되어 격자선과
+    # 구별되지 않았다 → 채움에 진회색 윤곽선(0.5 pt, 인쇄 0.46 pt)을 둘러 좁은 봉우리도 선으로 보이게. 자료·채움색은 그대로.
+    ax.fill_between(xa, ya, facecolor="#c8c8c8", edgecolor="#6a6a6a", lw=0.5, zorder=1, label="Capacity ignored")
     ax.plot(xb, yb, color=INK, lw=0.8, zorder=3, label="CAST, knee")   # 10-18(89 점검 [10]): 계열 이름을 표 3·7 과 같게 "CAST, knee"
     ax.axhline(cap, color=INK, lw=1.0, ls=(0, (4, 1.6)), zorder=2, label=f"Ceiling {cap}")   # 10-18(87 점검2 [12]): 점선 → 그림 6(gen_v2_fig7.py) 상한 선과 같은 파선(lw 1.0, 4/1.6)
     # 10-18(87 점검2 [12]): 선 위 "Ceiling 17" 글자를 범례 셋째 항목으로 옮겼다. 선 위에 두면 어디든 회색 봉우리(용량 무시)를
     # 흰 바탕이 가리거나(오른쪽 끝: day 189.8, 왼쪽 끝: day 184.7 의 18~21 구간), 바탕을 빼면 격자 20 이 글자를 지난다(렌더 확인).
     pa = max(ya); ia = ya.index(pa)
-    ax.annotate(f"{pa}", (xa[ia], pa), textcoords="offset points", xytext=(-4, -16),
-                fontsize=8.2, fontweight="bold", ha="right", va="top")
+    # 10-18(78 점검6 E [1]): "63" 이 봉우리 왼쪽 아래(y≈52)에 떨어져 어느 점의 값인지 이어 주는 것이 없었다 →
+    # 봉우리 꼭대기에 작은 ●, 오른쪽(빈 자리: 다음 봉우리는 35 아래)에 숫자를 두고 짧은 지시선으로 잇는다.
+    ax.plot([xa[ia]], [pa], ls="none", marker="o", ms=2.0, mfc=INK, mec=INK, mew=0, zorder=4)
+    ax.annotate(f"{pa}", (xa[ia], pa), textcoords="offset points", xytext=(9, 0),
+                fontsize=8.2, fontweight="bold", ha="left", va="center",
+                arrowprops=dict(arrowstyle="-", lw=0.5, color=INK, shrinkA=1.0, shrinkB=1.6), zorder=4)
     ax.set_xlim(0, win_hi - win_lo); ax.set_ylim(0, pa * 1.12)
     xt = list(range(0, win_hi - win_lo + 1, 24))
     ax.set_xticks(xt); ax.set_xticklabels([f"{day0 + i // 24}" for i in xt], fontsize=7.7)

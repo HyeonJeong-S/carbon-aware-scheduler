@@ -165,7 +165,7 @@ def summarize(out, regions, cap_d, score_from=0.0, alpha_log=None, extra=None):
     return st
 
 
-COMMIT_MODES = ("arrival_fixed", "arrival_fixed_exact", "start_check", "start_admit", "start_admit_replan")
+COMMIT_MODES = ("arrival_fixed", "arrival_fixed_exact", "start_check", "start_admit", "start_admit_replan", "start_admit_fb")
 
 
 def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
@@ -174,7 +174,9 @@ def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
               t_start=None, score_from=0.0, mode="joint", penalties=None, record_alpha=True, record_slots=None):
     """반환 (out, stats). cap/rho 는 int 또는 {리전: int}."""
     assert mode in ("joint", "decoupled", "greedy", "arrival_fixed", "start_check", "now_only", "no_lookahead",
-                    "arrival_fixed_exact", "start_admit", "start_admit_replan")
+                    "arrival_fixed_exact", "start_admit", "start_admit_replan", "start_admit_fb")
+    # start_admit_fb(10-18, 6회차 B[1]): start_admit 과 같되, 여유가 다해 강제로 들여야 할 때 정한 리전이 꽉 찼으면
+    # 그 순간 자리가 있는 리전 가운데 예측 탄소가 가장 낮은 곳으로 보낸다(그런 리전이 없을 때만 강제 초과).
     # start_admit_replan(10-18, 5회차 B[2]): start_admit 과 같되, 시작 순간에 자리가 없으면 같은 리전 다음 정시로 미루는 대신
     # 대기 집합 Q 로 되돌려 그 슬롯의 LP 가 리전·시각을 다시 고르게 한다(남의 미래 계획은 여전히 보지 않음).
     # start_admit(10-18, 4회차 B[3]·C[1]): start_check 처럼 도착 슬롯에 리전·시각을 정하되 다른 작업의 계획은 보지 않고,
@@ -306,6 +308,10 @@ def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
                     Q.append(pj)
                 elif late_ok:
                     pending.append([pj, pr, t + 1, pa])
+                elif mode == "start_admit_fb" and any(running_committed(r2, t) < cap_d[r2] for r2 in regions):
+                    r2 = min((r2 for r2 in regions if running_committed(r2, t) < cap_d[r2]),
+                             key=lambda r2: W.pred_mean(r2, t, 0, pj["duration"]))
+                    emit(pj, r2, float(t), True, False, pa); forced += 1
                 else:
                     emit(pj, pr, float(t), True, False, pa); forced += 1
         N = []
@@ -521,7 +527,7 @@ def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
                 if mode == "decoupled" and jj < nQ and j["id"] not in fixed_region:
                     fixed_region[j["id"]] = var_r[v]
                 if var_i[v] != 0:
-                    if mode in ("start_admit", "start_admit_replan"):
+                    if mode in ("start_admit", "start_admit_replan", "start_admit_fb"):
                         pending.append([j, var_r[v], var_start[v], a_used]); started.add(jj)
                         continue
                     if mode not in ("arrival_fixed", "arrival_fixed_exact", "start_check"):

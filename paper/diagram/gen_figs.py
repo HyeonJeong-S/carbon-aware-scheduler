@@ -386,6 +386,7 @@ def fig_forecast():
     # 2026-10-18(82 점검4 E [4]): 작은 글자 6.0 → 6.5 pt. 설계 폭 196 = 지면 폭이라 그대로 찍히는데, 대문자 높이로 재면
     # (÷0.72) 5.7 pt 로 6 pt 기준 아래였다(이 서체 대문자 높이는 글자 크기의 약 0.67~0.69). 6.5 면 약 6.1~6.3 pt.
     SM = 6.5
+    R_W = 2.4   # 6.5 pt 기울인 "r" 의 앞먹임 폭(Malgun Gothic) — 위첨자 (t) 를 r 위로 되돌리는 거리
     L = [head(W, H, "그림 2 리전별 LSTM 구조 (단내)")]
 
     # 바깥 틀 하나만 둥글다. 안쪽 상자는 전부 각진다(모서리 위계).
@@ -426,8 +427,15 @@ def fig_forecast():
 
     # ── ③ 출력 ──
     L += [box(12, 181, 172, 20, sw=1.0),
-          f'<text x="20" y="194" font-size="{FT}"><tspan font-weight="bold">Output  \u0108</tspan>'
-          f'<tspan font-size="{SM}" dy="1.5">r</tspan><tspan dy="-1.5"> (t \u2026 t+23)</tspan></text>',
+          # 2026-10-18(78 점검6 E [7]): 출력 기호를 식 (8)·그림 1 과 같은 Ĉ_r^(t)(발행 시각 위첨자)로 — 기호는 기울임,
+          # 아래첨자 r 과 위첨자 (t) 를 겹쳐 쌓는다(r 폭만큼 되돌림). 첨자 6.5 pt(설계 폭 = 지면 폭이라 인쇄도 6.5).
+          # 줄임표는 식과 같은 가운데 줄임표 ⋯ (전 …).
+          f'<text x="20" y="194" font-size="{FT}"><tspan font-weight="bold">Output</tspan>'
+          f'<tspan font-style="italic" dx="2.2">\u0108</tspan>'
+          f'<tspan font-size="{SM}" font-style="italic" dy="1.6">r</tspan>'
+          f'<tspan font-size="{SM}" dx="{-R_W + 1.1:.2f}" dy="-5.4">(<tspan font-style="italic">t</tspan>)</tspan>'
+          f'<tspan dy="3.8" dx="1.6">(<tspan font-style="italic">t</tspan><tspan dx="2.5">\u22ef</tspan>'
+          f'<tspan font-style="italic" dx="1.0">t</tspan><tspan dx="1.0">+23)</tspan></tspan></text>',
           spark(116, 184, 62, 14, n=24)]
 
     L.append("</svg>")

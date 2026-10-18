@@ -25,10 +25,10 @@ EQ = {
  # 식 9: 합의 몸을 {}로 묶는다 — 안 묶으면 XSL 이 c_j 만 Σ 의 몸(m:e)에 넣고 "(r,i)" 를 Σ 밖에 두어 c_j 와 괄호 사이가 벌어졌다(84 [10])
  9: r"\min\ \sum_{j\in Q}\sum_{r,i}{c_{j}(r,i)\,x_{jri}}+M_{A}\sum_{r,\kappa}z^{A}_{r\kappa} @@ \qquad+M_{B}\sum_{r,\sigma\ge t+1}z^{B}_{r\sigma}+\varepsilon\sum_{j\in Q}\sum_{r,i}i\,x_{jri}",   # 3회차 B[10]: κ 는 순간 u∈U_t 와 미래 슬롯 σ 를 함께(해설 문장). 세 줄로 나누면 Word 가 가운데 줄 Σ 를 크게 그렸다
  10: r"\sum_{r,i}x_{jri}=1,\qquad\forall j\in Q",                                      # "= 1, ∀j"(89 [24]: 붙어 있던 것)
- "11a": r"\sum_{(j,0)\ni u}x_{jr0}+n_{r}(u)\le\mathrm{cap}_{r}+z^{A}_{ru}",   # 3회차 B[10]: 지금 슬롯의 시작 순간 행. (j,0)∋u = 지금 시작하는 j 의 실행 [max(t,s_j), +d_j) 가 u 를 포함(해설 문장에)
- "11b": r"\sum_{(j,i)\ni\sigma}x_{jri}+n_{r}(\sigma)\le\mathrm{cap}_{r}+z^{A}_{r\sigma}",        # 미래 슬롯 σ∈[t+1,t+H] 는 해설 문장에
- 12: r"\sum_{(j,i)\ni\sigma,\ j\in Q^{\mathrm{def}}}x_{jri}+n_{r}(\sigma) @@ \qquad\le\mathrm{cap}_{r}-\rho_{r}+z^{B}_{r\sigma}",   # ∀ r, σ∈[t+1,t+H] 는 해설 문장에. 한 줄이면 번호 (12)가 식에 붙는다(89 [7]) — 두 줄
- 13: r"\alpha^{*}=\underset{\alpha\in\mathcal{A}}{\mathrm{arg\,min}}\sqrt{\tilde{\lambda}_{\alpha}^{2}+\tilde{e}_{\alpha}^{2}}",
+ "11a": r"\sum_{(j,0)\ni u}x_{jr0}+n_{r}(u)\le\mathrm{cap}_{r}+z^{A}_{ru} @@ \qquad\qquad\forall r,\ u\in U_{t}",   # 6회차 E[2]: 정의역
+ "11b": r"\sum_{(j,i)\ni\sigma}x_{jri}+n_{r}(\sigma)\le\mathrm{cap}_{r}+z^{A}_{r\sigma} @@ \qquad\qquad\forall r,\ \sigma\in[t+1,t+H]",   # 6회차 E[2]: 정의역
+ 12: r"\sum_{(j,i)\ni\sigma,\ j\in Q^{\mathrm{def}}}x_{jri}+n_{r}(\sigma) @@ \qquad\le\mathrm{cap}_{r}-\rho_{r}+z^{B}_{r\sigma} @@ \qquad\qquad\forall r,\ \sigma\in[t+1,t+H]",   # 두 줄. 6회차 E[2]: 정의역
+ 13: r"\alpha^{*}=\underset{\alpha\in\mathcal{A}}{\mathrm{arg\,min}}\medsp\sqrt{\tilde{\lambda}_{\alpha}^{2}+\tilde{e}_{\alpha}^{2}}",   # 6회차 E[14]: argmin 뒤 √ 가 붙었다(\, 는 XSL 에서 사라짐) → \medsp(U+2005)
  14: r"E_{j}\approx P\,d_{j}\,\frac{1}{|T_{j}|}\sum_{\sigma\in T_{j}}C_{r(j)}(\sigma)",   # 5회차 E: 슬롯 첨자 τ → σ(τ_j 는 시작 시각)
 }
 
@@ -37,7 +37,9 @@ W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 M_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"
 # \quad·\qquad 는 MathML <mspace> 가 되어 Word XSL 에서 사라진다(식 (4)(10) "1∀j" 붙음, 89 [24]).
 # 자리표시 글자로 바꿔 변환한 뒤 m:t 안에서 전각 공백(U+2003)으로 되돌린다.
-SPACES = [(r"\qquad", "QQSPACE", "  "), (r"\quad", "QSPACE", " ")]
+# \medsp(LaTeX 에 없는 이 파일 전용 표기): 1/4 em 빈칸(U+2005, Cambria Math 에 글리프 있음) — 식 (13) argmin 과 √ 사이(6회차 E [14]).
+#   \, 를 통째로 바꾸면 식 (1)(2)(7) 등의 간격까지 바뀌므로 따로 둔다.
+SPACES = [(r"\qquad", "QQSPACE", "  "), (r"\quad", "QSPACE", " "), (r"\medsp", "MSPACE", " ")]
 FUNCS = {"min", "max", "argmin", "arg min", "arg min", "log", "exp"}   # 함수 이름은 바른 글꼴(89 [24]: min 이 이탤릭)
 
 def _one(tex):

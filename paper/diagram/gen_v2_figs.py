@@ -164,8 +164,9 @@ def fig_capsweep():
         rows.sort()
         if not rows: continue
         any_data = True
+        # 10-18(78 점검6 E [9]): 캡션이 "■"(검정)라 부르는데 회색으로 찍혔다 → ■ 만 검정(선 색·굵기·파선은 그대로 회색)
         ax.plot([r[0] for r in rows], [r[1] for r in rows], color=col, lw=1.1 if suf_a == "" else 0.9, ls=ls if len(rows) > 1 else "none",
-                marker=mk, ms=3.2 if mk == "o" else 2.8, mfc=col, mec=col, zorder=3, label=name)
+                marker=mk, ms=3.2 if mk == "o" else 2.8, mfc=INK, mec=INK, mew=1.0 if mk == "o" else 0.4, zorder=3, label=name)
     # 용량 무시 점선은 곡선 둘 다음에 — 범례 순서가 CAST 둘, 용량 무시 순이 되게
     for suf_a, col, ig_lab in (("", INK, "Capacity ignored, knee"), ("_a1", GRAY, "Capacity ignored, α=1")):
         ig = stats(ig_name + suf_a)
@@ -287,6 +288,10 @@ def fig_priors():
         j = json.load(open(p)); s = j["at_cap"]; n = j["name"]
         if n in ("baseline", "suk_lb"):   # 10-18: suk_lb 는 v1 로드밸런서 리전 위의 옛 행 — 표 7 의 (ours) 는 suk_lb_v2knee
             continue
+        # 10-18(78 점검6 E 반영 중 발견): Caspian 가중치 민감도 실행(caspian_w0.5_frac 13:38, w2.0 13:34)이 priors/ 에 생겨
+        # 표 7 에 없는 ○ 와 "caspian_w0.5_frac" 라벨이 Caspian 점에 겹쳐 찍혔다 → 표 7 의 Caspian(w1.0_frac)만 그린다
+        if n.startswith("caspian") and n != "caspian_w1.0_frac":
+            continue
         # 10-18(89 점검 [20]): CASPER ○ 가 α=1 선에 꿰였다 → 흰 채움 ○ 를 곡선·점선(zorder ≤4) 위로 올려 선을 가린다
         # 10-18(87 점검2 [15]): ○ 뒤에 흰 원(테두리 없음, s 60)을 깔아 선이 ○ 앞에서 끊기게 — CASPER ○(α=1 곡선 위)·
         # Suk. temporal (ours) ○(무릎점 가로 점선 73.39 위)·Suk. spatial+temporal ○(α=1 가로 점선 위)가 선에 꿰인 것처럼 보였다.
@@ -315,13 +320,16 @@ def fig_priors():
             # 새 용량 무시 가로 점선(73.39 가 CAST 곡선 끝 73.42 와 같은 높이)이 글자를 지나가 범례로 옮겼다.
             # 10-18(82 점검4 E [10](a)): ■ 는 3.2 → 2.8(그림 10 의 ■ 와 같게) — 3.2 면 CASPER ○ 고리와 틈이 0.2 pt 로 붙어 보였다
             ms = 3.2 if mk == "o" else 2.8
+            # 10-18(78 점검6 E [6][9]): 캡션의 "■"(검정)와 맞게 ■ 를 검정으로(선은 회색 파선 그대로) — 회색 점선(용량 무시 α=1)과도 갈린다
             ax.plot([q[0] for q in pts], [q[1] for q in pts], color=col, lw=1.1, marker=mk, ms=ms,
-                    mfc=col, mec=col, zorder=4, ls="-" if suf == "" else (0, (3, 1.5)),
+                    mfc=INK, mec=INK, mew=1.0 if mk == "o" else 0.4, zorder=4, ls="-" if suf == "" else (0, (3, 1.5)),
                     label="CAST, knee" if suf == "" else "CAST, α=1")
             # 10-18(82 점검4 E [10](a)): CASPER ○(29, 95.30) 밑 흰 원(s 60, 반지름 약 3.9 pt)이 4.3 pt 옆 CAST α=1 ■(상한 26)을 반쯤 덮었다 →
             # 점만 한 번 더, 흰 원(4.5) 위·○ 고리(6) 아래인 zorder 5.2 로 찍는다. 선은 그대로 4 라 ○ 앞에서 끊기는 것은 유지.
             # ■(2.8) 와 ○ 고리는 서로 닿지 않는다(렌더 400% 확인).
-            ax.plot([q[0] for q in pts], [q[1] for q in pts], ls="none", marker=mk, ms=ms, mfc=col, mec=col, zorder=5.2)
+            ax.plot([q[0] for q in pts], [q[1] for q in pts], ls="none", marker=mk, ms=ms, mfc=INK, mec=INK, mew=1.0 if mk == "o" else 0.4, zorder=5.2)
+            # ↑ 검은 ■ 는 테두리 0.4(전 1.0, 겉 크기 3.8 → 3.2 pt): 1.0 이면 상한 26 의 ■ 와 CASPER ○ 고리 틈이 0.14 pt 라
+            #   검정끼리 붙어 보였다(500 dpi 화소 1개). 그림 10 의 ■ 도 같은 크기로 맞췄다.
     # 10-18(89 점검 [4]): 그림 10 의 합성 패널을 지우고 그 용량 무시 수준(무릎점·α=1)을 이 그림에 가로 점선으로 옮겼다
     for ig_name, col, lab in (("main/ignore", INK, "Capacity ignored, knee"), ("main/ignore_a1", GRAY, "Capacity ignored, α=1")):
         ig = stats(ig_name)

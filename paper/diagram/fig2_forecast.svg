@@ -46,6 +46,6 @@
 <text x="147" y="152" text-anchor="middle" font-size="8" font-weight="bold">FC</text>
 <path d="M95.5,165.0 L95.5,172.0 L93.0,172.0 L98.0,177.0 L103.0,172.0 L100.5,172.0 L100.5,165.0 Z" fill="#fff" stroke="#000000" stroke-width="1.2"/>
 <rect x="12" y="181" width="172" height="20" fill="#fff" stroke="#000000" stroke-width="1.0"/>
-<text x="20" y="194" font-size="8"><tspan font-weight="bold">Output  Ĉ</tspan><tspan font-size="6.5" dy="1.5">r</tspan><tspan dy="-1.5"> (t … t+23)</tspan></text>
+<text x="20" y="194" font-size="8"><tspan font-weight="bold">Output</tspan><tspan font-style="italic" dx="2.2">Ĉ</tspan><tspan font-size="6.5" font-style="italic" dy="1.6">r</tspan><tspan font-size="6.5" dx="-1.30" dy="-5.4">(<tspan font-style="italic">t</tspan>)</tspan><tspan dy="3.8" dx="1.6">(<tspan font-style="italic">t</tspan><tspan dx="2.5">⋯</tspan><tspan font-style="italic" dx="1.0">t</tspan><tspan dx="1.0">+23)</tspan></tspan></text>
 <polyline points="116.0,184.0 118.7,184.3 121.4,185.0 124.1,186.2 126.8,187.8 129.5,189.6 132.2,191.5 134.9,193.3 137.6,195.0 140.3,196.4 143.0,197.4 145.7,197.9 148.3,197.9 151.0,197.4 153.7,196.4 156.4,195.0 159.1,193.3 161.8,191.5 164.5,189.6 167.2,187.8 169.9,186.2 172.6,185.0 175.3,184.3 178.0,184.0" fill="none" stroke="#000000" stroke-width="0.9" stroke-linejoin="round"/>
 </svg>

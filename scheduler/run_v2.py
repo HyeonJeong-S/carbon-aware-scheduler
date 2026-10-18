@@ -73,7 +73,7 @@ def load_cap_json(spec):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--name", required=True)
-    ap.add_argument("--engine", choices=["joint", "decoupled", "greedy", "2stage", "ignore", "ignore_decoupled", "arrival_fixed", "start_check", "now_only", "no_lookahead", "arrival_fixed_exact", "start_admit", "start_admit_replan"], default="joint",
+    ap.add_argument("--engine", choices=["joint", "decoupled", "greedy", "2stage", "ignore", "ignore_decoupled", "arrival_fixed", "start_check", "now_only", "no_lookahead", "arrival_fixed_exact", "start_admit", "start_admit_replan", "start_admit_fb"], default="joint",
                     help="ignore = 결합 엔진을 cap=∞ 로, ignore_decoupled = 분리형을 cap=∞ 로 (둘 다 명목 cap 으로 채점)")
     ap.add_argument("--alpha", default="knee")
     ap.add_argument("--forecast", default="lstm", help="lstm | oracle | sn24 | lstm_daily | noisy_oracle[:seed] | mix<λ>")
