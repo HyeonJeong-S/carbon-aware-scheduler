@@ -251,7 +251,7 @@ def fig_frontier():
     t.annotate("α=0", (cx[0], cy[0]), textcoords="offset points", xytext=(7, 1), fontsize=F_ANN, ha="left")
     t.annotate("α=1", (cx[-1], cy[-1]), textcoords="offset points", xytext=(-1.5, -12), fontsize=F_ANN, ha="left")
     t.plot([], [], color=INK, lw=1.1, marker="o", ms=2.45, mew=0.5, mfc=INK, mec=INK, label="CAST, fixed α")
-    t.plot([], [], color=GRAY, lw=1.0, ls=(0, (3.2, 1.6)), marker="o", ms=5.5, mew=0.7, mfc="white", mec=INK, label="No re-solve (Zanotto-style)")
+    t.plot([], [], color=GRAY, lw=1.0, ls=(0, (3.2, 1.6)), marker="o", ms=5.5, mew=0.7, mfc="white", mec=INK, label="Arrival-fixed")   # 10-19: 표 3 의 영문 이름과 같게(3회차 C M5)
     t.set_ylabel("Carbon savings (%)", fontsize=F_LABEL)
     t.set_ylim(-4, 100); t.set_xlim(-6, 130)
     # 아래: 세로 틈

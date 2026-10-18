@@ -37,6 +37,8 @@ def main(argv=None):
     ap.add_argument("--milp", action="store_true")
     ap.add_argument("--relaxed", action="store_true", help="용량 행에 슬롯을 통째로 덮는 실행만 넣는다(참 하한)")
     ap.add_argument("--time-limit", type=float, default=1800)
+    ap.add_argument("--carry-run", default=None, help="10-19 B[3c]: 이 실행에서 창 전에 시작해 창 안까지 도는 작업을 그 실행의 자리에 고정 점유로 넣고,"
+                    " 같은 셈법의 그 실행 초과량(창 안 슬롯)을 함께 낸다 — 높은 부하의 초과가 완전예지로도 피할 수 없었는지")
     ap.add_argument("--match-run", default=None, help="3회차 B[6]: 이 연간 실행에서 그 주에 제출된 작업의 실행 시간 가중 지연 Λ̄ 를 예산으로 두고"
                     " 배출만 최소화(지연 합 ≤ Λ̄ 행 추가) — 같은 지연에서의 하한. 격차 = 그 실행의 그 주 작업 배출 − 하한")
     args = ap.parse_args(argv)
@@ -96,7 +98,36 @@ def main(argv=None):
         for v in cover[key]:
             rows.append(k); cols.append(v); vals.append(1.0)
         rows.append(k); cols.append(nx + k); vals.append(-1.0)
-    b_list = [float(args.cap)] * nA
+    carry = {}
+    run_over = None
+    if args.carry_run:
+        import pandas as pd
+        cdf = pd.read_csv(os.path.join(_HERE, "data", "v2", args.carry_run, "jobs.csv.gz"))
+        pre = cdf[(cdf.submit_time < t0) & (cdf.scheduled_start + cdf.duration > t0)]
+        for r, st, d in zip(pre.region, pre.scheduled_start, pre.duration):
+            for tau in joint.covered_slots(st, d):
+                if t0 <= tau <= tau_max and ((not args.relaxed) or (st <= tau and st + d >= tau + 1)):
+                    carry[(r, tau)] = carry.get((r, tau), 0) + 1
+        # 그 실행의 같은 셈법 초과량: 창 안 슬롯에서 (덮는 작업 수 − 상한)+ 의 합
+        occ = {}
+        live = cdf[(cdf.scheduled_start + cdf.duration > t0) & (cdf.submit_time < t1)]
+        for r, st, d in zip(live.region, live.scheduled_start, live.duration):
+            for tau in joint.covered_slots(st, d):
+                if t0 <= tau <= tau_max and ((not args.relaxed) or (st <= tau and st + d >= tau + 1)):
+                    occ[(r, tau)] = occ.get((r, tau), 0) + 1
+        run_over = float(sum(max(0, n - args.cap) for n in occ.values()))
+        print(f"{args.carry_run}: 창 앞에서 넘어온 작업 {len(pre)}건, 그 실행의 같은 셈법 초과량 {run_over:.0f}", flush=True)
+        for key, n in carry.items():
+            if key not in cover:
+                cover[key] = []
+        keys = list(cover)
+        nA = len(keys)
+        rows, cols, vals = [], [], []
+        for k, key in enumerate(keys):
+            for v in cover[key]:
+                rows.append(k); cols.append(v); vals.append(1.0)
+            rows.append(k); cols.append(nx + k); vals.append(-1.0)
+    b_list = [float(args.cap) - carry.get(key, 0) for key in keys]
     if lat_budget is not None:      # Σ x·d·(ℓ − Λ̄) ≤ 0
         for v in range(nx):
             rows.append(nA); cols.append(v); vals.append(var_d[v] * (var_lat[v] - lat_budget))
@@ -123,6 +154,8 @@ def main(argv=None):
                lp_kg=lp_kg, lp_savings_pct=100 * (1 - lp_kg / base), lp_overflow=float(o.sum()), lp_latency_ms=lp_lat, lp_dw_latency_ms=lp_dw, lp_objective=float(res.fun),
                lp_fractional_vars=frac, lp_wall_s=time.perf_counter() - t_start, n_vars=nx)
     print(f"LP 하한: {lp_kg:,.1f} kg ({out['lp_savings_pct']:.2f}%)  초과 {o.sum():.2f}  분수변수 {frac}  d가중 지연 {lp_dw:.2f} ms  {out['lp_wall_s']:.1f}s", flush=True)
+    if run_over is not None:
+        out.update(carry_run=args.carry_run, carry_slots=len(carry), run_overflow=run_over)
     if run_kg is not None:
         out.update(match_run=args.match_run, run_kg=run_kg, lat_budget_dw_ms=lat_budget,
                    gap_pp=100 * (run_kg - lp_kg) / base, gap_of_remaining_pct=100 * (run_kg - lp_kg) / run_kg)
@@ -140,6 +173,8 @@ def main(argv=None):
             print(f"MILP: {out['milp_kg']:,.1f} kg  초과 {om.sum():.2f}  status {resm.status}  {out['milp_wall_s']:.1f}s", flush=True)
     os.makedirs(OUT_DIR, exist_ok=True)
     tag = f"_lat_{args.match_run.replace('/', '_')}" if args.match_run else ""
+    if args.carry_run:
+        tag += f"_carry_{args.carry_run.replace('/', '_')}"
     p = os.path.join(OUT_DIR, f"bound_{t0}_{args.days}d_cap{args.cap}_a{args.alpha}{'_relaxed' if args.relaxed else ''}{tag}.json")
     json.dump(out, open(p, "w"), indent=1)
     print("저장:", p)

@@ -1,0 +1,20 @@
+{
+ "start_h": 3048,
+ "days": 8,
+ "cap": 17,
+ "alpha": 1.0,
+ "n_jobs": 3335,
+ "baseline_kg": 4592.940418490067,
+ "lp_kg": 3250.7460883895833,
+ "lp_savings_pct": 29.222985882793818,
+ "lp_overflow": 0.0,
+ "lp_latency_ms": 120.98928919752984,
+ "lp_dw_latency_ms": 119.53225969251734,
+ "lp_objective": 5111.235988033984,
+ "lp_fractional_vars": 726,
+ "lp_wall_s": 5.739274666993879,
+ "n_vars": 171944,
+ "carry_run": "load/azure_cap0.50_rho0_knee",
+ "carry_slots": 1558,
+ "run_overflow": 4.0
+}
