@@ -1,0 +1,4 @@
+[0] arrival_fixed_a1 109s | [arrival/fixed_a1] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 2,473.8 kg  절감 91.36%  위반 0  초과 0.0h  마감위반 0  지연 110.5/121.3ms  cap 17 ρ 3  벽시계 1.7분  → /Users/jongha/Deskt
+[0] arrival_fixed_oracle 633s | [arrival/fixed_oracle] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 10,384.4 kg  절감 63.72%  위반 0  초과 0.0h  마감위반 0  지연 36.6/37.5ms  cap 17 ρ 3  벽시계 10.4분  → /Users/jongha/D
+[0] arrival_fixed 653s | [arrival/fixed] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 10,347.1 kg  절감 63.85%  위반 0  초과 0.0h  마감위반 0  지연 41.4/38.8ms  cap 17 ρ 3  벽시계 10.8분  → /Users/jongha/Desktop/
+ALL DONE

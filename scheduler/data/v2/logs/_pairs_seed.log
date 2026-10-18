@@ -1,0 +1,4 @@
+[seed3] 과녁 48.00 ms, 구간 [0.3, 0.7] (점 0개) → scheduler.match_alpha --target 48.00 --lo 0.3000 --hi 0.7000 --prefix seed/3_m --extra --jobs load_balancer/data/variants/jobs_seed3.csv --max-runs 4
+[seed4] 과녁 47.51 ms, 구간 [0.3, 0.7] (점 0개) → scheduler.match_alpha --target 47.51 --lo 0.3000 --hi 0.7000 --prefix seed/4_m --extra --jobs load_balancer/data/variants/jobs_seed4.csv --max-runs 4
+[seed1] 과녁 47.76 ms, 구간 [0.3, 0.7] (점 2개) → scheduler.match_alpha --target 47.76 --lo 0.3000 --hi 0.7000 --prefix seed/1_m --extra --jobs load_balancer/data/variants/jobs_seed1.csv --max-runs 4
+[seed2] 과녁 47.87 ms, 구간 [0.3, 0.7] (점 2개) → scheduler.match_alpha --target 47.87 --lo 0.3000 --hi 0.7000 --prefix seed/2_m --extra --jobs load_balancer/data/variants/jobs_seed2.csv --max-runs 4

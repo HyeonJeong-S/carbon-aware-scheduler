@@ -1,0 +1,11 @@
+resume4 start Sun Oct 18 06:31:02 KST 2026
+[0] forecast_cal_sn24_a1 826s | [forecast/cal_sn24_a1] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 1,243.4 kg  절감 95.66%  위반 0  초과 0.0h  마감위반 0  지연 120.0/121.3ms  cap 17 ρ 3  벽시계 13.7분  → /Users/jongha/
+[0] rate_100_decoupled 1598s | [rate/100_decoupled] 채점 286,400건(시뮬 292,000)  기준 57,114.3 kg  결과 28,219.6 kg  절감 50.59%  위반 0  초과 0.0h  마감위반 0  지연 25.1/21.4ms  cap 23 ρ 3  벽시계 26.4분  → /Users/jongha/Des
+[0] forecast_cal_sn24 2468s | [forecast/cal_sn24] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 8,279.3 kg  절감 71.08%  위반 0  초과 0.0h  마감위반 0  지연 45.4/45.9ms  cap 17 ρ 3  벽시계 41.0분  → /Users/jongha/Deskt
+[0] skew_joint_a1 872s | [skew/joint_a1] 채점 143,200건(시뮬 146,000)  기준 26,801.8 kg  결과 1,228.4 kg  절감 95.42%  위반 0  초과 0.0h  마감위반 0  지연 113.9/114.9ms  cap 18 ρ 3  벽시계 14.4분  → /Users/jongha/Desktop
+[0] skew_joint 2322s | [skew/joint] 채점 143,200건(시뮬 146,000)  기준 26,801.8 kg  결과 6,826.0 kg  절감 74.53%  위반 0  초과 0.0h  마감위반 0  지연 48.1/46.9ms  cap 18 ρ 3  벽시계 38.6분  → /Users/jongha/Desktop/GitH
+[0] rate_100_ignore 3272s | [rate/100_ignore] 채점 286,400건(시뮬 292,000)  기준 57,114.3 kg  결과 15,247.0 kg  절감 73.30%  위반 81799  초과 2394.4h  마감위반 0  지연 48.5/48.7ms  cap 23 ρ 3  벽시계 54.4분  → /Users/jongha
+[0] skew_ignore 1666s | [skew/ignore] 채점 143,200건(시뮬 146,000)  기준 26,801.8 kg  결과 6,635.9 kg  절감 75.24%  위반 26366  초과 1031.1h  마감위반 0  지연 46.8/47.0ms  cap 18 ρ 3  벽시계 27.7분  → /Users/jongha/Desk
+[0] rate_100_joint 5147s | [rate/100_joint] 채점 286,400건(시뮬 292,000)  기준 57,114.3 kg  결과 17,448.1 kg  절감 69.45%  위반 0  초과 0.0h  마감위반 0  지연 46.7/43.8ms  cap 23 ρ 3  벽시계 85.6분  → /Users/jongha/Desktop
+[0] rate_100_joint_a1 9231s | [rate/100_joint_a1] 채점 286,400건(시뮬 292,000)  기준 57,114.3 kg  결과 4,239.0 kg  절감 92.58%  위반 0  초과 0.0h  마감위반 0  지연 116.8/119.3ms  cap 23 ρ 3  벽시계 153.7분  → /Users/jongha/De
+ALL DONE

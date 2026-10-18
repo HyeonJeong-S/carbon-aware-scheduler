@@ -1,0 +1,4 @@
+[0] azure_decoupled_a1 310s | [azure/decoupled_a1] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 73,988.2 kg  절감 65.35%  위반 0  초과 0.0h  마감위반 0  지연 116.8/115.9ms  cap 43 ρ 13  벽시계 5.0분  → /Users/jongha/
+[0] azure_arrival_fixed 754s | [azure/arrival_fixed] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 128,178.3 kg  절감 39.97%  위반 0  초과 0.0h  마감위반 0  지연 43.5/44.1ms  cap 43 ρ 13  벽시계 12.4분  → /Users/jongha
+[0] azure_rho_0 2964s | [azure/rho_0] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 103,883.4 kg  절감 51.35%  위반 0  초과 0.0h  마감위반 0  지연 36.9/39.3ms  cap 43 ρ 0  벽시계 49.3분  → /Users/jongha/Desktop/
+ALL DONE

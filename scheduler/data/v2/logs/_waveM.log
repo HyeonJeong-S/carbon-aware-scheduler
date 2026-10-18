@@ -1,0 +1,6 @@
+[0] arrive_defer_noon_time_only 598s | [arrive/defer_noon_time_only] 채점 143,200건(시뮬 146,000)  기준 27,053.1 kg  결과 23,288.5 kg  절감 13.92%  위반 0  초과 0.0h  마감위반 0  지연 0.0/0.0ms  cap 23 ρ 3  벽시계 9.9분  → /Users/jong
+[0] arrive_defer_noon_ignore 1630s | [arrive/defer_noon_ignore] 채점 143,200건(시뮬 146,000)  기준 27,053.1 kg  결과 7,961.8 kg  절감 70.57%  위반 11801  초과 372.5h  마감위반 0  지연 47.2/47.4ms  cap 23 ρ 3  벽시계 27.1분  → /Users
+[0] arrive_defer_noon 1967s | [arrive/defer_noon] 채점 143,200건(시뮬 146,000)  기준 27,053.1 kg  결과 8,044.7 kg  절감 70.26%  위반 0  초과 0.0h  마감위반 0  지연 47.0/46.9ms  cap 23 ρ 3  벽시계 32.7분  → /Users/jongha/Deskt
+[0] forecast_weather3_sn24_a1 844s | [forecast/weather3_sn24_a1] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 1,242.4 kg  절감 95.66%  위반 0  초과 0.0h  마감위반 0  지연 120.0/121.3ms  cap 17 ρ 3  벽시계 14.0분  → /Users/jo
+[0] forecast_weather3_sn24 2277s | [forecast/weather3_sn24] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 8,143.1 kg  절감 71.55%  위반 0  초과 0.0h  마감위반 0  지연 46.1/46.4ms  cap 17 ρ 3  벽시계 37.9분  → /Users/jongha/
+ALL DONE

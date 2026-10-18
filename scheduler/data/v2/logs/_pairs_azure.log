@@ -1,0 +1,4 @@
+[azure] 과녁 43.56 ms, 구간 [0.5, 0.6] (점 8개) → scheduler.match_alpha --target 43.56 --lo 0.5000 --hi 0.6000 --prefix azure/m --extra --jobs load_balancer/data/jobs_azure.csv --max-runs 4
+[azure] 끝 → /Users/jongha/Desktop/GitHub/carbon-aware-scheduler/scheduler/data/v2/logs/pair_azure_m.log
+BEST α=0.5438 lat 43.04 (target 43.56) save 44.25% kg 119,028.5 viol 0
+PAIRS DONE
