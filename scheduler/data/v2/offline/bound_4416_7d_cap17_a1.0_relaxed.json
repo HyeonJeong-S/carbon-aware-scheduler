@@ -9,15 +9,9 @@
  "lp_savings_pct": 98.37393459603729,
  "lp_overflow": 0.0,
  "lp_latency_ms": 119.95678571428572,
+ "lp_dw_latency_ms": 120.07798588077851,
  "lp_objective": 16.148509663868566,
  "lp_fractional_vars": 4,
- "lp_wall_s": 0.6342075419997855,
- "n_vars": 144600,
- "milp_kg": 9.07559648279357,
- "milp_overflow": 0.0,
- "milp_latency_ms": 120.17464285714286,
- "milp_objective": 16.148748190024147,
- "milp_status": 0,
- "milp_gap": 0.0,
- "milp_wall_s": 4.556075833999785
+ "lp_wall_s": 1.209958125000412,
+ "n_vars": 144600
 }

@@ -1,7 +1,7 @@
 {
  "n": 143165,
  "n_all": 146016,
- "total_carbon_kg": 103163.71172651673,
+ "total_carbon_kg": 75244.20571910945,
  "slo_violations": 0,
  "forced_admissions": 0,
  "immediate": 84723,
@@ -21,13 +21,13 @@
  },
  "peak_by_region": {
   "US-CAL-CISO": 43,
-  "US-TEX-ERCO": 43,
+  "US-TEX-ERCO": 41,
   "US-NY-NYIS": 43,
-  "FR": 42,
+  "FR": 43,
   "DE": 43,
-  "KR": 35,
+  "KR": 5,
   "IN": 0,
-  "JP": 21
+  "JP": 24
  },
  "hours_over_by_region": {
   "US-CAL-CISO": 0.0,
@@ -39,72 +39,72 @@
   "IN": 0.0,
   "JP": 0.0
  },
- "avg_delay_h": 3.635425994093838,
- "p95_delay_h": 17.14062222222218,
- "avg_latency_ms": 115.745573289561,
+ "avg_delay_h": 3.098026575008633,
+ "p95_delay_h": 17.690077777777688,
+ "avg_latency_ms": 116.59642370691161,
  "p95_latency_ms": 238.0,
- "dw_latency_ms": 113.97565475549573,
- "home_share": 0.12376628365871546,
+ "dw_latency_ms": 115.60268059510587,
+ "home_share": 0.12467432682569064,
  "by_k": {
   "1": {
    "n": 42921,
-   "carbon_kg": 15703.845909087391,
-   "avg_delay_h": 11.483443091830207,
-   "p95_delay_h": 19.454999999999927,
-   "avg_latency_ms": 118.6977237249831,
+   "carbon_kg": 31207.545879638947,
+   "avg_delay_h": 9.928906508469046,
+   "p95_delay_h": 20.469666666666853,
+   "avg_latency_ms": 116.66505906199762,
    "forced": 0,
    "over_cap": 0
   },
   "2": {
    "n": 14218,
-   "carbon_kg": 14589.122578217717,
-   "avg_delay_h": 1.9383403803472892,
-   "p95_delay_h": 6.066679166667244,
-   "avg_latency_ms": 115.75953017302011,
+   "carbon_kg": 15512.519589624464,
+   "avg_delay_h": 1.2203791477157258,
+   "p95_delay_h": 5.472952777777844,
+   "avg_latency_ms": 114.68532845688564,
    "forced": 0,
    "over_cap": 0
   },
   "3": {
    "n": 14269,
-   "carbon_kg": 10080.520061852478,
-   "avg_delay_h": 0.0017440002024585856,
+   "carbon_kg": 4577.432900520144,
+   "avg_delay_h": 0.0012963981747525003,
    "p95_delay_h": 0.0,
-   "avg_latency_ms": 113.56598219917304,
+   "avg_latency_ms": 116.21213820169598,
    "forced": 0,
    "over_cap": 0
   },
   "4": {
    "n": 28864,
-   "carbon_kg": 26839.062292261264,
-   "avg_delay_h": 2.381571045805327e-05,
+   "carbon_kg": 10183.489285574906,
+   "avg_delay_h": 1.820125800680023e-05,
    "p95_delay_h": 0.0,
-   "avg_latency_ms": 114.71868070953437,
+   "avg_latency_ms": 117.29521202882484,
    "forced": 0,
    "over_cap": 0
   },
   "5": {
    "n": 42893,
-   "carbon_kg": 35951.160885098536,
-   "avg_delay_h": 1.2628323194656176e-07,
+   "carbon_kg": 13763.218063751143,
+   "avg_delay_h": 9.260770343967081e-08,
    "p95_delay_h": 0.0,
-   "avg_latency_ms": 114.20297018161472,
+   "avg_latency_ms": 116.81882824703331,
    "forced": 0,
    "over_cap": 0
   }
  },
  "alpha_mean": 1.0,
  "unplaced": 0,
- "solve_ms_mean": 10.459725636624649,
- "solve_ms_p95": 25.97563060080574,
- "solve_ms_max": 154.988833994139,
+ "solve_ms_mean": 11.576838703195088,
+ "solve_ms_p95": 33.139827101331285,
+ "solve_ms_max": 285.91687500011176,
  "n_slots": 8760,
  "n_lp": 8760,
- "n_mip": 25,
+ "n_mip": 22,
  "max_vars": 2472,
- "zA_pos_slots": 8600,
- "zB_pos_slots": 5874,
- "zA_sum": 4712346.0,
- "zB_sum": 125848.0,
+ "zA_pos_slots": 0,
+ "zB_pos_slots": 8712,
+ "zA_sum": 0.0,
+ "zB_sum": 884020.0,
  "penalties": {
   "M_A": 143850.0,
   "M_B": 1438.5
@@ -139,15 +139,15 @@
   "IN": 27,
   "JP": 27
  },
- "savings_pct": 51.68280165195734,
- "wall_s": 144.54261541600135,
+ "savings_pct": 64.75903056000008,
+ "wall_s": 168.09253704099683,
  "herding": {
   "n": 146016,
-  "n_delayed": 52309,
-  "dip_occ_mean": 13.41340782122905,
-  "dip_occ_p90": 34.70000000000027,
-  "dip_full_share": 0.0178072625698324,
-  "bottom3_start_share": 0.1680913348946136,
-  "hours_at_or_over_cap": 1049
+  "n_delayed": 37476,
+  "dip_occ_mean": 13.189944134078212,
+  "dip_occ_p90": 43.0,
+  "dip_full_share": 0.16655027932960895,
+  "bottom3_start_share": 0.22429321651111533,
+  "hours_at_or_over_cap": 10064
  }
 }
