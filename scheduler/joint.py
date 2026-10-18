@@ -171,8 +171,9 @@ COMMIT_MODES = ("arrival_fixed", "arrival_fixed_exact", "start_check", "start_ad
 def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
               rho=0, horizon=HORIZON, alpha="knee", alpha_grid=ALPHA_GRID,
               n_hours=None, l_net_max=None, home_region=False, spatial_only=False,
-              t_start=None, score_from=0.0, mode="joint", penalties=None, record_alpha=True, record_slots=None):
-    """반환 (out, stats). cap/rho 는 int 또는 {리전: int}."""
+              t_start=None, score_from=0.0, mode="joint", penalties=None, record_alpha=True, record_slots=None,
+              lookahead=True):
+    """반환 (out, stats). cap/rho 는 int 또는 {리전: int}. lookahead=False 면 어느 mode 위에든 no_lookahead 도착 규약."""
     assert mode in ("joint", "decoupled", "greedy", "arrival_fixed", "start_check", "now_only", "no_lookahead",
                     "arrival_fixed_exact", "start_admit", "start_admit_replan", "start_admit_fb")
     # start_admit_fb(10-18, 6회차 B[1]): start_admit 과 같되, 여유가 다해 강제로 들여야 할 때 정한 리전이 꽉 찼으면
@@ -188,6 +189,8 @@ def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
     # no_lookahead(10-18, 3회차 A[7]·C[2]): 슬롯 머리에 그 슬롯 안 도착을 미리 알지 않는다. 미룰 수 있는 작업은 도착 뒤 첫 슬롯 머리에
     # 처음 보이고(CAST 그대로 풂), 미룰 수 없는 작업은 도착 순간 하나씩 그 순간의 장부로 배정한다(α 는 그 슬롯 머리에서 고른 값,
     # 비용은 같은 정규화, 순간 용량·미래 슬롯 점유를 넘지 않는 리전 가운데 최소, 없으면 초과가 가장 작은 리전 → 위반으로 셈).
+    # lookahead=False(10-18): 같은 도착 규약을 어느 mode 위에든 얹는다(arrival_fixed·start_admit_fb 등). mode="no_lookahead" 는
+    # joint + lookahead=False 와 같다. COMMIT_MODES 에서는 도착 순간 수를 running_committed 로 센다(장부 힙은 계획까지 셈).
     # now_only(10-18, 3회차 B[2]): CAST 그대로(매 슬롯 재풀이) 미래 슬롯의 용량 행(식 (11)의 τ>t 와 식 (12))만 지운 것 —
     # 용량을 "지금 시작하는 순간" 에만 확인한다. CAST 와 확인 시점 하나만 다른 짝.
     # start_check(10-18, 3회차 심사): arrival_fixed 처럼 도착 슬롯에 (리전, 시각)을 정하고 다시 풀지 않되, 미래 슬롯의 용량은
@@ -215,11 +218,12 @@ def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
 
     arrivals = {}
     arrivals_n = {}            # no_lookahead: 미룰 수 없는 작업(도착 순간 배정)
+    no_look = (mode == "no_lookahead") or not lookahead
     for j in jobs:
         nondef = math.floor(j["deadline"] - j["duration"]) <= math.floor(j["submit_time"])
-        if mode == "no_lookahead" and nondef:
+        if no_look and nondef:
             arrivals_n.setdefault(math.floor(j["submit_time"]), []).append(j)
-        elif mode == "no_lookahead":
+        elif no_look:
             arrivals.setdefault(math.ceil(j["submit_time"]), []).append(j)
         else:
             arrivals.setdefault(math.floor(j["submit_time"]), []).append(j)
@@ -249,9 +253,8 @@ def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
     def exact_base(r, t):
         """슬롯 τ ∈ [t+1, t+H] 마다 확정 작업의 순간 최대 동시 실행 수(장부 규약: start ≤ u < end)."""
         lo, hi = t + 1, t + horizon + 1
-        act[r] = [iv for iv in act[r] if iv[1] > lo]
         ev = []
-        for s0, e0 in act[r]:
+        for s0, e0 in act[r]:   # act 를 여기서 자르지 않는다 — lookahead=False 면 이 슬롯 안 도착 순간 수에 아직 쓴다
             s2, e2 = max(s0, lo), min(e0, hi)
             if s2 < e2:
                 ev.append((s2, 1)); ev.append((e2, -1))
@@ -561,7 +564,8 @@ def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
                       [r for r in regions if r == o or latency_ms[o][r] <= l_net_max])
             best = None
             for r in cand_r:
-                over_u = max(0, led[r].running(r, s_j) + 1 - cap_d[r])
+                run_u = running_committed(r, s_j) if mode in COMMIT_MODES else led[r].running(r, s_j)
+                over_u = max(0, run_u + 1 - cap_d[r])
                 over_s = sum(max(0, int(occ[r][tau]) + 1 - cap_d[r]) for tau in covered_slots(s_j, d)
                              if t < tau <= t + horizon and tau < T_END)
                 c = a_prev * d * W.pred_mean(r, t, 0, d) / cmax + (1 - a_prev) * d * latency_ms[o][r] / L_NET_MAX_MS
@@ -577,7 +581,7 @@ def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
         solve_ms_max=1000 * float(np.max(solve_t)) if solve_t else 0.0,
         n_slots=len(solve_t), n_lp=n_lp, n_mip=n_mip, max_vars=max_vars,
         zA_pos_slots=zA_pos_slots, zB_pos_slots=zB_pos_slots, zA_sum=zA_sum, zB_sum=zB_sum, knee_degenerate=degen,
-        penalties=dict(M_A=M_A, M_B=M_B), mode=mode))
+        penalties=dict(M_A=M_A, M_B=M_B), mode=mode, **({} if lookahead else dict(lookahead=False))))
     if slot_records:
         stats["slot_records"] = slot_records
     return out, stats

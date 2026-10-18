@@ -1,0 +1,98 @@
+28쪽 보강 C1 — 롤링 지평 / 확정 있는 온라인 스케줄링 인용 후보 (2026-10-18)
+==========================================================================
+
+심사 지적: "매시 전체 대기 작업으로 LP 하나를 다시 풀고 지금 시작할 작업만 확정하는 것은
+표준 롤링 지평(receding horizon, MPC) 기법인데, 운영연구의 롤링 지평 문헌과
+'확정 있는 온라인 스케줄링(도착 즉시 결정 vs 나중 결정)' 문헌을 인용하지 않았다."
+
+확인 방법: 아래 서지(저자·제목·권호·쪽·연월)는 Crossref API(출판사 등록 메타데이터)로
+DOI 하나하나 조회해 맞췄고, 내용(무엇을 뒷받침하는지)은 초록 또는 원문으로 따로 대조했다.
+기억으로 쓴 것 없음.
+
+--------------------------------------------------------------------------
+[권장 4편] — 본문에 넣을 것
+--------------------------------------------------------------------------
+
+[R1] 롤링 지평의 이론
+S. P. Sethi and G. Sorger, “A Theory of Rolling Horizon Decision Making,” Annals of Operations Research, Vol. 29, No. 1, pp. 387-415, Dec. 1991.
+  DOI: https://doi.org/10.1007/BF02283607
+  확인: Crossref(제목·저자·29권 1호·387-415쪽·1991-12), OpenAlex 동일, dblp 키 journals/anor/SethiS91.
+        내용은 IAOR 초록(https://iaorifors.com/paper/5384)으로 대조 — "rolling horizon decision
+        making 의 이론 틀; 먼 미래를 예측하는 데 비용이 들기 때문에 롤링 지평이 유용하다;
+        이산시간 확률 동적 최적화로 정식화".
+  주의: 연월이 출처마다 다르다(Crossref 1991-12, IAOR 1991-04, 쪽도 IAOR 은 387-416).
+        출판사 등록값(Crossref)을 따라 Dec. 1991, pp. 387-415 로 적었다.
+  뒷받침: 먼 미래 예보가 불확실할 때 매 기간 앞을 다시 계획하고 당장의 결정만 실행하는 롤링 지평 결정 방식의 이론적 근거 — CAST 가 24시간 예보로 매시 다시 푸는 이유.
+
+[R2] 롤링 지평 문헌 정리(운영관리 분야 서지)
+S. Chand, V. N. Hsu, and S. Sethi, “Forecast, Solution, and Rolling Horizons in Operations Management Problems: A Classified Bibliography,” Manufacturing & Service Operations Management, Vol. 4, No. 1, pp. 25-43, Jan. 2002.
+  DOI: https://doi.org/10.1287/msom.4.1.25.287
+  확인: Crossref(4권 1호·25-43쪽·2002-01), OpenAlex 초록 원문 대조 — "200편 넘는 논문을 지평 종류·
+        모형·방법·분야로 분류; 대부분 재고·생산계획·용량 확장 문제; 지평 결과와 rolling-horizon
+        procedure 의 이론·실무 관계를 논의".
+        (Semantic Scholar 는 연도를 2001 로 표시하나 출판사 등록은 2002-01.)
+  뒷받침: 롤링 지평 절차가 생산계획·용량 확장 같은 운영관리 문제에서 오래 쓰여 온 표준 기법임을 한 편으로 보여 주는 정리 문헌 — "새 기법이 아니라 알려진 구조"라는 서술의 근거.
+
+[R3] 모형 예측 제어(MPC) 표준 문헌
+D. Q. Mayne, J. B. Rawlings, C. V. Rao, and P. O. M. Scokaert, “Constrained Model Predictive Control: Stability and Optimality,” Automatica, Vol. 36, No. 6, pp. 789-814, Jun. 2000.
+  DOI: https://doi.org/10.1016/S0005-1098(99)00214-9
+  확인: Crossref(36권 6호·789-814쪽·2000-06), dblp 키 journals/automatica/MayneRRS00, 인용 약 8,700회(OpenAlex).
+        초록 원문 대조: "매 샘플링 시점마다 현재 상태를 초기값으로 유한 지평 최적제어 문제를 풀고,
+        얻은 최적 제어 열 가운데 첫 번째 제어만 플랜트에 적용한다; 제어·상태의 hard constraint 를
+        다룰 수 있는 것이 장점".
+  뒷받침: 매 시점 유한 지평 최적화를 다시 풀고 첫 단계 결정만 적용한다는 receding-horizon(MPC)의 정의, 그리고 용량 같은 경성 제약을 최적화 안에 넣을 수 있다는 성질 — CAST 의 "매시 LP 재풀이 + 지금 시작분만 확정 + 지역 용량 제약"과 같은 구조.
+
+[R4] 확정(commitment) 있는 온라인 작업 수락
+L. Chen, F. Eberle, N. Megow, K. Schewior, and C. Stein, “A General Framework for Handling Commitment in Online Throughput Maximization,” Mathematical Programming, Vol. 183, No. 1-2, pp. 215-247, Sep. 2020.
+  DOI: https://doi.org/10.1007/s10107-020-01469-2  (공개본 arXiv:1811.08238, IPCO 2019 학회판 DOI 10.1007/978-3-030-17953-3_11)
+  확인: Crossref(183권 1-2호·215-247쪽, 인쇄 2020-09 / 온라인 2020-02-03), 오픈액세스(CC BY).
+        arXiv 원문 1장에서 대조한 확정 모형 세 가지:
+          · commitment upon job arrival — 작업이 도착한 순간 끝낼지 말지 정해야 함. 저자들은 이 모형에서
+            (가중치 없어도) 유계 경쟁비를 갖는 온라인 알고리즘이 없음을 보임.
+          · commitment upon job admission — 시작하기 전까지는 언제든 버릴 수 있고, 시작(admission)하면 확정.
+          · δ-commitment — 여유(slack)가 작업 크기의 δ배 밑으로 떨어지기 전까지 확정.
+        또 관련연구에서 Lucier 외(SPAA 2013)가 도착 시 확정 모형의 불가능성을 보였다고 정리.
+  뒷받침: 도착 즉시 확정하는 방식은 원리적으로 불리하고, 시작 시점까지 결정을 미루는(시작 시 확정) 방식이 여지를 남긴다는 온라인 스케줄링의 확정 시점 분류 — CAST 가 대기 작업을 매시 다시 배치하고 시작하는 작업만 확정하는 것은 이 분류의 "시작 시 확정(commitment upon admission)"에 해당.
+  주의: 이 논문은 단일 서버·처리량 최대화의 경쟁비 분석이다. 우리는 경쟁비를 주장하지 않으므로
+        "확정 시점의 분류와 그 의미"만 빌려 쓰고, 성능 보장은 끌어오지 말 것.
+
+--------------------------------------------------------------------------
+[예비 2편] — 지면이 되면 R4 옆에, 또는 심사 답변서에서
+--------------------------------------------------------------------------
+
+[R5] B. Lucier, I. Menache, J. Naor, and J. Yaniv, “Efficient Online Scheduling for Deadline-Sensitive Jobs,” Proc. of the 25th ACM Symp. on Parallelism in Algorithms and Architectures (SPAA), pp. 305-314, Jul. 2013.
+  DOI: https://doi.org/10.1145/2486159.2486187
+  확인: Crossref(305-314쪽, SPAA '13, 2013-07), dblp 키 conf/spaa/LucierMNY13. 초록 첫머리(OpenAlex):
+        "대형 컴퓨팅 클러스터에서 마감 있는 배치 작업의 온라인 스케줄링". 확정 관련 내용(도착 시 확정의
+        불가능성, 시작 시 확정용 휴리스틱)은 R4 의 관련연구 서술로 2차 확인(1차 원문은 ACM 403 으로 못 열었음).
+  뒷받침: 데이터센터 배치 작업 스케줄링에서 "언제 수락을 확정하느냐"가 핵심 설계 축이라는 클라우드 쪽 근거.
+  주의: Semantic Scholar 는 제목에 ": extended abstract" 를 붙이나 Crossref 등록 제목엔 없음.
+
+[R6] Y. Azar, I. Kalp-Shaltiel, B. Lucier, I. Menache, J. Naor, and J. Yaniv, “Truthful Online Scheduling with Commitments,” Proc. of the 16th ACM Conf. on Economics and Computation (EC), pp. 715-732, Jun. 2015.
+  DOI: https://doi.org/10.1145/2764468.2764535  (공개본 arXiv:1507.00773)
+  확인: Crossref(715-732쪽, 2015-06), 초록 원문(Semantic Scholar/arXiv) 대조 — "마감 여유가 충분하면
+        작업이 끝날지 여부를 마감 훨씬 전에 확정해 줄 수 있다; 마감 직전에야 거절을 알게 되는 것은
+        사용자에게 받아들이기 어렵다".
+  뒷받침: 확정을 늦출수록 스케줄러는 유리하지만 사용자는 일찍 알고 싶어 한다는 긴장 — 확정 시점을 고르는 이유.
+
+후보 중 검토하고 뺀 것:
+  - Rawlings & Mayne 교과서(Model Predictive Control: Theory and Design): 쪽 지정 없이 책 한 권을
+    인용하게 되고 판(1판 2009 / 2판 2017)이 갈려 R3 논문 하나로 충분.
+  - Chen, Megow, Schewior "An O(log m)-competitive algorithm for online machine minimization":
+    기계 수 최소화 문제로 확정(commitment)과 무관. 요청한 "수락 시 확정" 논문은 R4 가 정답.
+
+--------------------------------------------------------------------------
+[관련연구 절에 넣을 문장 초안]
+--------------------------------------------------------------------------
+
+(기본형, 4편)
+매 기간 앞날 전체를 다시 최적화하되 당장의 결정만 실행하는 롤링 지평(receding horizon) 방식은 운영연구의 생산계획·용량 계획[R1, R2]과 모형 예측 제어[R3]에서 오래 쓰여 온 표준 구조이고, 온라인 스케줄링에서도 작업을 도착 즉시 확정하기보다 시작할 때까지 결정을 미루는 편이 유리하다는 확정 시점의 분류가 알려져 있다[R4]. CAST 는 이 알려진 구조를 그대로 가져와, 매시 대기 작업 전체를 지역×시작시각으로 다시 배치하되 지역 용량을 모든 작업이 함께 나눠 쓰는 제약으로 LP 안에 넣고 지금 시작하는 작업만 확정하는, 탄소 인지 시공간 배치 문제에 적용한 것이다.
+
+(짧은 형, 지면이 부족할 때)
+CAST 의 "매시 다시 풀고 지금 시작분만 확정"은 롤링 지평·모형 예측 제어[R1-R3]와 시작 시 확정(commitment upon admission)[R4]이라는 알려진 구조이며, 본 논문은 이를 지역 용량을 공유하는 탄소 인지 시공간 배치에 적용한다.
+
+쓸 때 메모:
+  - [R1]~[R4] 는 참고문헌 목록에 넣은 뒤 실제 번호로 바꿀 것(번호 재매김 함정 주의).
+  - "새 기법"이라는 인상을 주는 문장이 본문에 남아 있으면 이 문장과 충돌한다. 기여는 "알려진 구조를
+    이 문제에 적용했고, 용량을 함께 묶어 푸는 방식이 위반 수를 가른다는 발견" 쪽으로 둘 것(계획 C1 과 같음).
+  - R4 를 인용하며 경쟁비·성능 보장을 우리 것처럼 말하지 말 것(문제 설정이 다름).

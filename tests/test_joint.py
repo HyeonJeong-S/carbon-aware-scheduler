@@ -168,3 +168,44 @@ def test_commit_modes_do_not_count_planned_jobs_as_running():
         out, st = _run(jobs, cap=1, alpha=1.0, home_region=True, mode=mode)
         assert out["j0"]["scheduled_start"] >= 8.0          # j0 는 미래로 확정
         assert st["zA_pos_slots"] == 0 and st["capacity_violations"] == 0, (mode, st["zA_pos_slots"])
+
+
+# ── 10-18: lookahead=False 를 어느 mode 위에든 ──────────────────────────────
+def test_no_lookahead_mode_equals_joint_without_lookahead():
+    jobs = [_job(i, 10 + i * 0.37, 1.0 + 0.4 * (i % 3), 0.001 if i % 4 == 0 else 8, k=5 if i % 4 == 0 else 1)
+            for i in range(14)]
+    out1, st1 = _run(jobs, cap=2, mode="no_lookahead")
+    out2, st2 = _run(jobs, cap=2, mode="joint", lookahead=False)
+    assert out1 == out2
+    assert st2["lookahead"] is False and "lookahead" not in st1
+
+
+def test_arrival_fixed_without_lookahead_waits_for_slot_head_and_respects_cap():
+    import math
+    jobs = [_job(i, 10 + i * 0.37, 1.0 + 0.4 * (i % 3), 0.001 if i % 4 == 0 else 12, k=5 if i % 4 == 0 else 1)
+            for i in range(14)]
+    for mode in ("arrival_fixed", "start_admit_fb"):
+        out, st = _run(jobs, cap=3, mode=mode, lookahead=False)
+        assert st["n"] == 14 and st["unplaced"] == 0 and st["slo_violations"] == 0
+        for j in jobs:
+            v = out[j["id"]]
+            if math.floor(j["deadline"] - j["duration"]) > math.floor(j["submit_time"]):   # 미룰 수 있음
+                assert v["scheduled_start"] >= math.ceil(j["submit_time"]) - 1e-9, (mode, j["id"])
+            else:                                                                           # 도착 순간 시작
+                assert abs(v["scheduled_start"] - j["submit_time"]) < 1e-9 and v["immediate"]
+        assert st["capacity_violations"] == 0 and max(st["peak_by_region"].values()) <= 3, mode
+        ocf, oci, ocn = capacity._over_cap_admissions(out, REG, 3)
+        assert ocf + oci + ocn == 0
+
+
+def test_no_lookahead_commit_mode_counts_committed_not_planned():
+    # 도착 순간 그리디도 COMMIT_MODES 에서는 확정 구간으로 센다: j0 는 A 의 8h 이후로 확정(아직 시작 전), j1(7.2h, 미룰 수 없음)은
+    # A 가 비어 있으니 A 로 가야 한다. 장부 힙으로 세면 A 가 가짜로 차 B(더러움)로 밀린다.
+    h = np.arange(N_H)
+    actual = {"A": np.where(h >= 8, 50.0, 300.0), "B": np.full(N_H, 1000.0)}
+    jobs = [_job(0, 6.0, 2.0, 30.0), _job(1, 7.2, 0.5, 0.001)]
+    out, st = joint.run_joint(jobs, actual, _oracle(actual), cap=1, regions=REG, latency_ms=LAT, rho=0,
+                              n_hours=N_H - 30, alpha=1.0, mode="arrival_fixed", lookahead=False)
+    assert out["j0"]["region"] == "A" and out["j0"]["scheduled_start"] >= 8.0
+    assert out["j1"]["region"] == "A" and abs(out["j1"]["scheduled_start"] - 7.2) < 1e-9
+    assert st["capacity_violations"] == 0

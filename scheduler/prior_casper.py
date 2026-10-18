@@ -50,11 +50,23 @@
    배치 안 job 순서를 바꾸면 총배출 소수점 단위가 흔들릴 수 있다는 점은
    밝혀둔다(배치당 최대 십여 건 수준이라 총합 영향은 미미할 것으로 본다).
 
+**선택 사항 — 리전 동시 실행 상한(cap, 10-18, 원문에 없음):** CAST 와 같은 리전 상한으로 CASPER 를 돌려 보기
+위한 대조 실행. 기본(cap=None)은 위 원문 그대로이고 결과도 바이트 단위로 같다. cap 을 주면
+  · 시간 h 를 풀기 전 리전 j 마다 free_j = max(0, cap − running_j(h)), running_j(h) = 이 실행이 이미 배정해
+    h 에 아직 도는 작업 수(start ≤ h < start+duration; CASPER 는 submit_time 에 시작)
+  · 원문 제약에 더해 Σ_i x_ij ≤ free_j
+  · 그래도 못 넣는 시간(Σ 요청 > 닿는 리전의 Σ free)을 위해 슬랙 y_i ≥ 0: Σ_j x_ij + y_i = request_rates[i],
+    목적에 SLACK_PENALTY·Σ y_i. y_i 건은 홈 리전으로 보낸다(상한을 넘을 수 있고 채점에서 위반으로 셈).
+    원문 목적 두 항은 정규화돼 합이 1 이하라 벌점 1000 이면 자리가 있는 한 y=0.
+  · 같은 시간에 도착한 작업은 저마다 submit_time 에 시작하므로 그 시간 안 순간 동시 실행은
+    running_j(h) + 배정 ≤ cap (슬랙 건 제외) — 앞 시간 작업은 h 이후 끝나기만 한다.
+
 채점은 절대 여기서 하지 않는다 — scheduler.prior_harness.score()에 넘긴다.
 
-실행: ./.venv/bin/python -m scheduler.prior_casper [--alpha 0.9] [--hours N]
+실행: ./.venv/bin/python -m scheduler.prior_casper [--alpha 0.9] [--hours N] [--cap 17]
 """
 import argparse
+import heapq
 import math
 import time
 
@@ -69,6 +81,7 @@ MAX_SERVERS_PER_REGION = 100  # Config.MAX_SERVERS_PER_REGION
 SERVER_CAPACITY = 10          # Config.SERVER_CAPACITY
 ALPHA_CAP = 0.9                # Carbon.schedule_servers (진짜 CAP)
 ALPHA_LATENCY_BASELINE = 0.5   # Latency.schedule_servers (비교용, 참고 실행)
+SLACK_PENALTY = 1000.0         # cap 실행 전용: 못 넣은 요청 1건당 벌점(원문 목적은 ≤1)
 
 
 def _bucket_by_hour(jobs):
@@ -79,11 +92,12 @@ def _bucket_by_hour(jobs):
     return buckets
 
 
-def _solve_hour(carbon_intensities, latency, request_rates, alpha, n_regions):
+def _solve_hour(carbon_intensities, latency, request_rates, alpha, n_regions, free=None):
     """CASPER CAP/milp_scheduler.py::Carbon.schedule_servers 원문 그대로.
 
     변수·제약 이름까지 원문 대응관계를 알아볼 수 있게 맞췄다. alpha만 인자로
-    뺐다(원문은 0.9로 하드코딩).
+    뺐다(원문은 0.9로 하드코딩). free(리전별 빈자리)를 주면 상한 제약·슬랙을 더한다(모듈 docstring).
+    반환 (xij, y): y 는 origin 별 슬랙 건수(free=None 이면 전부 0).
     """
     opt_model = plp.LpProblem(name="model")
     max_carbon_intensities = max(carbon_intensities)
@@ -111,9 +125,20 @@ def _solve_hour(carbon_intensities, latency, request_rates, alpha, n_regions):
             plp.LpConstraint(e=plp.lpSum(x_vars[i, j] for i in set_R) - s_vars[j] * SERVER_CAPACITY,
                               sense=plp.LpConstraintLE, rhs=0, name=f"capacity_const{j}"))
 
+    y_vars = {}
+    if free is not None:   # cap 실행 전용(원문에 없음)
+        y_vars = {i: plp.LpVariable(cat=plp.LpInteger, lowBound=0, name=f"y_{i}") for i in set_R}
+        for j in set_R:
+            opt_model.addConstraint(
+                plp.LpConstraint(e=plp.lpSum(x_vars[i, j] for i in set_R), sense=plp.LpConstraintLE,
+                                  rhs=free[j], name=f"region_cap_const{j}"))
+
     for i in set_R:
+        e = plp.lpSum(x_vars[i, j] for j in set_R)
+        if y_vars:
+            e = e + y_vars[i]
         opt_model.addConstraint(
-            plp.LpConstraint(e=plp.lpSum(x_vars[i, j] for j in set_R), sense=plp.LpConstraintEQ,
+            plp.LpConstraint(e=e, sense=plp.LpConstraintEQ,
                               rhs=request_rates[i], name=f"sched_all_reqs_const{i}"))
 
     for i in set_R:
@@ -125,13 +150,17 @@ def _solve_hour(carbon_intensities, latency, request_rates, alpha, n_regions):
     objective = (alpha * max_obj_1 * plp.lpSum(x_vars[i, j] * carbon_intensities[j]
                                                 for i in set_R for j in set_R)
                  + (1 - alpha) * max_obj_2 * plp.lpSum(s_vars[i] for i in set_R))
+    if y_vars:
+        objective += SLACK_PENALTY * plp.lpSum(y_vars[i] for i in set_R)
     opt_model.setObjective(objective)
     opt_model.solve(plp.PULP_CBC_CMD(msg=False))
 
     if opt_model.sol_status not in (1,):
         raise RuntimeError(f"CASPER MILP infeasible/미해결 (request_rates={request_rates})")
 
-    return {(i, j): round(x_vars[i, j].varValue or 0) for i in set_R for j in set_R}
+    xij = {(i, j): round(x_vars[i, j].varValue or 0) for i in set_R for j in set_R}
+    y = [round(y_vars[i].varValue or 0) if y_vars else 0 for i in set_R]
+    return xij, y
 
 
 def _solve_hour_latency_baseline(latency, request_rates, alpha, n_regions):
@@ -186,9 +215,11 @@ def _solve_hour_latency_baseline(latency, request_rates, alpha, n_regions):
 
 
 def run_casper(jobs, actual, latency, alpha, regions=REGIONS, max_hours=None, verbose_every=500,
-               policy="carbon"):
+               policy="carbon", cap=None, info=None):
     """policy: "carbon" -> Carbon.schedule_servers (진짜 CAP, alpha=0.9 원문)
-               "latency" -> Latency.schedule_servers (비-탄소 비교용, alpha=0.5 원문)"""
+               "latency" -> Latency.schedule_servers (비-탄소 비교용, alpha=0.5 원문)
+    cap: None(원문) 또는 int — 리전 동시 실행 상한(모듈 docstring). info(dict)를 주면 n_slack·slack_hours 를 채운다."""
+    assert cap is None or policy == "carbon", "cap 은 carbon(CAP) 정책에만"
     n_regions = len(regions)
     ridx = {r: i for i, r in enumerate(regions)}
     buckets = _bucket_by_hour(jobs)
@@ -197,6 +228,8 @@ def run_casper(jobs, actual, latency, alpha, regions=REGIONS, max_hours=None, ve
         hours = [h for h in hours if h < max_hours]
 
     decisions = {}
+    ends = {r: [] for r in regions}   # cap 실행: 리전별 배정 작업 종료 시각 힙
+    n_slack = slack_hours = 0
     t0 = time.time()
     for k, h in enumerate(hours):
         batch = buckets[h]
@@ -215,7 +248,15 @@ def run_casper(jobs, actual, latency, alpha, regions=REGIONS, max_hours=None, ve
             for r in regions:
                 series = actual[r]
                 carbon_intensities.append(series[h] if h < len(series) else series[-1])
-            xij = _solve_hour(carbon_intensities, latency, request_rates, alpha, n_regions)
+            free = None
+            if cap is not None:
+                for r in regions:
+                    while ends[r] and ends[r][0] <= h:   # start ≤ h < end 만 남긴다
+                        heapq.heappop(ends[r])
+                free = [max(0, cap - len(ends[r])) for r in regions]
+            xij, y = _solve_hour(carbon_intensities, latency, request_rates, alpha, n_regions, free=free)
+            n_slack += sum(y)
+            slack_hours += int(sum(y) > 0)
         elif policy == "latency":
             xij = _solve_hour_latency_baseline(latency, request_rates, alpha, n_regions)
         else:
@@ -230,14 +271,20 @@ def run_casper(jobs, actual, latency, alpha, regions=REGIONS, max_hours=None, ve
                         break
                     job = queue.pop()
                     decisions[job["id"]] = (regions[j], job["submit_time"])
-            for job in queue:  # 반올림으로 남으면(이론상 없음) 홈 리전 fallback
+            for job in queue:  # 반올림으로 남으면(이론상 없음) 홈 리전 fallback — cap 실행에서는 슬랙 y_i 건이 여기로 온다
                 decisions[job["id"]] = (job["region"], job["submit_time"])
+        if cap is not None:
+            for j in batch:
+                r, st = decisions[j["id"]]
+                heapq.heappush(ends[r], st + j["duration"])
 
         if verbose_every and (k + 1) % verbose_every == 0:
             elapsed = time.time() - t0
             print(f"  [{k+1}/{len(hours)}시간] {elapsed:.1f}s 경과, "
                   f"평균 {elapsed/(k+1)*1000:.1f}ms/시간", flush=True)
 
+    if info is not None:
+        info.update(cap=cap, n_slack=n_slack, slack_hours=slack_hours)
     return decisions
 
 
@@ -245,6 +292,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--alpha", type=float, default=None, help="지정 안 하면 0.9와 0.5 둘 다 돌린다")
     ap.add_argument("--hours", type=int, default=None, help="디버그용 — 앞 N시간만")
+    ap.add_argument("--cap", type=int, default=None, help="리전 동시 실행 상한(원문에 없음, CAST 와 같은 상한 대조용). 주면 carbon 만 돌고 그 상한으로 채점")
     args = ap.parse_args()
 
     jobs, actual, _pred24, W, latency = H.load_all()
@@ -255,17 +303,24 @@ def main():
         runs = [(args.alpha, "carbon")]
     else:
         runs = [(ALPHA_CAP, "carbon"), (ALPHA_LATENCY_BASELINE, "latency")]
+    if args.cap is not None:
+        runs = [(a, p) for a, p in runs if p == "carbon"]
 
     for alpha, policy in runs:
         label = (f"CASPER CAP(carbon, α={alpha})" if policy == "carbon"
                  else f"CASPER Latency-baseline(비탄소, α={alpha})")
+        if args.cap is not None:
+            label += f" cap={args.cap}"
         print(f"\n=== {label} 실행 ===")
         t0 = time.time()
-        decisions = run_casper(jobs, actual, latency, alpha, max_hours=args.hours, policy=policy)
+        info = {}
+        decisions = run_casper(jobs, actual, latency, alpha, max_hours=args.hours, policy=policy,
+                               cap=args.cap, info=info)
         dt = time.time() - t0
-        print(f"  배정 완료: {len(decisions):,}건, {dt:.1f}s")
+        print(f"  배정 완료: {len(decisions):,}건, {dt:.1f}s"
+              + (f", 슬랙(홈 강제) {info['n_slack']:,}건 / {info['slack_hours']:,}시간" if args.cap is not None else ""))
 
-        s = H.score(decisions, jobs, W, latency, label=label)
+        s = H.score(decisions, jobs, W, latency, label=label, **({} if args.cap is None else dict(cap=args.cap)))
         print(f"  {s['label']}: {s['total_carbon_kg']:,.1f} kg, "
               f"지연 {s['avg_latency_ms']:.1f} ms, "
               f"마감위반 {s['deadline_misses']:,}, 용량위반 {s['capacity_violations']:,}")

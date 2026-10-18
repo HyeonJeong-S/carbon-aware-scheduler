@@ -9,6 +9,7 @@ v1 표 4 와 다른 점(정리.txt [80], 2026-10-16 감사):
 
     ./.venv/bin/python -m scheduler.run_priors_v2 --policies baseline,suk_home,suk_lb,suk_st,cics,casper
     ./.venv/bin/python -m scheduler.run_priors_v2 --policies caspian --caspian-omega1 1.0 --caspian-fractional
+    ./.venv/bin/python -m scheduler.run_priors_v2 --policies casper_cap --cap 17   # → priors/casper_cap17.json (CASPER 에 CAST 와 같은 리전 상한)
 """
 import argparse
 import csv
@@ -125,6 +126,7 @@ def main(argv=None):
     os.makedirs(OUT_DIR, exist_ok=True)
     for name in args.policies.split(","):
         t0 = time.perf_counter()
+        info = {}
         if name == "baseline":
             dec = base_dec
         elif name == "suk_home":
@@ -137,6 +139,9 @@ def main(argv=None):
             from . import prior_cics as C; _, dec = C.run(lam_ratio=0.0, delta_max=1.0, verbose=False, jobs=jobs, actual=actual)
         elif name == "casper":
             from . import prior_casper as P; dec = P.run_casper(jobs, actual, latency, P.ALPHA_CAP, policy="carbon")
+        elif name == "casper_cap":   # 10-18: 원문에 없는 리전 동시 실행 상한 = 채점 상한 --cap (prior_casper docstring)
+            from . import prior_casper as P; dec = P.run_casper(jobs, actual, latency, P.ALPHA_CAP, policy="carbon",
+                                                                cap=args.cap, info=info)
         elif name == "caspian":
             from . import prior_caspian as Q
             assert args.caspian_omega1 is not None
@@ -151,7 +156,10 @@ def main(argv=None):
         s["savings_pct"] = 100 * (1 - s["total_carbon_kg"] / base_kg)
         if name == "caspian":
             s["omega1"] = args.caspian_omega1; s["fractional"] = args.caspian_fractional
-        tag = (name if name != "caspian" else f"caspian_w{args.caspian_omega1}{'_frac' if args.caspian_fractional else ''}") + args.tag_suffix
+        if name == "casper_cap":
+            s["casper_cap"] = info["cap"]; s["n_slack"] = info["n_slack"]; s["slack_hours"] = info["slack_hours"]
+        tag = {"caspian": f"caspian_w{args.caspian_omega1}{'_frac' if args.caspian_fractional else ''}",
+               "casper_cap": f"casper_cap{args.cap}"}.get(name, name) + args.tag_suffix
         with open(os.path.join(OUT_DIR, f"{tag}.json"), "w") as f:
             json.dump(dict(name=tag, at_cap=s), f, ensure_ascii=False, indent=1, default=float)
         with gzip.open(os.path.join(OUT_DIR, f"{tag}.decisions.csv.gz"), "wt", newline="") as f:
@@ -159,6 +167,8 @@ def main(argv=None):
             for jid, (r, st_) in dec.items():
                 w.writerow([jid, r, st_])
         report(name, s)
+        if name == "casper_cap":
+            print(f"  {'':10s} 슬랙(자리 없어 홈 강제) {s['n_slack']:,}건 / {s['slack_hours']:,}시간", flush=True)
 
 
 if __name__ == "__main__":

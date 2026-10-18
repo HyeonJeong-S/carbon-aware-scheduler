@@ -94,7 +94,9 @@ def main(argv=None):
     ap.add_argument("--seed", type=int, default=0, help="noisy_oracle 잡음 시드")
     ap.add_argument("--mb-scale", type=float, default=1.0, help="5회차 B[3]: 예약 침범 벌점 M_B 배수(M_A 는 그대로 100·2·max d)")
     ap.add_argument("--carbon-now", choices=["actual", "lag1"], default="actual", help="4회차 A[1]: lag1 이면 한 시간 앞서 발행된 예측만으로 판단")
+    ap.add_argument("--no-lookahead", action="store_true", help="10-18: 어느 엔진 위에든 no_lookahead 도착 규약(슬롯 안 도착을 미리 알지 않음)")
     args = ap.parse_args(argv)
+    assert not (args.no_lookahead and args.engine == "2stage"), "--no-lookahead 는 결합 엔진(run_joint)에만"
     capacity.CARBON_NOW = args.carbon_now
 
     data = carbon_2025.load_2025()
@@ -163,6 +165,7 @@ def main(argv=None):
                                   horizon=args.horizon, alpha=alpha, alpha_grid=grid, n_hours=n_hours,
                                   l_net_max=args.l_net_max, home_region=args.home_region,
                                   spatial_only=args.spatial_only, score_from=args.score_from, mode=mode,
+                                  lookahead=not args.no_lookahead,
                                   penalties=None if args.mb_scale == 1.0 else (100.0 * max(10.0, 2.0 * max(j["duration"] for j in jobs)),
                                                                                args.mb_scale * max(10.0, 2.0 * max(j["duration"] for j in jobs))))
         if ignore:
@@ -175,6 +178,7 @@ def main(argv=None):
     hm = herding.herding(list(out.values()), actual, REGIONS, cap_d, args.score_from,
                          min(n_hours, len(next(iter(actual.values())))))
     extra = dict(name=args.name, engine=args.engine, alpha_setting=args.alpha, forecast=args.forecast, carbon_now=args.carbon_now, mb_scale=args.mb_scale,
+                 lookahead=not args.no_lookahead,
                  cap=cap, cap_mode=args.cap_mode, cap_json=args.cap_json, rho=rho, rho_setting=args.rho,
                  l_net_max=args.l_net_max, horizon=args.horizon, home_region=args.home_region,
                  spatial_only=args.spatial_only, jobs_csv=args.jobs, score_from=args.score_from, days=args.days,
