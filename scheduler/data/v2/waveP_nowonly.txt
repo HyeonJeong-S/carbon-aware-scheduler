@@ -1,0 +1,5 @@
+# P파(10-18, 3회차 B[2]): now_only = CAST(매 슬롯 재풀이)에서 미래 슬롯 용량 행만 지움 — 시작 순간에만 확인
+--name nowonly/lstm --engine now_only --alpha knee --forecast lstm
+--name nowonly/oracle --engine now_only --alpha knee --forecast oracle
+--name nowonly/sn24 --engine now_only --alpha knee --forecast sn24
+--name nowonly/azure --engine now_only --alpha knee --jobs load_balancer/data/jobs_azure.csv

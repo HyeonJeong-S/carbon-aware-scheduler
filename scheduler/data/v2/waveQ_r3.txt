@@ -1,0 +1,14 @@
+nolook_lstm|./.venv/bin/python -m scheduler.run_v2 --name nolook/lstm --engine no_lookahead
+nolook_lstm_rho0|./.venv/bin/python -m scheduler.run_v2 --name nolook/lstm_rho0 --engine no_lookahead --rho 0
+nolook_oracle|./.venv/bin/python -m scheduler.run_v2 --name nolook/oracle --engine no_lookahead --forecast oracle
+nolook_azure|./.venv/bin/python -m scheduler.run_v2 --name nolook/azure --engine no_lookahead --jobs load_balancer/data/jobs_azure.csv
+nolook_azure_rho0|./.venv/bin/python -m scheduler.run_v2 --name nolook/azure_rho0 --engine no_lookahead --rho 0 --jobs load_balancer/data/jobs_azure.csv
+dw_sn24|./.venv/bin/python -m scheduler.match_alpha --axis dw --target 36.74 --lo 0.525 --hi 0.5375 --prefix alpha/sn24_dw --extra "--forecast sn24" --max-runs 3
+dw_azure|./.venv/bin/python -m scheduler.match_alpha --axis dw --target 39.78 --lo 0.55 --hi 0.6 --prefix azure/dw --extra "--jobs load_balancer/data/jobs_azure.csv" --max-runs 4
+azs1_m|./.venv/bin/python -m scheduler.match_alpha --target 44.04 --lo 0.5 --hi 0.6 --prefix azure/seed1_m --extra "--jobs load_balancer/data/variants/jobs_azure_seed1.csv" --max-runs 5
+azs2_m|./.venv/bin/python -m scheduler.match_alpha --target 44.23 --lo 0.5 --hi 0.6 --prefix azure/seed2_m --extra "--jobs load_balancer/data/variants/jobs_azure_seed2.csv" --max-runs 5
+af_s1|./.venv/bin/python -m scheduler.match_alpha --engine arrival_fixed --target 48.07 --lo 0.55 --hi 0.62 --prefix seed/1_af_m --extra "--jobs load_balancer/data/variants/jobs_seed1.csv" --max-runs 4
+af_s2|./.venv/bin/python -m scheduler.match_alpha --engine arrival_fixed --target 48.06 --lo 0.55 --hi 0.62 --prefix seed/2_af_m --extra "--jobs load_balancer/data/variants/jobs_seed2.csv" --max-runs 4
+af_s3|./.venv/bin/python -m scheduler.match_alpha --engine arrival_fixed --target 47.76 --lo 0.55 --hi 0.62 --prefix seed/3_af_m --extra "--jobs load_balancer/data/variants/jobs_seed3.csv" --max-runs 4
+af_s4|./.venv/bin/python -m scheduler.match_alpha --engine arrival_fixed --target 47.94 --lo 0.55 --hi 0.62 --prefix seed/4_af_m --extra "--jobs load_balancer/data/variants/jobs_seed4.csv" --max-runs 4
+af_oracle|./.venv/bin/python -m scheduler.match_alpha --engine arrival_fixed --target 39.40 --lo 0.5 --hi 0.6 --prefix arrival/oracle_af_m --extra "--forecast oracle" --max-runs 4

@@ -1,0 +1,4 @@
+# N파(10-18, 3회차 A[4]): Azure 용량 비용을 같은 지연대에서 — α=1 끼리(용량 무시 α=1, CAST α=1 예약 0)
+--name azure/ignore_a1 --engine ignore --alpha 1.0 --jobs load_balancer/data/jobs_azure.csv
+--name azure/rho0_a1 --engine joint --alpha 1.0 --rho 0 --jobs load_balancer/data/jobs_azure.csv
+--name rho0/joint_a1 --engine joint --alpha 1.0 --rho 0

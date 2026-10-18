@@ -1,0 +1,17 @@
+# O파(10-18, 3회차 C[1]): 시작할 때만 확인(start_check)을 CAST 와 같은 LP·예측·α 규칙·풀이기로 — v1 대조군의 교란 없이 확인 시점만 바꿈
+--name startcheck/lstm --engine start_check --alpha knee --forecast lstm
+--name startcheck/mix0.75 --engine start_check --alpha knee --forecast mix0.75
+--name startcheck/mix0.5 --engine start_check --alpha knee --forecast mix0.5
+--name startcheck/mix0.25 --engine start_check --alpha knee --forecast mix0.25
+--name startcheck/oracle --engine start_check --alpha knee --forecast oracle
+--name startcheck/sn24 --engine start_check --alpha knee --forecast sn24
+--name startcheck/seed1 --engine start_check --alpha knee --jobs load_balancer/data/variants/jobs_seed1.csv
+--name startcheck/seed1_oracle --engine start_check --alpha knee --forecast oracle --jobs load_balancer/data/variants/jobs_seed1.csv
+--name startcheck/seed2 --engine start_check --alpha knee --jobs load_balancer/data/variants/jobs_seed2.csv
+--name startcheck/seed2_oracle --engine start_check --alpha knee --forecast oracle --jobs load_balancer/data/variants/jobs_seed2.csv
+--name startcheck/seed3 --engine start_check --alpha knee --jobs load_balancer/data/variants/jobs_seed3.csv
+--name startcheck/seed3_oracle --engine start_check --alpha knee --forecast oracle --jobs load_balancer/data/variants/jobs_seed3.csv
+--name startcheck/seed4 --engine start_check --alpha knee --jobs load_balancer/data/variants/jobs_seed4.csv
+--name startcheck/seed4_oracle --engine start_check --alpha knee --forecast oracle --jobs load_balancer/data/variants/jobs_seed4.csv
+--name startcheck/azure --engine start_check --alpha knee --jobs load_balancer/data/jobs_azure.csv
+--name startcheck/azure_oracle --engine start_check --alpha knee --forecast oracle --jobs load_balancer/data/jobs_azure.csv
