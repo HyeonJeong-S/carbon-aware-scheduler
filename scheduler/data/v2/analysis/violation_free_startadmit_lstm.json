@@ -1,0 +1,13 @@
+{
+ "run": "startadmit/lstm",
+ "cap": 17,
+ "violations": 241,
+ "by_kind": {
+  "forced": 122,
+  "normal": 119
+ },
+ "free_elsewhere": 241,
+ "no_free_anywhere": 0,
+ "violation_instants": 78,
+ "instants_without_forced": 0
+}

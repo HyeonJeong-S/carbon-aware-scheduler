@@ -1,0 +1,13 @@
+{
+ "run": "startadmit/azure_rho0",
+ "cap": 43,
+ "violations": 7583,
+ "by_kind": {
+  "forced": 6347,
+  "normal": 1236
+ },
+ "free_elsewhere": 7583,
+ "no_free_anywhere": 0,
+ "violation_instants": 2542,
+ "instants_without_forced": 0
+}

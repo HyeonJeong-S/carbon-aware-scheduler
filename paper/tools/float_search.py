@@ -26,15 +26,19 @@ def main():
     if len(sys.argv) > 2:
         for kv in sys.argv[2].split(","):
             k, v = kv.split("="); sh[k] = int(v)
-    keys = ["fig1", "tbl1", "fig2", "alg1", "tbl2", "tbl3", "tbl4", "fig3", "tbl5"]
+    keys = os.environ.get("KEYS", "fig1,tbl1,fig2,alg1,tbl2,tbl3,tbl4,fig3,tbl5").split(",")   # 10-19: 전체판은 KEYS 로 큰 그림·표만
+    deltas = tuple(int(x) for x in os.environ.get("DELTAS", "-1,1,-2,2").split(","))
     best = score(src, sh); print("시작", best, flush=True)
+    deadline = float(os.environ.get("DEADLINE", "0")) or None   # time.time() 기준 마감 — 넘으면 그때까지의 최선으로 멈춤
+    import time
     improved = True
     while improved:
         improved = False
         for k in keys:
-            for dv in (-1, 1, -2, 2):
+            for dv in deltas:
                 cand = dict(sh); cand[k] = cand.get(k, 0) + dv
                 if abs(cand[k]) > 5: continue
+                if deadline and time.time() > deadline: print("마감", best, flush=True); return
                 sc = score(src, cand); print(" ", k, dv, sc[:4], flush=True)
                 if sc[0] < best[0]: best, sh, improved = sc, cand, True; print("  → 채택", best, flush=True); break
     print("최종", best, flush=True)

@@ -1,0 +1,13 @@
+{
+ "run": "load/azure_cap0.50_rho0_af_knee",
+ "cap": 17,
+ "violations": 847,
+ "by_kind": {
+  "immediate": 440,
+  "normal": 407
+ },
+ "free_elsewhere": 65,
+ "no_free_anywhere": 782,
+ "violation_instants": 697,
+ "instants_without_forced": 697
+}

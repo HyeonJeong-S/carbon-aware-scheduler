@@ -1,0 +1,119 @@
+{
+ "name": "casper_cap17",
+ "at_cap": {
+  "n": 143200,
+  "n_all": 146000,
+  "total_carbon_kg": 6145.902007063174,
+  "slo_violations": 0,
+  "forced_admissions": 0,
+  "immediate": 0,
+  "capacity_violations": 0,
+  "over_cap_forced": 0,
+  "over_cap_immediate": 0,
+  "over_cap_normal": 0,
+  "scored_cap": {
+   "US-CAL-CISO": 17,
+   "US-TEX-ERCO": 17,
+   "US-NY-NYIS": 17,
+   "FR": 17,
+   "DE": 17,
+   "KR": 17,
+   "IN": 17,
+   "JP": 17
+  },
+  "peak_by_region": {
+   "US-CAL-CISO": 16,
+   "US-TEX-ERCO": 13,
+   "US-NY-NYIS": 12,
+   "FR": 15,
+   "DE": 13,
+   "KR": 7,
+   "IN": 0,
+   "JP": 10
+  },
+  "hours_over_by_region": {
+   "US-CAL-CISO": 0.0,
+   "US-TEX-ERCO": 0.0,
+   "US-NY-NYIS": 0.0,
+   "FR": 0.0,
+   "DE": 0.0,
+   "KR": 0.0,
+   "IN": 0.0,
+   "JP": 0.0
+  },
+  "avg_delay_h": 0.0,
+  "p95_delay_h": 0.0,
+  "avg_latency_ms": 114.59334497206704,
+  "p95_latency_ms": 238.0,
+  "dw_latency_ms": 117.34583185085415,
+  "home_share": 0.15085893854748603,
+  "by_k": {
+   "1": {
+    "n": 42974,
+    "carbon_kg": 5432.40244931796,
+    "avg_delay_h": 0.0,
+    "p95_delay_h": 0.0,
+    "avg_latency_ms": 117.49892958533067,
+    "forced": 0,
+    "over_cap": 0
+   },
+   "2": {
+    "n": 14200,
+    "carbon_kg": 627.218295041264,
+    "avg_delay_h": 0.0,
+    "p95_delay_h": 0.0,
+    "avg_latency_ms": 117.08253521126761,
+    "forced": 0,
+    "over_cap": 0
+   },
+   "3": {
+    "n": 14455,
+    "carbon_kg": 61.97984844123858,
+    "avg_delay_h": 0.0,
+    "p95_delay_h": 0.0,
+    "avg_latency_ms": 112.57827741265999,
+    "forced": 0,
+    "over_cap": 0
+   },
+   "4": {
+    "n": 28656,
+    "carbon_kg": 19.752189033297967,
+    "avg_delay_h": 0.0,
+    "p95_delay_h": 0.0,
+    "avg_latency_ms": 113.09031267448353,
+    "forced": 0,
+    "over_cap": 0
+   },
+   "5": {
+    "n": 42915,
+    "carbon_kg": 4.549225229210075,
+    "avg_delay_h": 0.0,
+    "p95_delay_h": 0.0,
+    "avg_latency_ms": 112.54249097052313,
+    "forced": 0,
+    "over_cap": 0
+   }
+  },
+  "required_capacity": 16,
+  "p999_by_region": {
+   "US-CAL-CISO": 12,
+   "US-TEX-ERCO": 9,
+   "US-NY-NYIS": 9,
+   "FR": 13,
+   "DE": 10,
+   "KR": 4,
+   "IN": 0,
+   "JP": 5
+  },
+  "p999": 13,
+  "min_cap_0.1pct_hours_over": 13,
+  "label": "casper_cap",
+  "violations_at_cap12": 771,
+  "wall_s": 369.7321554579976,
+  "baseline_kg": 28625.461808413354,
+  "savings_pct": 78.52994635266697,
+  "casper_cap": 17,
+  "n_slack": 0,
+  "slack_hours": 0
+ }
+}

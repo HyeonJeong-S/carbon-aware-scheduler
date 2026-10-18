@@ -293,17 +293,19 @@ def fig_capsweep():
     Azure 는 α=1 용량 무시 실행이 없다)."""
     from matplotlib.ticker import NullFormatter, NullLocator
     fig, ax = new_ax(h=170 / 72.0)
-    YLIM = (25, 70)
-    levels = [("0.50x", 0.5), ("0.75x", 0.75), ("1.00x", 1.0), ("1.50x", 1.5), ("2.00x", 2.0), ("3.00x", 3.0)]
-    pre, main_name, ig_name = "azure/cap_", "azure/joint", "azure/ignore"
+    # 10-19: 예약 없이(ρ=0) — Azure 대표를 ρ=0 으로 바꿈. 0.5·0.6배는 높은 부하 실험(load/), 0.5배에서만 위반(0.32%)
+    YLIM = (15, 70)
+    knee_runs = {0.5: "load/azure_cap0.50_rho0_knee", 0.6: "load/azure_cap0.60_rho0_knee", 0.75: "azure/cap_0.75x_rho0",
+                 1.0: "azure/cap_1.00x_rho0", 1.25: "azure/rho_0", 1.5: "azure/cap_1.50x_rho0", 2.0: "azure/cap_2.00x_rho0"}
+    a1_runs = {1.25: "azure/rho0_a1"}
+    ig_name = "azure/ignore"
     any_data = False
-    for suf_a, mk, ls, col, name in (("", "o", "-", INK, "CAST, knee"), ("_a1", "s", (0, (3, 1.5)), GRAY, "CAST, α=1")):
+    for runs, mk, ls, col, name in ((knee_runs, "o", "-", INK, "CAST, knee"), (a1_runs, "s", (0, (3, 1.5)), GRAY, "CAST, α=1")):
         rows = []
-        for suf, x in levels:
-            st = stats(pre + suf + suf_a)
-            if st: rows.append((x, st["savings_pct"]))
-        m = stats(main_name + suf_a)
-        if m: rows.append((1.25, m["savings_pct"]))
+        for x, nm in runs.items():
+            st = stats(nm)
+            if st and YLIM[0] <= st["savings_pct"] <= YLIM[1]: rows.append((x, st["savings_pct"]))
+        suf_a = "" if runs is knee_runs else "_a1"
         rows.sort()
         if not rows: continue
         any_data = True
@@ -320,8 +322,8 @@ def fig_capsweep():
     if not any_data:
         print("capsweep: 자료 없음"); return
     ax.set_xscale("log"); ax.xaxis.set_minor_locator(NullLocator()); ax.xaxis.set_minor_formatter(NullFormatter())
-    ax.set_xticks([0.75, 1, 1.25, 1.5, 2]); ax.set_xticklabels(["0.75×", "1×", "1.25×", "1.5×", "2×"], fontsize=F_TICK)
-    ax.set_xlim(0.65, 2.3); ax.set_ylim(*YLIM)
+    ax.set_xticks([0.5, 0.75, 1, 1.25, 1.5, 2]); ax.set_xticklabels(["0.5×", "0.75×", "1×", "1.25×", "1.5×", "2×"], fontsize=F_TICK)
+    ax.set_xlim(0.45, 2.3); ax.set_ylim(*YLIM)
     ax.set_xlabel("Ceiling (× baseline peak)", fontsize=F_LABEL)   # 10-18(87 점검2 [14]): "Capacity" → 본문·그림 6·7·11 과 같은 "Ceiling"
     ax.set_ylabel("Carbon savings (%)", fontsize=F_LABEL)
     # 10-18(82 점검4 E [4]): 범례 7.1 pt 에서 y 격자 30 이 "Capacity ignored, knee" 윗부분에 닿았다 → 흰 바탕(테두리 없음)으로 격자만 가린다
@@ -415,6 +417,7 @@ def fig_priors():
     # 렌더(10-17): CASPER 라벨이 α=1 곡선 점(26·39)에 걸리고 S+T 라벨이 "CAST α=1" 과 겹쳐 자리 조정
     labels = {"cics": ("CICS", -6, -1, "right"),   # 10-18 렌더: 오른쪽이면 기준 피크 점선(13)을 가로질러 왼쪽으로
               "casper": ("CASPER", 0, -11, "center"),   # CASPER 는 α=1 곡선 위에 놓이는 점 — 라벨은 곡선 아래
+              "casper_cap17": ("CASPER, cap 17", 6, 0, "left"),   # 10-19: 같은 상한 17 을 건 CASPER(78.53%, 필요 용량 16)
               "suk_home": ("Suk. temporal (home)", 6, -1, "left"),
               # 10-18(84 점검3 [1]): 가운데 맞춤이면 라벨 왼쪽 끝이 Caspian 점(34, 67.5) 바로 오른쪽에 붙고 그 아래 Caspian 라벨이 있어
               # (34, 67.5) 점이 "Suk. temporal (ours)" 로 읽혔다 → 자기 점 바로 아래, 점 8 pt 왼쪽에서 시작(왼쪽 맞춤)해
