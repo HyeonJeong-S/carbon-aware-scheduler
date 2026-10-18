@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """띄운 그림·표 자리(FLOAT_SHIFT)를 좌표 하강으로 고른다: 조립 → Word 로 PDF → 쪽수·단 아래 빈 곳·겹침으로 점수.
     ./.venv/bin/python paper/tools/float_search.py <원고.txt> [시작 shift 예: tbl4=-1,fig1=2]
-점수 = 쪽수×1000 + 단 아래 빈 곳(pt) 합 + 겹침(쪽당 12곳 넘는 것)×5000. 10-18 줄인 판 2회차에서 손으로 맞추다 만듦."""
+점수 = 쪽수×1000 + 빈 곳(단 아래·단 중간, pt) 합 + 홀로 남은 절 제목×300 + 겹침(쪽당 12곳 넘는 것)×5000.
+주의: 시험마다 Word 창이 뜬다 — 사용자가 싫어함(10-18). 돌리기 전에 묻는다. 10-18 줄인 판 2회차에서 손으로 맞추다 만듦."""
 import os, re, subprocess, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PY = os.path.join(ROOT, ".venv/bin/python"); B = os.path.join(ROOT, "paper/tools/build_v2_docx.py")
@@ -16,7 +17,7 @@ def score(src, sh):
     r = subprocess.run(["osascript", os.path.join(ROOT, "paper/tools/word_to_pdf.applescript"), DOCX, PDF, "quiet"], capture_output=True, text=True)
     if r.returncode: raise RuntimeError(r.stderr)
     rep = subprocess.run([PY, B, "--in", src, "--report", PDF], cwd=ROOT, capture_output=True, text=True).stdout
-    pages = int(re.search(r"(\d+)쪽\n", rep).group(1)); gaps = sum(int(g) for g in re.findall(r"아래 (\d+)pt 빔", rep))
+    pages = int(re.search(r"(\d+)쪽\n", rep).group(1)); gaps = sum(int(g) for g in re.findall(r"(\d+)pt 빔", rep)) + 300 * rep.count("절 제목만")   # 단 중간 빈 곳·홀로 남은 절 제목도(2회차 E2·E3)
     d = pymupdf.open(PDF); ov = sum(1 for p in d if len(overlaps(p)) > 12)
     return pages * 1000 + gaps + ov * 5000, pages, gaps, ov, s
 

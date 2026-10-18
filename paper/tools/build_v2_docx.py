@@ -263,9 +263,12 @@ def table_elems(T, tbl, full=False):
     # 음수 기호 −(U+2212)와 신뢰구간의 "to"도 숫자 열로 — 표 6 의 Δ·CI 두 열만 왼쪽 정렬이던 것(87 [18]). ± 도(줄인 판 표 5 "71.51 ± 0.43")
     NUM = re.compile(r"^(?:[\d.,%/–\-−—+±()\[\]⟦⟧ ×†‡§]|to)*$")
     numeric = [all(NUM.match(r[c]) for r in rows[1:] if c < len(r)) for c in range(ncol)]
+    symbolic = [all(re.match(r"^[○△×—\s]*$", r[c]) for r in rows[1:] if c < len(r)) and not numeric[c] for c in range(ncol)]   # 표 1·3 의 ○△× 열은 가운데(2회차 E8)
     if sum(need) > total and any(numeric[1:]):
         # 빠듯한 표: 숫자 열에 먼저 필요한 폭을 주고 남는 폭을 글자 열에 비례로 — 비례 배분은 긴 행 이름에 폭을 몰아
         # 숫자를 가운데서 꺾었다(줄인 판 표 5 "1.83±0.5/3", "0.35–/9.64"; 고정 폭 표라 noWrap 이 안 먹음)
+        # 숫자 열은 본문 칸 폭만(머리는 두 줄로 꺾여도 됨) — 머리 "Cost of cap (pp)" 까지 세면 행 이름 열이 50pt 로 좁아져 15행이 꺾였다(2회차 E4)
+        need = [20 * (max([_dlen(r[c]) for r in rows[1:] if c < len(r)] + [0]) * 3.6 * TBL_SZ / 14 + 6) if (c > 0 and numeric[c]) else need[c] for c in range(ncol)]
         fixed = sum(need[c] for c in range(ncol) if c > 0 and numeric[c]); rest = total - fixed
         tw_ = sum(wts[c] for c in range(ncol) if not (c > 0 and numeric[c]))
         if rest > 0.25 * total:
@@ -317,7 +320,7 @@ def table_elems(T, tbl, full=False):
             sp = ppr.find(qn("w:spacing"))
             (sp.addnext(ind) if sp is not None else ppr.append(ind))
             jc = etree.SubElement(ppr, qn("w:jc"))               # 글자 칸도 왼쪽으로 못박는다 — 틀의 양쪽 맞춤이 꺾인 행 이름을 "Main    (LSTM," 처럼 벌렸다(줄인 판 표 5)
-            jc.set(qn("w:val"), "right" if (c > 0 and numeric[c]) else "left")
+            jc.set(qn("w:val"), "right" if (c > 0 and numeric[c]) else "center" if (c > 0 and symbolic[c]) else "left")
         if i == 0: t.append(rule_row(ncol, total, "top", RULE_TOP))           # 위 굵은 선(맨 윗행의 top)
         t.append(tr)
         if i == 0:                                                            # 머리 아래 가는 선(전에는 머리 칸마다 tcBorders)
@@ -488,7 +491,7 @@ FLOAT_GAP = 220       # 띄운 그림·표와 아래 본문 사이 11pt(v1 그�
 #   표 3·4 값은 원고 판마다 결과가 크게 갈린다(같은 값이 4회차판에서는 12쪽 R 191pt·18쪽 R 211pt) — 원고가 멈춘 뒤 다시 맞출 것.
 FLOAT_SHIFT = {("tbl", 3): 0, ("tbl", 4): 1, ("tbl", 6): -1, ("fig", 9): -1, ("alg", 1): 0, ("fig", 5): -1, ("fig", 8): 4}   # fig5 +1(10-18): 표 4 와 같은 자리에 겹쳤다  # fig8 +4(10-18 5회차판): 표 6(전폭)과 겹침
 # 줄인 판(10-18): 표 4 −1(7쪽 R단 371pt 빔), 그림 1 +2(2쪽 R단 144pt 빔), 그림 2 −1(4쪽 R단 빔), 표 5 +1(그림 3 캡션 위에 얹힘 — overlap_check.py 로 잡음)
-FLOAT_SHIFT_CUT = {("alg", 1): -2, ("fig", 1): 4, ("fig", 2): -2, ("fig", 3): 2, ("tbl", 4): -2, ("tbl", 5): 1}   # 2회차 원고(10-18 19:50, float_search: 10쪽, 빈 곳 89pt, 겹침 0)
+FLOAT_SHIFT_CUT = {("alg", 1): -1, ("fig", 1): 4, ("fig", 2): -2, ("tbl", 4): -3, ("tbl", 5): 1}   # 3회차 원고(10-18 22:10, 손으로 4번: 10쪽, 겹침 0, 빈 곳 2쪽 R 73·8쪽 R 123pt)
 
 def apply_shift(blocks, shift):
     """("fig"|"tbl", 번호) → n. 그림·표가 아닌 블록(단락·절 제목·식) n개를 건너 앞(−)·뒤(+)로 옮긴다."""
@@ -739,8 +742,40 @@ def mathify_doc(doc):
 
 
 # ── 조립 ──────────────────────────────────────────────────────────────────
+def cite_check(blocks):
+    """본문이 부르는 인용 번호 집합 = 참고문헌 번호 집합(1..N, 빈틈 없음), 첫 등장 순인가.
+    10-18 줄인 판 2회차: 본문을 다시 매기고 목록은 그대로 둬서 [2]가 EU 지침을 가리켰다(심사 A 가 발견)."""
+    refs = [int(re.match(r"^\[(\d+)\]", r).group(1)) for k, v in blocks if k == "refs" for r in v]
+    order = []
+    for k, v in blocks:
+        txts = [v] if k in ("p", "h1", "h2") else ([v["kr"]] + [c for r in v["rows"] for c in r]) if k == "tbl" else [v["kr"]] if k == "fig" else v if k == "alg" else []
+        for t in txts:
+            for grp in re.findall(r"\[(\d+(?:\s*[–,-]\s*\d+)*)\]", t):
+                for part in re.split(r"\s*,\s*", grp):
+                    m = re.match(r"^(\d+)\s*[–-]\s*(\d+)$", part)
+                    for n in (range(int(m.group(1)), int(m.group(2)) + 1) if m else [int(part)]):
+                        if n not in order: order.append(n)
+    bad = []
+    if sorted(order) != list(range(1, len(refs) + 1)): bad.append(f"본문 번호 {sorted(set(order))} ≠ 목록 1..{len(refs)}")
+    if order != sorted(order): bad.append(f"첫 등장 순이 아님: {order}")
+    # 내용 대조: 인용 바로 앞(40자)의 이름(Sukprasert, CASPER …)이 어느 문헌엔가 있으면, 그 번호의 문헌에 있어야 한다
+    texts = {int(re.match(r"^\[(\d+)\]", r).group(1)): r.lower() for k, v in blocks if k == "refs" for r in v}
+    allp = " ".join(v for k, v in blocks if k == "p")
+    miss = set()
+    for m in re.finditer(r"\[(\d+)\]", allp):
+        n = int(m.group(1))
+        if n not in texts: continue
+        ws = re.findall(r"[A-Z][A-Za-z]{3,}", allp[max(0, m.start() - 30):m.start()])
+        if ws and not re.search(r"\[\d", allp[max(0, m.start() - 30):m.start()].split(ws[-1])[-1]):   # 가장 가까운 이름 하나, 그 사이에 다른 인용이 없을 때만
+            wl = ws[-1].lower()
+            if any(wl in t for t in texts.values()) and wl not in texts[n]: miss.add(f"{ws[-1]}[{n}]")
+    if miss: bad.append("이름과 문헌이 어긋남(의심): " + ", ".join(sorted(miss)))
+    print("  인용 점검:", "; ".join(bad) if bad else f"본문 {len(order)}편 = 목록 {len(refs)}편, 첫 등장 순, 이름 대조 통과")
+    return not bad
+
 def build(src, out, shift=None):
     head, blocks = parse(src)
+    cite_check(blocks)
     base = os.path.basename(src)                        # FLOAT_SHIFT 는 전체판의 번호로 맞춘 값 — 줄인 판은 FLOAT_SHIFT_CUT, 그 밖은 --shift 만
     sh = dict(FLOAT_SHIFT if base == "99_원고.txt" else FLOAT_SHIFT_CUT if base.startswith("99_원고_줄인판") else {}); sh.update(shift or {})
     if FLOAT_ALL and sh:
@@ -819,8 +854,19 @@ def layout_report(pdf):
         rs = [r for r in rs if 40 < r.y0 and r.y1 < 680]
         if not rs or i == 0 or i == len(d) - 1: continue
         for col, (x0, x1) in (("L", (50, MID)), ("R", (MID, 470))):
-            ys = [r.y1 for r in rs if r.x0 < x1 - 2 and r.x1 > x0 + 2]
+            cs = sorted((r.y0, r.y1) for r in rs if r.x0 < x1 - 2 and r.x1 > x0 + 2)
+            ys = [b for _, b in cs]
             if ys and BOT - max(ys) > 40: print(f"  {i + 1}쪽 {col}단 아래 {BOT - max(ys):.0f}pt 빔")
+            # 단 중간 빈 곳(2회차 E2: 식 (11)과 알고리즘 상자 사이 154pt — 단 아래만 세던 점수가 못 잡음)
+            hi = cs[0][1] if cs else 0
+            for a, b in cs[1:]:
+                if a - hi > 40: print(f"  {i + 1}쪽 {col}단 중간 y{hi:.0f}~{a:.0f} {a - hi:.0f}pt 빔")
+                hi = max(hi, b)
+            # 단 맨 아래에 홀로 남은 절 제목(2회차 E3: "4.5 선행 정책과의 비교")
+            for b_ in pg.get_text("dict")["blocks"]:
+                for l in b_.get("lines", []):
+                    t = "".join(x["text"] for x in l["spans"]).strip()
+                    if re.match(r"^\d\.\d+ \S", t) and x0 <= l["bbox"][0] < x1 and l["bbox"][3] > BOT - 16: print(f"  {i + 1}쪽 {col}단 맨 아래 절 제목만: {t[:20]}")
         for b in pg.get_text("dict")["blocks"]:
             for l in b.get("lines", [])[:1]:
                 t = "".join(x["text"] for x in l["spans"]).strip()

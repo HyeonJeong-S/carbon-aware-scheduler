@@ -1,0 +1,5 @@
+[1] α=0.5975  dw 49.54 ms (dw 49.54)  save 73.67%  kg 7,554.7  viol 0
+[2] α=0.5862  dw 47.09 ms (dw 47.09)  save 72.31%  kg 7,947.0  viol 0
+MATCHED
+BEST α=0.5862 lat 47.09 (target 46.86) save 72.31% kg 7,947.0 viol 0
+done
