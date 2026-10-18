@@ -274,6 +274,20 @@ def table_elems(T, tbl, full=False):
         if rest > 0.25 * total:
             widths = [int(need[c]) if (c > 0 and numeric[c]) else int(rest * wts[c] / tw_) for c in range(ncol)]
             widths[0] += total - sum(widths)
+        else:   # 10-19 전체판 E: 숫자 열이 다 못 들어가면 글자 열에 표 폭의 25%만 주고 나머지를 숫자 열에 필요 폭 비례로
+            # (전에는 비례 배분으로 돌아가 행 이름 열이 40%를 먹고 신뢰구간이 "(1.68–/3.42)"처럼 숫자 가운데서 꺾였다 — 표 12)
+            lab = 0.25 * total
+            widths = [int((total - lab) * need[c] / fixed) if (c > 0 and numeric[c]) else int(lab * wts[c] / tw_) for c in range(ncol)]
+            widths[0] += total - sum(widths)
+    # 어느 열도 그 열의 가장 긴 낱말(띄어쓰기 없는 덩어리)보다 좁으면 안 된다 — "CASPE/R", "SN-/24h"(10-19 전체판 E 표 11·13).
+    # 모자란 폭은 가장 넓은 열에서 가져온다.
+    tok = [20 * (max([_dlen(w) for r in rows for w in (r[c] if c < len(r) else "").split()] + [0]) * 3.6 * TBL_SZ / 14 + 6) for c in range(ncol)]
+    for c in range(ncol):
+        short = int(tok[c]) - widths[c]
+        if short > 0:
+            donor = max((k for k in range(ncol) if k != c), key=lambda k: widths[k] - tok[k])
+            if widths[donor] - short >= tok[donor]:
+                widths[donor] -= short; widths[c] += short
     for w in widths: etree.SubElement(grid, qn("w:gridCol")).set(qn("w:w"), str(w))
     trs = t.findall(qn("w:tr")); head_tr, body_tr = trs[0], trs[1]
     for tr in trs: t.remove(tr)

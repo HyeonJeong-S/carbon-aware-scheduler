@@ -1,1 +1,1 @@
-fig10=1,fig6=2,tbl10=1,tbl11=1,tbl12=3,tbl13=1,tbl7=3,tbl8=-1,fig5=2,tbl9=-1
+fig10=1,fig6=2,tbl10=1,tbl11=1,tbl12=4,tbl13=2,tbl14=2,tbl7=3,tbl8=-2,fig5=2,tbl9=-1,fig11=-1
