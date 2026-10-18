@@ -3,6 +3,6 @@
 cd /Users/jongha/Desktop/GitHub/carbon-aware-scheduler
 until ! pgrep -f "resume2.sh" >/dev/null; do sleep 120; done
 echo "resume3 start $(date)"
-./.venv/bin/python scheduler/data/v2/launch.py scheduler/data/v2/waveH_extra.txt 6
+./.venv/bin/python scheduler/data/v2/queues/launch.py scheduler/data/v2/queues/waveH_extra.txt 6
 ./.venv/bin/python scheduler/data/v2/pair_driver.py --par 3
 echo "resume3 done $(date)"

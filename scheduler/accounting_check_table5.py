@@ -177,7 +177,7 @@ def main():
 
     text = "\n".join(out_lines)
     print(text)
-    out_path = Path(__file__).parent.parent / "paper" / "문서" / "회계검증_표5.txt"
+    out_path = Path(__file__).parent.parent / "paper" / "v1" / "문서" / "회계검증_표5.txt"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(text + "\n")

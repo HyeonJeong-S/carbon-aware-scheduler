@@ -1,4 +1,4 @@
-"""한 줄 = 한 실행. N개 동시. 사용: ./.venv/bin/python scheduler/data/v2/launch.py <list.txt> [N]"""
+"""한 줄 = 한 실행. N개 동시. 사용: ./.venv/bin/python scheduler/data/v2/queues/launch.py <list.txt> [N]"""
 import shlex, subprocess, sys, re, os, time
 from concurrent.futures import ThreadPoolExecutor
 ROOT = "/Users/jongha/Desktop/GitHub/carbon-aware-scheduler"

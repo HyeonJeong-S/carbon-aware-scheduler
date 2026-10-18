@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""v2 원고(paper/문서/v2_draft/99_원고.txt) → paper/CAST_JOK_v2.docx. v1 docx(CAST_JOK_v1.docx)의 문단을 서식 틀로 복제한다.
+"""v2 원고(paper/v2/원고/99_원고.txt) → paper/CAST_JOK_v2.docx. v1 docx(CAST_JOK_v1.docx)의 문단을 서식 틀로 복제한다.
 원고 표기: 제목:/Title:/초록:/주제어:/Abstract:/Keywords: · "# 1절" · "## 3.1" · "[그림 N | 파일[, 파일2] | 단폭|전폭]"+캡션 2줄 ·
 "[표 N]"+캡션 2줄+행("a | b | c")·빈 줄 · "[식 N]"(omml/eqN.xml) · "[알고리즘 1]"+줄들·빈 줄 · "# 참고문헌"+"[n] …".
 틀: 제목부(v1 0~8 요소 그대로, 글만 교체), 절 제목(1. 서론 / 3.1 개요), 본문(서론 첫 단락), 그림(단폭: 그림 2 단락, 전폭: 그림 1 섹션 꼴),
@@ -14,8 +14,8 @@ from docx.oxml.ns import qn
 from lxml import etree
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-V1 = os.path.join(ROOT, "paper", "CAST_JOK_v1.docx")
-DRAFT = os.path.join(ROOT, "paper", "문서", "v2_draft")
+V1 = os.path.join(ROOT, "paper", "v1", "CAST_JOK_v1.docx")
+DRAFT = os.path.join(ROOT, "paper", "v2", "원고")   # 10-18 폴더 정리: 옛 paper/문서/v2_draft
 DIAG = os.path.join(ROOT, "paper", "diagram")
 W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 M_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"

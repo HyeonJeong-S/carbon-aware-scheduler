@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """v2 수식 (1)~(14) LaTeX → OMML. 번호·꼴은 paper/문서/v2_draft/30_CAST.txt(92 초안) 기준.
 파이프라인(v1 A11 과 같음): latex2mathml → Word.app mathml2omml.xsl(lxml XSLT) → <m:oMath>.
-산출: paper/문서/v2_draft/omml/eq{n}.xml (docx 삽입용 조각) + 같은 폴더 eq{n}.tex (원자재).
+산출: paper/v2/원고/omml/eq{n}.xml (docx 삽입용 조각) + 같은 폴더 eq{n}.tex (원자재).
 검사: <m:t> 뿐 아니라 <m:d>(괄호)·<m:f>(분수)·<m:rad>(근호)·<m:nary>(Σ∫) 요소 수를 같이 센다(A11 교훈).
     ./.venv/bin/python paper/tools/build_omml_v2.py
 """
@@ -10,7 +10,7 @@ import latex2mathml.converter as l2m
 from lxml import etree
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.normpath(os.path.join(HERE, "..", "문서", "v2_draft", "omml"))
+OUT = os.path.normpath(os.path.join(HERE, "..", "v2", "원고", "omml"))   # 10-18 폴더 정리
 XSL = "/Applications/Microsoft Word.app/Contents/Resources/mathml2omml.xsl"
 
 EQ = {

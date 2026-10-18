@@ -9,7 +9,7 @@ bundle_done() {  # $1 = wave file
 }
 pending=()
 for w in waveH_extra; do
-  bundle_done scheduler/data/v2/$w.txt || pending+=($w)
+  bundle_done scheduler/data/v2/queues/$w.txt || pending+=($w)
 done
 [ -f scheduler/data/v2/main/joint_zcheck/stats.json ] || pending+=(zcheck)
 [ -f scheduler/data/v2/priors/caspian_w1.0_frac.json ] || pending+=(caspian)
@@ -20,7 +20,7 @@ while true; do
     case $w in
       zcheck) [ -f scheduler/data/v2/main/joint_zcheck/stats.json ] && { echo "BUNDLE DONE: zcheck"; exit 0; };;
       caspian) [ -f scheduler/data/v2/priors/caspian_w1.0_frac.json ] && { echo "BUNDLE DONE: caspian"; exit 0; };;
-      *) bundle_done scheduler/data/v2/$w.txt && { echo "BUNDLE DONE: $w"; exit 0; };;
+      *) bundle_done scheduler/data/v2/queues/$w.txt && { echo "BUNDLE DONE: $w"; exit 0; };;
     esac
   done
   grep -l "Traceback" scheduler/data/v2/logs/*.log 2>/dev/null | grep -v -E "offline_bound_w4416|_gen_azure_seed" | head -3 | sed 's#^#ERROR in #'
