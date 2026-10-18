@@ -847,6 +847,10 @@ def build(src, out, shift=None):
     n_math = mathify_doc(doc); n_hf = head_font(doc); print(f"  제목 한글 글꼴 {n_hf}곳 → {HEAD_KR_FONT}")
     cp = doc.core_properties   # 7회차 C: 이중 맹검 — 문서 속성에 저자 이름을 남기지 않는다
     cp.author = ""; cp.last_modified_by = ""; cp.comments = ""; cp.title = ""; cp.subject = ""; cp.keywords = ""
+    cp.revision = 1
+    for tag in ("wp:docPr", "pic:cNvPr"):                 # 10-19 4회차 C: 그림 이름(v1_docx_fig2 등)이 이전 판을 드러내지 않게
+        for k, dp in enumerate(body.iter(qn(tag)), 1):
+            dp.set("name", f"Figure {k}"); dp.set("descr", "")
     doc.save(out)
     print(f"본문 기호 {n_math}곳을 수식 서체로")
     n_p = len(body.findall(qn("w:p"))); n_t = len(body.findall(qn("w:tbl")))
