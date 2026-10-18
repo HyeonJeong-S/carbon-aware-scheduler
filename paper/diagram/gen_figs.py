@@ -119,14 +119,17 @@ def path(d, sw=1.1, dash=None, head_=True):
 # 아이콘, (b) 둥근 모서리 컨테이너, (c) 굵기가 다른 화살표, (d) 기울어진 리본
 # 라벨을 쓴다. 흑백이라는 제약 안에서 같은 결을 낸다.
 
-def ic_cloud(x, y, s=1.0, label=""):
-    """CO₂ 구름 — 탄소집약도 입력."""
+def ic_cloud(x, y, s=1.0, label="", co2=True):
+    """CO₂ 구름 — 탄소집약도 입력.
+    co2=False: 구름 안 "CO₂" 글자를 뺀다. 2026-10-18(82 점검4 E [4]): 그림 2 는 s=0.45 라 글자가 인쇄 약 2.5 pt 로 뭉개졌다 —
+    키우면(6 pt 이상) 구름이 2배 넘게 커져 옆 탄소 곡선과 부딪혀, 글자를 빼고 아이콘만 남긴다. 그림 1 판(s=0.70)은 그대로."""
     g = [f'<g transform="translate({x},{y}) scale({s})">']
     g.append(f'<path d="M12,14 a7,7 0 0,1 13,-4 a6,6 0 0,1 10,5 a5.5,5.5 0 0,1 -1,11 '
              f'L10,26 a6,6 0 0,1 2,-12 z" fill="{INK}"/>')
     g.append(f'<circle cx="8" cy="9" r="5" fill="{INK}"/>')
-    g.append(f'<text x="21" y="24" font-size="7" fill="#fff" text-anchor="middle" '
-             f'font-weight="bold">CO₂</text>')
+    if co2:
+        g.append(f'<text x="21" y="24" font-size="7" fill="#fff" text-anchor="middle" '
+                 f'font-weight="bold">CO₂</text>')
     g.append("</g>")
     if label:
         g.append(txt(x + 21 * s, y + 38 * s, label, anchor="middle", size=FT))
@@ -373,23 +376,27 @@ def fig_forecast():
     단내 폭(195.6pt)에 맞추려고 가로 3열(입력→LSTM→출력)을 세로 3단으로 세웠다.
     ** 설계 폭 = 지면 폭 ** 이라 축소가 없다 — gen_figs_data.py 쪽 단내 그림들이
     쓰는 1.099배 글자 부풀리기가 여기엔 필요 없다(그것은 215pt 설계를 195.6pt 에
-    넣을 때의 보정이다). 가장 작은 글자 6.0pt 가 그대로 6.0pt 로 찍힌다.
+    넣을 때의 보정이다). 가장 작은 글자 6.5pt(10-18 전 6.0)가 그대로 찍힌다.
 
     담은 것은 전과 같다: 리전마다 독립(× 8 regions), 피처 13장(공통 10 + 기상 3),
-    은닉 64·2층, 미래 24 h 기상이 FC 에서 합류(24×3=72), 출력 Ĉ_r(t…t+24).
+    은닉 64·2층, 미래 24 h 기상이 FC 에서 합류(24×3=72), 출력 Ĉ_r(t…t+23).
+    2026-10-18(82 점검4 E [5]): 출력 "t … t+24" 는 값 25개로 읽혔다 — 본문은 24개(3.2절 "i=24 는 t+23 의 예측")라 t+23.
     """
     W, H = 196, 212
+    # 2026-10-18(82 점검4 E [4]): 작은 글자 6.0 → 6.5 pt. 설계 폭 196 = 지면 폭이라 그대로 찍히는데, 대문자 높이로 재면
+    # (÷0.72) 5.7 pt 로 6 pt 기준 아래였다(이 서체 대문자 높이는 글자 크기의 약 0.67~0.69). 6.5 면 약 6.1~6.3 pt.
+    SM = 6.5
     L = [head(W, H, "그림 2 리전별 LSTM 구조 (단내)")]
 
     # 바깥 틀 하나만 둥글다. 안쪽 상자는 전부 각진다(모서리 위계).
     L.append(rbox(4, 4, 188, 204, r=10, sw=0.9))
-    L.append(txt(186, 15, "\u00d7 8 regions", anchor="end", size=6.0))
+    L.append(txt(186, 15, "\u00d7 8 regions", anchor="end", size=SM))
 
     # ── ① 입력: 탄소 이력 + 피처 13장 ──
     L += [box(12, 21, 172, 62, sw=1.0),
-          ic_cloud(20, 27, 0.45),
+          ic_cloud(20, 27, 0.45, co2=False),
           spark(48, 28, 64, 11, n=40),
-          txt(98, 48, "Carbon intensity, past 168 h", anchor="middle", size=6.0)]
+          txt(98, 48, "Carbon intensity, past 168 h", anchor="middle", size=SM)]
     TW, TH, G = 7.0, 7.0, 1.6
     TX, TY = 34, 54
     for k in range(13):
@@ -397,21 +404,21 @@ def fig_forecast():
         fill = "#d9d9d9" if k >= 10 else "#fff"
         L.append(f'<rect x="{x:.1f}" y="{TY}" width="{TW}" height="{TH}" '
                  f'fill="{fill}" stroke="{INK}" stroke-width="0.7"/>')
-    L += [txt(TX + 5 * (TW + G) - G / 2, 72, "Common 10", anchor="middle", size=6.0),
-          txt(TX + 6 + 11.5 * (TW + G) - G / 2, 72, "Weather +3", anchor="middle", size=6.0)]
+    L += [txt(TX + 5 * (TW + G) - G / 2, 72, "Common 10", anchor="middle", size=SM),
+          txt(TX + 6 + 11.5 * (TW + G) - G / 2, 72, "Weather +3", anchor="middle", size=SM)]
     L.append(fat_arrow(98, 85, 98, 97, w=5))
 
     # ── ② LSTM ──
     L += [box(12, 101, 172, 62, sw=1.0),
           txt(20, 115, "LSTM", size=FB, bold=True),
-          txt(20, 127, "Hidden 64 \u00b7 2 layers", size=6.0),
-          txt(176, 115, "+ future 24 h weather", anchor="end", size=6.0),
-          txt(176, 125, "Weather regions only \u00b7 24\u00d73 = 72", anchor="end", size=6.0),
+          txt(20, 127, "Hidden 64 \u00b7 2 layers", size=SM),
+          txt(176, 115, "+ future 24 h weather", anchor="end", size=SM),
+          txt(176, 125, "Weather regions only \u00b7 24\u00d73 = 72", anchor="end", size=SM),
           # 미래 기상은 출력이 아니라 FC 에서 합류한다(2026-10-08, 70 지적).
           path("M148,129 L148,137", sw=0.8, dash="2.5 1.8")]
     # 마지막 은닉 상태 h(64) 가 FC 로 간다 — FC 입력이 64+72 라는 것을 라벨로 말한다.
     L += [arr(24, 148, 132, 148, 0.9),
-          f'<text x="76" y="144" text-anchor="middle" font-size="6.0">'
+          f'<text x="76" y="144" text-anchor="middle" font-size="{SM}">'
           f'<tspan font-style="italic">h</tspan> (64)</text>',
           box(134, 138, 26, 20, sw=0.8),
           txt(147, 152, "FC", anchor="middle", bold=True, size=FT)]
@@ -420,7 +427,7 @@ def fig_forecast():
     # ── ③ 출력 ──
     L += [box(12, 181, 172, 20, sw=1.0),
           f'<text x="20" y="194" font-size="{FT}"><tspan font-weight="bold">Output  \u0108</tspan>'
-          f'<tspan font-size="6.0" dy="1.5">r</tspan><tspan dy="-1.5"> (t \u2026 t+24)</tspan></text>',
+          f'<tspan font-size="{SM}" dy="1.5">r</tspan><tspan dy="-1.5"> (t \u2026 t+23)</tspan></text>',
           spark(116, 184, 62, 14, n=24)]
 
     L.append("</svg>")

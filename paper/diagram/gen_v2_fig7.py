@@ -31,7 +31,9 @@ plt.rcParams.update({"axes.unicode_minus": False, "axes.linewidth": 0.8,
                      "xtick.major.size": 2.6, "ytick.major.size": 2.6})
 INK = "#000000"
 COL = 215 / 72.0
-LAB, TICK, NOTE = 8.2, 7.1, 6.6
+LAB, TICK, NOTE = 8.2, 7.1, 7.1
+# 10-18(82 점검4 E [4]): NOTE 6.6 → 7.1. 215 pt 로 그려 단폭 195.6 pt 에 0.91배로 들어가 6.6 은 인쇄 6.0 pt(대문자 높이로 재면 5.2~5.7)였다.
+# 7.1 은 인쇄 6.46 pt(대문자 높이 ÷0.72 로 약 6.0~6.2) — 눈금(TICK)과 같은 크기.
 
 
 def main():

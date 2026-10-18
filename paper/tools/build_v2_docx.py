@@ -196,7 +196,8 @@ def table_fits_column(rows):
 
 # 표 머리 이름 맞춤(84 [12] 가): 같은 양을 표 4 는 "Lat. (ms)", 표 7 은 "Latency (ms)" 로 썼다 — 조립에서 짧은 쪽으로
 HEAD_RENAME = {"Latency (ms)": "Lat. (ms)"}
-HEAD_VAR_RE = re.compile(r"(?<![A-Za-z.])([A-Za-z])(?![A-Za-z.])")    # 표 머리의 라틴 낱글자 변수(표 2 "k", "Median d") — 본문·캡션처럼 기울임(84 [12] 나)
+HEAD_VAR_RE = re.compile(r"(?<![A-Za-z0-9.\-])([A-Za-z])(?![A-Za-z.])")    # 표 머리의 라틴 낱글자 변수(표 2 "k", "Median d") — 본문·캡션처럼 기울임(84 [12] 나)
+# 82 [7]: 숫자·붙임표 바로 뒤 글자는 단위·이름의 일부("SN-24h" 의 h)라 변수가 아니다 — 전에는 h 가 수식 이탤릭으로 찍혔다
 RULE_TOP, RULE_MID = 12, 6        # 위·아래 굵은 선 1.5pt, 머리 아래 가는 선 0.75pt(v1 표 틀과 같은 굵기)
 LAST_PAD = 20                     # 마지막 행 아래 안쪽 여백 1pt(+ 선 행 0.5pt = 1.5pt) — 내림 글자(g·y·p)가 아래 선에 0.5pt 로 붙었다(84 [14])
 
@@ -457,8 +458,11 @@ FLOAT_GAP = 220       # 띄운 그림·표와 아래 본문 사이 11pt(v1 그�
 # 절 제목 바로 뒤에는 두지 말 것(제목의 '다음 문단과 함께'가 띄운 표에 걸려 제목만 다음 쪽으로 감).
 # 알고리즘 1 −2(84 [3], 10-18 3회차): 상자를 단 아래 끝에 띄우는데(ALG_FLOAT), 매인 단락의 첫 줄 + 상자가 그 단 남은 자리에
 # 안 들어가면 단락째 다음 단으로 넘어가 앞 단 아래가 빈다(원래 자리·−1 은 원고 판에 따라 8쪽 오른쪽 단 아래 172pt 가 비었다).
-# 두 단락 앞에 매면 3회차판·10:55 판·10:59 판 원고 셋 모두 8쪽 오른쪽 단 아래 끝에 놓였다.
-FLOAT_SHIFT = {("tbl", 3): -3, ("tbl", 6): -1, ("fig", 9): -1, ("alg", 1): -2, ("fig", 5): 1}   # fig5 +1(10-18): 표 4 와 같은 자리에 겹쳤다
+# 두 단락 앞에 매면 3회차판·10:55 판·10:59 판 원고 셋 모두 8쪽 오른쪽 단 아래 끝에 놓였다. (4회차에 0 으로 되돌림 — 아래 주석)
+# 10-18 4회차(82 [3]): 13:25 원고로 다시 맞춤 — 알고리즘 −2→0, 표 3 −3→0, 표 4 0→+1. 13:25 원고에서 단 아래 40pt 넘는 빈 곳 0.
+#   알고리즘 0 은 4회차판·13:25 원고 둘 다에서 8쪽 오른쪽 단을 채웠다(−2 는 4회차판 8쪽 R 123pt, −3 은 13:25 원고 170pt).
+#   표 3·4 값은 원고 판마다 결과가 크게 갈린다(같은 값이 4회차판에서는 12쪽 R 191pt·18쪽 R 211pt) — 원고가 멈춘 뒤 다시 맞출 것.
+FLOAT_SHIFT = {("tbl", 3): 0, ("tbl", 4): 1, ("tbl", 6): -1, ("fig", 9): -1, ("alg", 1): 0, ("fig", 5): 1, ("fig", 8): 4}   # fig5 +1(10-18): 표 4 와 같은 자리에 겹쳤다  # fig8 +4(10-18 5회차판): 표 6(전폭)과 겹침
 
 def apply_shift(blocks, shift):
     """("fig"|"tbl", 번호) → n. 그림·표가 아닌 블록(단락·절 제목·식) n개를 건너 앞(−)·뒤(+)로 옮긴다."""
@@ -479,6 +483,16 @@ def spacer(keep=False, h=80):
     _el("w:spacing", ppr, before=0, after=0, line=h, lineRule="exact")
     rp = _el("w:rPr", ppr); _el("w:sz", rp, val=4); _el("w:szCs", rp, val=4)
     return p
+
+# 82 [20]: 절 제목·참고문헌 제목의 한글은 v1 틀이 "Apple SD Gothic Neo"(굵게)로 지정 — 맥에만 있는 글꼴이라 다른 환경에서는
+# 대체 글꼴(fontTable altName 맑은 고딕)로 바뀌어 줄바꿈이 달라질 수 있다. 본문 한글 휴먼명조는 레귤러 한 벌뿐(굵은 꼴 없음)이고,
+# JOK 실물도 절 제목은 고딕 굵은체라 명조로 바꾸면 안 된다. 맥 Word(번들 malgun/malgunbd)·윈도에 모두 있는 맑은 고딕(굵은 꼴 있음)으로.
+HEAD_KR_FONT = "맑은 고딕"
+def head_font(doc):
+    n = 0
+    for f in doc.element.body.iter(qn("w:rFonts")):
+        if f.get(qn("w:eastAsia")) == "Apple SD Gothic Neo": f.set(qn("w:eastAsia"), HEAD_KR_FONT); n += 1
+    return n
 
 def keep_next_only(p, keep=True):
     """84 [4]: \uc808 \uc81c\ubaa9\uc740 '\ub2e4\uc74c \ub2e8\ub77d\uacfc \ud568\uaed8'\ub9cc \ub450\uace0 '\uc55e\uc5d0\uc11c \ucabd \ub098\ub214'\u00b7'\uc904 \ud568\uaed8'\ub294 \ub048\ub2e4. \ubcf8\ubb38 \ub2e8\ub77d(keep=False)\uc740 \ub458 \ub2e4 \ub048\ub2e4.
@@ -760,7 +774,7 @@ def build(src, out, shift=None):
             for item in val: add(no_overflow(para_from(T["ref_item"], item)))
     for fp, path, width in pictures:                       # 그림은 문단이 문서에 붙은 뒤 넣는다(관계 id 때문)
         Paragraph(fp, doc._body).add_run().add_picture(path, width=Pt(width))
-    n_math = mathify_doc(doc)
+    n_math = mathify_doc(doc); n_hf = head_font(doc); print(f"  제목 한글 글꼴 {n_hf}곳 → {HEAD_KR_FONT}")
     doc.save(out)
     print(f"본문 기호 {n_math}곳을 수식 서체로")
     n_p = len(body.findall(qn("w:p"))); n_t = len(body.findall(qn("w:tbl")))

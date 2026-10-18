@@ -34,7 +34,9 @@ for name in ("Apple SD Gothic Neo", "AppleGothic", "Malgun Gothic", "Noto Sans K
 plt.rcParams["axes.unicode_minus"] = False
 
 W_IN, H_IN = 215 / 72.0, 190 / 72.0
-F_LABEL, F_TICK, F_ANN, F_LEG = 8.8, 7.7, 7.1, 6.6   # 10-18: 범례 6.0→6.6 — 215 pt 로 그려 단폭 195.6 pt 에 0.91배로 들어가므로 인쇄 6.0 pt(JOK 실물 최소 5.7~5.9 위)
+F_LABEL, F_TICK, F_ANN, F_LEG = 8.8, 7.7, 7.1, 7.1   # 10-18: 범례 6.0→6.6 — 215 pt 로 그려 단폭 195.6 pt 에 0.91배로 들어가므로 인쇄 6.0 pt(JOK 실물 최소 5.7~5.9 위)
+# 10-18(82 점검4 E [4]): 범례·보조 글자 6.6 → 7.1(점 주석과 같게). 인쇄 6.0 pt 는 대문자 높이로 재면(÷0.72) 5.6~5.8 pt 라 기준 아래였다 —
+# 7.1 은 인쇄 6.46 pt(대문자 높이로 약 6.0~6.2).
 GRAY = "#888888"
 
 
@@ -91,14 +93,22 @@ def fig_alpha():
         # 두 배라 두 점이 거의 같은 자리(α=0~0.3, 0.9, 1)에서도 고리와 점 사이 흰 틈이 남아 "○ 안의 ●" 로 둘 다 보인다.
         ax.scatter(xs, ys, s=6 if filled else 30, facecolor=INK if filled else "white", edgecolor=INK, lw=0.5 if filled else 0.7, zorder=3 + zo)
         kx, ky = r["knee"][0], 100 * (1 - r["knee"][1] / base)
-        knee_marker(ax, kx, ky, filled=filled, zo=zo)
+        if filled:
+            # 10-18(82 점검4 E [9](a)): 같은 지연 ×(47.71, 72.86)가 무릎점(47.85, 71.93)과 1.3 pt 거리라 과녁 안 검은 ● 위에 얹혀
+            # 흰 테두리를 둘러도 ⊗ 처럼 묻혔다 → CAST 무릎점 과녁만 안을 흰색으로 비우고(가운데 ● 없음) 고리를 1.6 → 1.0 으로 가늘게.
+            # 과녁 크기(s 150)와 자리는 그대로 — 고리 안에는 × 하나만 남는다. 분리형 과녁(○ + 고리)은 그대로.
+            ax.scatter([kx], [ky], s=150, facecolor="white", edgecolor=INK, lw=1.0, zorder=5 + zo)
+        else:
+            knee_marker(ax, kx, ky, filled=filled, zo=zo)
         # 라벨은 양 끝 α 와 무릎점만. 결합(●)은 위·왼쪽, 분리형(○)은 아래·오른쪽에 적어 서로 피한다(렌더 확인 10-17).
         dy = 6 if filled else -12
         if filled:
             ax.annotate("α=0", (xs[0], ys[0]), textcoords="offset points", xytext=(7, 1), fontsize=F_ANN, ha="left")
         # 10-18: 두 계열의 α=1 점은 같은 자리(120 ms, 95.7/95.3 %)라 라벨 하나만 점 아래에 — 위 라벨은 격자 100 에 얹히고 축 위로 나갔다
+        # 10-18(82 점검4 E [9]): 오른쪽 맞춤(−4 pt)이면 라벨이 α=0.9 점(112.5 ms) 바로 아래라 그 점이 자기 점(120 ms)보다 가까웠다 →
+        # 왼쪽 맞춤으로 α=1 점 바로 아래(−1.5 pt 에서 시작)에 둔다. 오른쪽 끝은 축 안(xlim 130).
         if not filled:
-            ax.annotate("α=1", (xs[-1], ys[-1]), textcoords="offset points", xytext=(-4, dy), fontsize=F_ANN, ha="right")
+            ax.annotate("α=1", (xs[-1], ys[-1]), textcoords="offset points", xytext=(-1.5, dy), fontsize=F_ANN, ha="left")
         # 10-18(87 점검2 [2]): "knee" 두 라벨이 어느 설계 것인지 적었다 — "CAST knee" / "Decoupled knee"
         if filled:
             # 10-18(84 점검3 [8]): 라벨이 과녁에서 약 10 ms 왼쪽·8 %p 위로 떨어져 있었다 → 과녁 고리 바로 왼쪽(고리 반지름 6.1 pt + 틈)에 붙였다
@@ -124,7 +134,10 @@ def fig_alpha():
     ax.set_ylabel("Carbon savings (%)", fontsize=F_LABEL)
     ax.set_xlim(-6, 130); ax.set_ylim(-4, 100)
     ax.scatter([], [], marker="x", s=30, color=INK, lw=1.3, label="Fixed α, same latency")   # 87 점검2 [2]: 같은 지연 짝
-    ax.legend(fontsize=F_LEG, frameon=False, loc="lower right", handlelength=2.0)
+    # 10-18(82 점검4 E [4]): 범례를 7.1 pt 로 키우니 y 격자 20 이 "CAST" 글자 아랫부분을 지나갔다(전 판도 글자 가운데를 지났다) →
+    # 그림 11 처럼 흰 바탕(테두리 없음)으로 격자만 가린다. 범례 자리(오른쪽 아래)에는 점·선이 없다(렌더 확인).
+    leg = ax.legend(fontsize=F_LEG, frameon=True, loc="lower right", handlelength=2.0, borderpad=0.2, fancybox=False)
+    leg.get_frame().set_facecolor("white"); leg.get_frame().set_edgecolor("none"); leg.get_frame().set_alpha(1.0)
     save(fig, "alpha")
 
 
@@ -137,6 +150,7 @@ def fig_capsweep():
     Azure 는 α=1 용량 무시 실행이 없다)."""
     from matplotlib.ticker import NullFormatter, NullLocator
     fig, ax = new_ax(h=170 / 72.0)
+    YLIM = (25, 70)
     levels = [("0.50x", 0.5), ("0.75x", 0.75), ("1.00x", 1.0), ("1.50x", 1.5), ("2.00x", 2.0), ("3.00x", 3.0)]
     pre, main_name, ig_name = "azure/cap_", "azure/joint", "azure/ignore"
     any_data = False
@@ -155,16 +169,20 @@ def fig_capsweep():
     # 용량 무시 점선은 곡선 둘 다음에 — 범례 순서가 CAST 둘, 용량 무시 순이 되게
     for suf_a, col, ig_lab in (("", INK, "Capacity ignored, knee"), ("_a1", GRAY, "Capacity ignored, α=1")):
         ig = stats(ig_name + suf_a)
-        if ig:
+        # 10-18(82 점검4 E 반영 중 발견): azure/ignore_a1(10-18 10:01 실행, 95.11 %)이 생겨 세로 범위(25~70) 밖 선의 범례만 찍혔다 —
+        # 그림에 안 보이는 범례 항목을 막으려고 범위 안의 값만 그린다(지난 판 그림·캡션과 같은 세 항목).
+        if ig and YLIM[0] <= ig["savings_pct"] <= YLIM[1]:
             ax.axhline(ig["savings_pct"], color=col, lw=0.6, ls=(0, (1, 1.6)), zorder=1, label=ig_lab)
     if not any_data:
         print("capsweep: 자료 없음"); return
     ax.set_xscale("log"); ax.xaxis.set_minor_locator(NullLocator()); ax.xaxis.set_minor_formatter(NullFormatter())
     ax.set_xticks([0.75, 1, 1.25, 1.5, 2]); ax.set_xticklabels(["0.75×", "1×", "1.25×", "1.5×", "2×"], fontsize=F_TICK)
-    ax.set_xlim(0.65, 2.3); ax.set_ylim(25, 70)
+    ax.set_xlim(0.65, 2.3); ax.set_ylim(*YLIM)
     ax.set_xlabel("Ceiling (× baseline peak)", fontsize=F_LABEL)   # 10-18(87 점검2 [14]): "Capacity" → 본문·그림 6·7·11 과 같은 "Ceiling"
     ax.set_ylabel("Carbon savings (%)", fontsize=F_LABEL)
-    ax.legend(loc="lower right", fontsize=F_LEG, frameon=False, handlelength=2.0)
+    # 10-18(82 점검4 E [4]): 범례 7.1 pt 에서 y 격자 30 이 "Capacity ignored, knee" 윗부분에 닿았다 → 흰 바탕(테두리 없음)으로 격자만 가린다
+    leg = ax.legend(loc="lower right", fontsize=F_LEG, frameon=True, handlelength=2.0, borderpad=0.2, fancybox=False)
+    leg.get_frame().set_facecolor("white"); leg.get_frame().set_edgecolor("none"); leg.get_frame().set_alpha(1.0)
     save(fig, "capsweep"); plt.close(fig)
 
 
@@ -295,9 +313,15 @@ def fig_priors():
         if pts:
             # 10-18(89 점검 [10]): 계열 이름 "CAST, knee" / "CAST, α=1"(표 3·7, 그림 7·10 과 같게). 곡선 끝 직접 라벨은
             # 새 용량 무시 가로 점선(73.39 가 CAST 곡선 끝 73.42 와 같은 높이)이 글자를 지나가 범례로 옮겼다.
-            ax.plot([q[0] for q in pts], [q[1] for q in pts], color=col, lw=1.1, marker=mk, ms=3.2,
+            # 10-18(82 점검4 E [10](a)): ■ 는 3.2 → 2.8(그림 10 의 ■ 와 같게) — 3.2 면 CASPER ○ 고리와 틈이 0.2 pt 로 붙어 보였다
+            ms = 3.2 if mk == "o" else 2.8
+            ax.plot([q[0] for q in pts], [q[1] for q in pts], color=col, lw=1.1, marker=mk, ms=ms,
                     mfc=col, mec=col, zorder=4, ls="-" if suf == "" else (0, (3, 1.5)),
                     label="CAST, knee" if suf == "" else "CAST, α=1")
+            # 10-18(82 점검4 E [10](a)): CASPER ○(29, 95.30) 밑 흰 원(s 60, 반지름 약 3.9 pt)이 4.3 pt 옆 CAST α=1 ■(상한 26)을 반쯤 덮었다 →
+            # 점만 한 번 더, 흰 원(4.5) 위·○ 고리(6) 아래인 zorder 5.2 로 찍는다. 선은 그대로 4 라 ○ 앞에서 끊기는 것은 유지.
+            # ■(2.8) 와 ○ 고리는 서로 닿지 않는다(렌더 400% 확인).
+            ax.plot([q[0] for q in pts], [q[1] for q in pts], ls="none", marker=mk, ms=ms, mfc=col, mec=col, zorder=5.2)
     # 10-18(89 점검 [4]): 그림 10 의 합성 패널을 지우고 그 용량 무시 수준(무릎점·α=1)을 이 그림에 가로 점선으로 옮겼다
     for ig_name, col, lab in (("main/ignore", INK, "Capacity ignored, knee"), ("main/ignore_a1", GRAY, "Capacity ignored, α=1")):
         ig = stats(ig_name)

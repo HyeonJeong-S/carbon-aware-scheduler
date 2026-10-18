@@ -213,13 +213,20 @@ class _Windows:
         # 인덱싱 코드는 그대로 두고, 여기 배열 조립 단계에서만 "combined[h] =
         # [actual(h), pred24(h)[0], ..., pred24(h)[22]]" 로 다시 쌓는다. 이렇게 하면
         # offset=0이 진짜 "지금(실측)"을, offset=i(i>=1)가 진짜 "h+i"를 가리키게 된다.
+        # 10-18(4회차 A[1]): CARBON_NOW="lag1" 이면 슬롯 h 의 판단에 h−1 에 발행된 예측만 쓴다 — 첫 한 시간의 사후 확정값도,
+        # h 시 값을 입력으로 쓴 발행 h 예측도 쓰지 않는다(탄소 쪽 1시간 선견 제거). pred24[h−1][i] 가 곧 h+i 의 예측.
         combined = {}
         for r, p in pred24.items():
             a = actual[r]
             n = min(len(a), p.shape[0])
             c = np.empty((n, HORIZON))
-            c[:, 0] = a[:n]
-            c[:, 1:] = p[:n, : HORIZON - 1]
+            if CARBON_NOW == "lag1":
+                c[1:, :] = p[: n - 1, :HORIZON]
+                c[0, 0] = a[0]
+                c[0, 1:] = p[0, : HORIZON - 1]
+            else:
+                c[:, 0] = a[:n]
+                c[:, 1:] = p[:n, : HORIZON - 1]
             combined[r] = c
 
         self.act = {r: np.concatenate([[0.0], np.cumsum(v)]) for r, v in actual.items()}
@@ -245,6 +252,9 @@ class _Windows:
         a = min(max(int(offset), 0), HORIZON - 1)
         b = min(a + max(1, math.ceil(dur_h)), HORIZON)
         return (cs[i][b] - cs[i][a]) / (b - a)
+
+
+CARBON_NOW = "actual"   # "actual"(기본: 슬롯 첫 시간은 사후 확정값) | "lag1"(한 시간 앞서 발행된 예측만)
 
 
 def _alpha(k):

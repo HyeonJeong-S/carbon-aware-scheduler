@@ -73,7 +73,7 @@ def load_cap_json(spec):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--name", required=True)
-    ap.add_argument("--engine", choices=["joint", "decoupled", "greedy", "2stage", "ignore", "ignore_decoupled", "arrival_fixed", "start_check", "now_only", "no_lookahead", "arrival_fixed_exact"], default="joint",
+    ap.add_argument("--engine", choices=["joint", "decoupled", "greedy", "2stage", "ignore", "ignore_decoupled", "arrival_fixed", "start_check", "now_only", "no_lookahead", "arrival_fixed_exact", "start_admit"], default="joint",
                     help="ignore = 결합 엔진을 cap=∞ 로, ignore_decoupled = 분리형을 cap=∞ 로 (둘 다 명목 cap 으로 채점)")
     ap.add_argument("--alpha", default="knee")
     ap.add_argument("--forecast", default="lstm", help="lstm | oracle | sn24 | lstm_daily | noisy_oracle[:seed] | mix<λ>")
@@ -92,7 +92,9 @@ def main(argv=None):
     ap.add_argument("--days", type=int, default=None, help="채점 일수 (제출 < score_from + days·24 인 작업까지만 포함)")
     ap.add_argument("--alpha-grid", default=None)
     ap.add_argument("--seed", type=int, default=0, help="noisy_oracle 잡음 시드")
+    ap.add_argument("--carbon-now", choices=["actual", "lag1"], default="actual", help="4회차 A[1]: lag1 이면 한 시간 앞서 발행된 예측만으로 판단")
     args = ap.parse_args(argv)
+    capacity.CARBON_NOW = args.carbon_now
 
     data = carbon_2025.load_2025()
     actual, lstm = data["actual"], data["pred24"]
@@ -169,7 +171,7 @@ def main(argv=None):
 
     hm = herding.herding(list(out.values()), actual, REGIONS, cap_d, args.score_from,
                          min(n_hours, len(next(iter(actual.values())))))
-    extra = dict(name=args.name, engine=args.engine, alpha_setting=args.alpha, forecast=args.forecast,
+    extra = dict(name=args.name, engine=args.engine, alpha_setting=args.alpha, forecast=args.forecast, carbon_now=args.carbon_now,
                  cap=cap, cap_mode=args.cap_mode, cap_json=args.cap_json, rho=rho, rho_setting=args.rho,
                  l_net_max=args.l_net_max, horizon=args.horizon, home_region=args.home_region,
                  spatial_only=args.spatial_only, jobs_csv=args.jobs, score_from=args.score_from, days=args.days,

@@ -1,0 +1,72 @@
+81_그림수정_4회차 — 82_점검4_E그림조판 의 그림 항목 [4][5][6](a)[9](a)[10](a) 반영 (2026-10-18)
+고친 곳: paper/diagram/gen_figs.py · gen_v2_fig1.py · gen_v2_fig4.py · gen_v2_fig7.py · gen_v2_figs.py 만.
+다시 그린 것: fig2_forecast(svg·png) · v2_fig1_pipeline · v2_fig4_slot · v2_fig7_day · v2_alpha · v2_capsweep · v2_priors (png·pdf).
+원고·docx·pdf·paper/tools/* 는 손대지 않았다. 커밋 안 함. 자료 값은 그대로(모든 점 좌표는 원자료 json 그대로 읽는다).
+그림 크기(픽셀) 전부 그대로.
+확인: PNG 원본(인쇄 1 pt ≈ 7.6~8 px, 400% 보다 큼)과 PDF(600·1200 dpi)를 크롭해 봤다. 글자 크기는 점검 E 와 같은 방법
+(대문자 높이 ÷ 0.72, 인쇄 크기 환산)으로 쟀다. 그림 8·11 은 라벨→점 최단 거리 검사(스크래치 labdist.py)도 돌렸다.
+
+────────────────────────────────────────
+글자 크기 [4]
+  matplotlib 그림(215 pt 설계 → 단폭 195.6 pt, 0.91배): 주석·범례 6.6 → 7.1 pt. 인쇄 명목 6.46 pt.
+    그림 4 칸 라벨·색막대, 그림 6 "CAST slot / Capacity-ignored slot / Carbon minimum / Ceiling 17"·범례,
+    그림 8·10·11 범례, 그림 11 "Ceiling 17"·"baseline peak".
+  그림 2(SVG, 196 pt = 지면 폭): 작은 글자 6.0 → 6.5 pt 전부("Hidden 64 · 2 layers", "Weather regions only …" 등).
+  잰 값(대문자 높이 ÷0.72): 그림 2 "H" 5.69 → 6.21, 그림 6 "CAST" 6.19·"Carbon" 6.19, 그림 8 범례 5.82 → 6.19,
+    그림 10 범례 6.19, 그림 11 "Ceiling" 6.37·범례 6.37, 그림 4 칸 숫자 6.19. 모두 6.0 위.
+  키우면서 생긴 겹침과 처리:
+    - 그림 4 한국 "0.0 · 352" 끝이 i=6 ○ 에 닿았다 → "·" 를 따로 조각으로 떼고 양옆 가는 빈칸(U+2009, 서체에 없어 대체 서체로 찍히던
+      글자)을 뺐다. 라벨이 약 2 pt 짧아져 "352"–○ 틈 약 2.3 pt(PDF 600 dpi 로도 확인). 일본 라벨 끝–오른쪽 테두리 약 10 pt.
+    - 그림 8 범례 "CAST" 글자에 y 격자 20 이, 그림 10 범례 "Capacity ignored, knee" 윗부분에 격자 30 이 걸렸다
+      → 두 범례 모두 그림 11 처럼 흰 바탕(테두리 없음). 범례 자리에는 점·선이 없다.
+    - 그림 2 "Hidden 64 · 2 layers" 와 오른쪽 "Weather regions only …" 사이가 21 → 10 pt 로 줄었으나 따로 읽힌다(왼쪽/오른쪽 맞춤 묶음).
+  그림 6 "Capacity-ignored slot" 의 y 꼬리와 가로축 안쪽 눈금 사이 약 1.6 pt, "Carbon minimum" 과 눈금 18 사이 약 2.6 pt.
+
+그림 2  fig2_forecast  [5][4]
+  출력 "(t … t+24)" → "(t … t+23)" (값 24개, 3.2절 "i=24 는 t+23").
+  구름 안 "CO₂"(인쇄 약 2.5 pt) 지웠다 — 6 pt 로 키우면 구름이 2배 넘게 커져 옆 탄소 곡선과 부딪힌다. ic_cloud(co2=False) 로
+  그림 2 만 빼고, 같은 아이콘을 쓰는 옛 그림 1(fig1_architecture.svg)은 그대로(다시 만들어도 내용 같음 확인).
+  (범위 밖, 손대지 않음: 점검 E [5] 의 기호 통일 "Ĉ_r^(t)" 기울임·위첨자는 이번 지시에 없어 굵은 정체 Ĉ_r 그대로.)
+  PNG 는 render_svg.py(Chrome headless)로 구웠다. Chrome 이 끝날 때 "Teardown watchdog" 로 종료코드 2 를 내지만 PNG 는 정상으로 써진다.
+
+그림 1  v2_fig1_pipeline  [6](a)
+  점선 라벨 n_r(τ) → n_r(σ). σ 가 τ 보다 넓어 7.5 pt 그대로면 "n" 이 회색 테두리(바깥 끝 300.6)에 닿았다(틈 −0.1 pt)
+  → 7.3 pt, 가운데 307.6 → 308.1. 틈 왼쪽 0.6 pt·오른쪽 0.7 pt(PDF 600 dpi). 첨자 6.3 pt 그대로. SVG 차이는 이 한 줄뿐.
+
+그림 8  v2_alpha  [9](a)
+  CAST 같은 지연 ×(47.71, 72.86)는 무릎점(47.85, 71.93)과 1.3 pt 거리라 과녁 안 검은 ● 위에서 ⊗ 처럼 묻혔다.
+  → CAST 무릎점 과녁만 안을 흰색으로 비우고(가운데 ● 없음) 고리 1.6 → 1.0 pt. 과녁 크기·자리 그대로. 고리 안에 × 하나만 또렷하다.
+    분리형 과녁(굵은 고리 + ○)은 그대로.
+  "α=1" 라벨: 오른쪽 맞춤(−4 pt)이라 α=0.9 점 바로 아래였다 → 왼쪽 맞춤(−1.5 pt)으로 α=1 점 바로 아래.
+  거리 검사(자기 점 / 가장 가까운 남의 점): α=1 5.6 / 8.9 pt(전 6.9 / 5.1 로 남이 더 가까웠음), CAST knee 8.0 / 11.3,
+    Decoupled knee 10.0 / 13.2, α=0 7.0 / 25.7 — 모두 자기 점이 가장 가깝다.
+
+그림 11  v2_priors  [10](a)
+  CASPER ○ 밑의 흰 원(s 60, 선 끊기용)이 4.3 pt 옆 CAST α=1 ■(상한 26)을 반쯤 덮었다.
+  → CAST 두 곡선의 점만 한 번 더 zorder 5.2(흰 원 4.5 위, ○ 고리 6 아래)로 찍었다. 선은 그대로 4 라 ○ 앞에서 끊기는 것은 유지.
+  → ■ 3.2 → 2.8(그림 10 의 ■ 와 같은 크기). 3.2 면 ○ 고리와 틈 0.2 pt 로 붙어 보였다. 지금 ■ 전체가 보이고 ○ 와 떨어져 있다(PDF 1200 dpi).
+  거리 검사 7개 라벨 모두 자기 점이 가장 가깝다(지난 회차와 같은 값).
+
+그림 10  v2_capsweep  (범례 크기 외에 하나 더)
+  다시 그리니 범례에 "Capacity ignored, α=1" 이 새로 생겼다: azure/ignore_a1 실행(10-18 10:01, 95.11 %)이 지난 그림(09:25) 뒤에
+  생겼는데 세로 범위 25~70 밖이라 선은 안 보이고 범례만 찍혔다. → 범위 안 값만 그리게 해 지난 판·캡션과 같은 세 항목 유지.
+  (그 값을 그림 10 에 넣을지는 원고 판단 — 넣으려면 세로 범위를 100 까지 늘려야 한다.)
+
+부수 사고: check_glyphs.py 가 v1 생성기를 돌려 fig3~7 의 v1 png·pdf 12개를 다시 썼다 → git checkout 으로 되돌렸다(v2 원고와 무관).
+check_glyphs: 두부 없음. v2 생성기 실행 중 글자 누락 경고 없음.
+
+────────────────────────────────────────
+원고 담당이 고칠 캡션
+  그림 8 (권장) 국문: "… 과녁 표식이 각 설계의 무릎점이고(CAST의 ×는 무릎점과 거의 같은 자리라 과녁 안에 있다), ×는 무릎점과 같은
+         작업당 평균 지연을 내는 고정 α …" / 영문: "… target markers are each design's knee point (CAST's cross lies inside its
+         target), and crosses are the fixed α giving the same per-job mean latency as each knee …"
+         ("작업당" 은 점검 E [9](c) 몫 — 함께 넣으면 된다.)
+  그림 1·2·4·6·10·11: 캡션 바꿀 것 없음. 그림 2 캡션은 출력 범위를 말하지 않아 그대로 맞다.
+  본문: 그림 1 의 n_r(σ) 가 식 (3)(6)의 점유 기호와 같은지 원고 쪽에서 확인(점검 E [6](a) 는 n_r(t) 를 권했고, 지시는 σ).
+
+다시 그리는 명령
+  ./.venv/bin/python paper/diagram/gen_figs.py && ./.venv/bin/python paper/diagram/render_svg.py fig2_forecast
+  ./.venv/bin/python paper/diagram/gen_v2_fig1.py
+  ./.venv/bin/python paper/diagram/gen_v2_fig4.py
+  ./.venv/bin/python paper/diagram/gen_v2_fig7.py
+  ./.venv/bin/python paper/diagram/gen_v2_figs.py alpha | capsweep | priors

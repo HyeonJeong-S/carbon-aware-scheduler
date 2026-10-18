@@ -165,7 +165,7 @@ def summarize(out, regions, cap_d, score_from=0.0, alpha_log=None, extra=None):
     return st
 
 
-COMMIT_MODES = ("arrival_fixed", "arrival_fixed_exact", "start_check")
+COMMIT_MODES = ("arrival_fixed", "arrival_fixed_exact", "start_check", "start_admit")
 
 
 def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
@@ -174,9 +174,13 @@ def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
               t_start=None, score_from=0.0, mode="joint", penalties=None, record_alpha=True, record_slots=None):
     """반환 (out, stats). cap/rho 는 int 또는 {리전: int}."""
     assert mode in ("joint", "decoupled", "greedy", "arrival_fixed", "start_check", "now_only", "no_lookahead",
-                    "arrival_fixed_exact")
-    # arrival_fixed_exact(10-18, 3회차 점검 중 발견): arrival_fixed 는 확정한 미래 계획을 슬롯 덮음으로 세어(81초 작업도 한 슬롯 한 자리)
-    # 미래 슬롯 행이 가짜로 차고 z^A 벌점이 결정을 비튼다. 이 판은 확정 작업들의 슬롯 안 최대 동시 실행(순간 단위)을 기저로 쓴다.
+                    "arrival_fixed_exact", "start_admit")
+    # start_admit(10-18, 4회차 B[3]·C[1]): start_check 처럼 도착 슬롯에 리전·시각을 정하되 다른 작업의 계획은 보지 않고,
+    # 정한 시각이 오면 그 순간의 장부로 다시 확인해 자리가 있으면 시작, 없으면 한 슬롯 미루고, 여유가 다하면 강제로 들인다
+    # ("시작할 때 입장 통제" 를 단 정직한 꼴).
+    # arrival_fixed_exact(10-18): 확정 작업의 미래 슬롯 기저를 슬롯 덮음 대신 슬롯 안 순간 최대 동시 실행으로 세는 확인용 판.
+    # "슬롯 덮음이 가짜 포화를 만든다" 는 가설을 시험했으나 기각 — 확정 계획은 모두 슬롯 머리(정수 시각)에 시작해 두 수가 같다
+    # (10일 시험에서 결과가 숫자까지 같음). 실제 결함은 순간 수 버그(COMMIT_MODES 주석)였다.
     # no_lookahead(10-18, 3회차 A[7]·C[2]): 슬롯 머리에 그 슬롯 안 도착을 미리 알지 않는다. 미룰 수 있는 작업은 도착 뒤 첫 슬롯 머리에
     # 처음 보이고(CAST 그대로 풂), 미룰 수 없는 작업은 도착 순간 하나씩 그 순간의 장부로 배정한다(α 는 그 슬롯 머리에서 고른 값,
     # 비용은 같은 정규화, 순간 용량·미래 슬롯 점유를 넘지 않는 리전 가운데 최소, 없으면 초과가 가장 작은 리전 → 위반으로 셈).
@@ -197,6 +201,7 @@ def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
     occ = {r: np.zeros(T_END + 2, dtype=np.int32) for r in regions}
     plan_occ = {r: np.zeros(T_END + 2, dtype=np.int32) for r in regions}   # start_check: 계획만 되고 아직 시작 안 한 작업의 슬롯 점유
     planned = []                                                            # (r, start, d)
+    pending = []                                                            # start_admit: [job, r, start, α] 아직 시작 안 한 계획
     max_d = max(j["duration"] for j in jobs)
     if penalties is None:
         M_B = max(10.0, 2.0 * max_d)
@@ -279,13 +284,26 @@ def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
         if planned:   # start_check: 시작 시각이 지난 계획은 "시작한 작업" 으로 넘긴다
             keep = []
             for (pr, ps, pd_) in planned:
-                if ps < t:
+                if ps <= t:   # 4회차 B[3]: 지금 슬롯에 시작하는 계획도 "시작한 작업" (전에는 ps < t 라 빠졌다)
                     for tau in covered_slots(ps, pd_):
                         if tau < T_END:
                             plan_occ[pr][tau] -= 1
                 else:
                     keep.append((pr, ps, pd_))
             planned = keep
+        if pending:   # start_admit: 오늘 시작할 계획을 그 순간 장부로 다시 확인
+            for r in regions:
+                act[r] = [iv for iv in act[r] if iv[1] > t]
+            due = sorted([p for p in pending if p[2] <= t], key=lambda p: p[0]["deadline"] - p[0]["duration"])
+            pending = [p for p in pending if p[2] > t]
+            for pj, pr, _, pa in due:
+                late_ok = (pj["deadline"] - pj["duration"] - t) >= 1
+                if running_committed(pr, t) < cap_d[pr]:
+                    emit(pj, pr, float(t), False, False, pa)
+                elif late_ok:
+                    pending.append([pj, pr, t + 1, pa])
+                else:
+                    emit(pj, pr, float(t), True, False, pa); forced += 1
         N = []
         for j in arrivals.pop(t, ()):
             if math.floor(j["deadline"] - j["duration"]) <= math.floor(j["submit_time"]):
@@ -294,7 +312,7 @@ def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
                 Q.append(j)
         N_late = sorted(arrivals_n.pop(t, ()), key=lambda j: j["submit_time"])
         if not Q and not N and not N_late:
-            if not arrivals and not arrivals_n:
+            if not arrivals and not arrivals_n and not pending:
                 break
             continue
 
@@ -499,6 +517,9 @@ def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
                 if mode == "decoupled" and jj < nQ and j["id"] not in fixed_region:
                     fixed_region[j["id"]] = var_r[v]
                 if var_i[v] != 0:
+                    if mode == "start_admit":
+                        pending.append([j, var_r[v], var_start[v], a_used]); started.add(jj)
+                        continue
                     if mode not in ("arrival_fixed", "arrival_fixed_exact", "start_check"):
                         continue
                     # arrival_fixed: 미래 시작도 지금 확정(자리를 미리 점유, 이후 재풀이 없음)
