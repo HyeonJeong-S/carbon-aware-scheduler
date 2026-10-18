@@ -19,9 +19,11 @@
 on run argv
   set p to item 1 of argv
   set o to item 2 of argv
+  -- 2026-10-18: 셋째 인자 quiet 면 Word 를 앞으로 끌어내지 않고 끝나면 숨긴다(float_search.py 가 10초마다 창을 띄워 사용자가 물음)
+  set quiet to ((count of argv) > 2) and (item 3 of argv is "quiet")
   with timeout of 600 seconds
   tell application "Microsoft Word"
-    activate
+    if not quiet then activate
     repeat while (count of documents) > 0
       close document 1 saving no
     end repeat
@@ -42,5 +44,10 @@ on run argv
     delay 3
     close document 1 saving no
   end tell
+  if quiet then
+    try
+      tell application "System Events" to set visible of process "Microsoft Word" to false
+    end try
+  end if
   end timeout
 end run

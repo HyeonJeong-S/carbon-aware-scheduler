@@ -1,0 +1,1 @@
+[hetero/clean_small_a1] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 3,613.3 kg  절감 87.38%  위반 0  초과 0.0h  마감위반 0  지연 115.1/119.3ms  cap {'US-CAL-CISO': 10, 'US-TEX-ERCO': 15, 'US-NY-NYIS': 9, 'FR': 9, 'DE': 16, 'KR': 18, 'IN': 19, 'JP': 18} ρ 3  벽시계 65.8분  → /Users/jongha/Desktop/GitHub/carbon-aware-scheduler/scheduler/data/v2/hetero/clean_small_a1

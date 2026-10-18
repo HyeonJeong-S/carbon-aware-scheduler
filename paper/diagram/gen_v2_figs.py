@@ -177,8 +177,8 @@ def fig_alpha_cast():
     ax.annotate("α=1", (xs[-1], ys[-1]), textcoords="offset points", xytext=(-1.5, -12), fontsize=F_ANN, ha="left")
     ax.annotate("CAST knee", (kx, ky), textcoords="offset points", xytext=(-10, 3), fontsize=F_ANN, ha="right", va="center")   # 고리 반지름 7.6 pt + 틈
     ax.plot([], [], color=INK, lw=1.1, marker="o", ms=3.46, mew=0.5, mfc=INK, mec=INK, label="CAST, fixed α")
-    ax.scatter([], [], marker="x", s=20, color=INK, lw=1.1, label="Fixed α, same latency")
-    ax.set_xlabel("Duration-weighted mean latency (ms)", fontsize=F_LABEL)
+    ax.scatter([], [], marker="x", s=20, color=INK, lw=1.1, label="Fixed α, same RTT")
+    ax.set_xlabel("Duration-weighted mean RTT (ms)", fontsize=F_LABEL)
     ax.set_ylabel("Carbon savings (%)", fontsize=F_LABEL)
     ax.set_xlim(-6, 130); ax.set_ylim(-4, 100)
     leg = ax.legend(fontsize=F_LEG, frameon=True, loc="lower right", handlelength=2.0, borderpad=0.2, fancybox=False)

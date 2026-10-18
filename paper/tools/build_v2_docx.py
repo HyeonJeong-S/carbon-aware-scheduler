@@ -259,11 +259,19 @@ def table_elems(T, tbl, full=False):
     if sum(need) <= total:
         extra = (total - sum(need)) / ncol
         widths = [int(x + extra) for x in need]; widths[-1] += total - sum(widths)
-    for w in widths: etree.SubElement(grid, qn("w:gridCol")).set(qn("w:w"), str(w))
     # 숫자 열(본문 칸이 전부 숫자·범위·—·⟦ ⟧)만 오른쪽, 글자 열은 왼쪽(92 지적: 표 1 Region)
-    # 음수 기호 −(U+2212)와 신뢰구간의 "to"도 숫자 열로 — 표 6 의 Δ·CI 두 열만 왼쪽 정렬이던 것(87 [18])
-    NUM = re.compile(r"^(?:[\d.,%/–\-−—+()\[\]⟦⟧ ×]|to)*$")
+    # 음수 기호 −(U+2212)와 신뢰구간의 "to"도 숫자 열로 — 표 6 의 Δ·CI 두 열만 왼쪽 정렬이던 것(87 [18]). ± 도(줄인 판 표 5 "71.51 ± 0.43")
+    NUM = re.compile(r"^(?:[\d.,%/–\-−—+±()\[\]⟦⟧ ×†‡§]|to)*$")
     numeric = [all(NUM.match(r[c]) for r in rows[1:] if c < len(r)) for c in range(ncol)]
+    if sum(need) > total and any(numeric[1:]):
+        # 빠듯한 표: 숫자 열에 먼저 필요한 폭을 주고 남는 폭을 글자 열에 비례로 — 비례 배분은 긴 행 이름에 폭을 몰아
+        # 숫자를 가운데서 꺾었다(줄인 판 표 5 "1.83±0.5/3", "0.35–/9.64"; 고정 폭 표라 noWrap 이 안 먹음)
+        fixed = sum(need[c] for c in range(ncol) if c > 0 and numeric[c]); rest = total - fixed
+        tw_ = sum(wts[c] for c in range(ncol) if not (c > 0 and numeric[c]))
+        if rest > 0.25 * total:
+            widths = [int(need[c]) if (c > 0 and numeric[c]) else int(rest * wts[c] / tw_) for c in range(ncol)]
+            widths[0] += total - sum(widths)
+    for w in widths: etree.SubElement(grid, qn("w:gridCol")).set(qn("w:w"), str(w))
     trs = t.findall(qn("w:tr")); head_tr, body_tr = trs[0], trs[1]
     for tr in trs: t.remove(tr)
     for i, row in enumerate(rows):
@@ -283,6 +291,12 @@ def table_elems(T, tbl, full=False):
             if i == 0 and HEAD_VAR_RE.search(txt):               # 머리의 k, d → 수식 이탤릭(굵기는 머리 그대로)
                 spans = [(m.start(), m.end(), m.group(1), "", "") for m in HEAD_VAR_RE.finditer(txt)]
                 for r in math_runs(txt, rpr, spans=spans): p0.append(r)
+            elif "^" in txt:                                     # "CICS^a" → 각주 표지 위첨자(줄인 판 표 4: ^a 가 그대로 찍힘)
+                for k_, part in enumerate(re.split(r"\^([a-z†‡§*]+)", txt)):
+                    if not part: continue
+                    rp_ = copy.deepcopy(rpr)
+                    if k_ % 2: _el("w:vertAlign", rp_, val="superscript")
+                    p0.append(make_run(part, rp_))
             else:
                 p0.append(make_run(txt, rpr))
             # 짧은 칸(숫자·한 단어)은 줄바꿈 금지 — "43,8/30" 같은 꺾임 방지
@@ -302,8 +316,8 @@ def table_elems(T, tbl, full=False):
             ind = etree.Element(qn("w:ind")); ind.set(qn("w:firstLine"), "0")   # 문서 기본 첫 줄 들여쓰기 10pt 가 칸마다 먹혀 "0./9"처럼 꺾였다
             sp = ppr.find(qn("w:spacing"))
             (sp.addnext(ind) if sp is not None else ppr.append(ind))
-            if c > 0 and numeric[c]:
-                jc = etree.SubElement(ppr, qn("w:jc")); jc.set(qn("w:val"), "right")
+            jc = etree.SubElement(ppr, qn("w:jc"))               # 글자 칸도 왼쪽으로 못박는다 — 틀의 양쪽 맞춤이 꺾인 행 이름을 "Main    (LSTM," 처럼 벌렸다(줄인 판 표 5)
+            jc.set(qn("w:val"), "right" if (c > 0 and numeric[c]) else "left")
         if i == 0: t.append(rule_row(ncol, total, "top", RULE_TOP))           # 위 굵은 선(맨 윗행의 top)
         t.append(tr)
         if i == 0:                                                            # 머리 아래 가는 선(전에는 머리 칸마다 tcBorders)
@@ -474,7 +488,7 @@ FLOAT_GAP = 220       # 띄운 그림·표와 아래 본문 사이 11pt(v1 그�
 #   표 3·4 값은 원고 판마다 결과가 크게 갈린다(같은 값이 4회차판에서는 12쪽 R 191pt·18쪽 R 211pt) — 원고가 멈춘 뒤 다시 맞출 것.
 FLOAT_SHIFT = {("tbl", 3): 0, ("tbl", 4): 1, ("tbl", 6): -1, ("fig", 9): -1, ("alg", 1): 0, ("fig", 5): -1, ("fig", 8): 4}   # fig5 +1(10-18): 표 4 와 같은 자리에 겹쳤다  # fig8 +4(10-18 5회차판): 표 6(전폭)과 겹침
 # 줄인 판(10-18): 표 4 −1(7쪽 R단 371pt 빔), 그림 1 +2(2쪽 R단 144pt 빔), 그림 2 −1(4쪽 R단 빔), 표 5 +1(그림 3 캡션 위에 얹힘 — overlap_check.py 로 잡음)
-FLOAT_SHIFT_CUT = {("tbl", 4): -1, ("fig", 1): 2, ("fig", 2): -1, ("tbl", 5): 1}
+FLOAT_SHIFT_CUT = {("alg", 1): -2, ("fig", 1): 4, ("fig", 2): -2, ("fig", 3): 2, ("tbl", 4): -2, ("tbl", 5): 1}   # 2회차 원고(10-18 19:50, float_search: 10쪽, 빈 곳 89pt, 겹침 0)
 
 def apply_shift(blocks, shift):
     """("fig"|"tbl", 번호) → n. 그림·표가 아닌 블록(단락·절 제목·식) n개를 건너 앞(−)·뒤(+)로 옮긴다."""
