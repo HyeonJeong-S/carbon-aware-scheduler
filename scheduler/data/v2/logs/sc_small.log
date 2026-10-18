@@ -1,0 +1,1 @@
+[capx/startcheck_small] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 9,679.0 kg  절감 66.19%  위반 21437  초과 2151.6h  마감위반 0  지연 40.9/40.5ms  cap {'US-CAL-CISO': 10, 'US-TEX-ERCO': 15, 'US-NY-NYIS': 9, 'FR': 9, 'DE': 16, 'KR': 18, 'IN': 19, 'JP': 18} ρ 3  벽시계 9.1분  → /Users/jongha/Desktop/GitHub/carbon-aware-scheduler/scheduler/data/v2/capx/startcheck_small

@@ -18,7 +18,7 @@ EQ = {
  2: r"\Lambda=\sum_{j\in J}d_{j}\,\ell(o_{j},r(j))",
  3: r"Z=\sum_{r\in R}\int\max\{0,\,n_{r}(t)-\mathrm{cap}_{r}\}\,dt",
  4: r"s_{j}\le\tau_{j},\quad\tau_{j}+d_{j}\le D_{j}\qquad\forall j\in J",
- 5: r"\ell(o_{j},r(j))\le L_{j}\qquad\forall j\in J",
+ 5: r"\ell(o_{j},r(j))\le \bar{\ell}_{j}\qquad\forall j\in J",   # 10-19: 지연 한도 ℓ̄_j(미룸 허용치 L_j 와 값은 같고 이름을 나눔, 2회차 B 주1)
  6: r"n_{r}(t)\le\mathrm{cap}_{r}+z_{r}(t),\ z_{r}(t)\ge 0\quad\forall r\in R,\ \forall t",        # 간격을 넓히면 단폭을 넘어 번호 (6)이 다음 줄로 떨어진다
  7: r"c_{j}(r,i)=d_{j}\left[\alpha\,\tilde{C}_{j}(r,i)+(1-\alpha)\,\tilde{\ell}(o_{j},r)\right]",
  8: r"\tilde{C}_{j}(r,i)=\frac{\hat{C}_{r}^{(t)}(t+i,\,d_{j})}{\max_{r',t'}\hat{C}_{r'}^{(t)}(t')},\qquad\tilde{\ell}(o,r)=\frac{\ell(o,r)}{244}",
