@@ -9,6 +9,9 @@
   fossil_f     대칭 화석 몫 대리 (fossil_rescore.fossil_actual), FLOOR f ∈ {0.05(본), 0.02, 0.1, 0.2}
   pue_adv      PUE 불리 — FR·US-CAL-CISO 에서 × 1.6, 나머지 × 1.1 (기준도 같은 계수)
   pue_fav      PUE 유리 — 거꾸로 (FR·US-CAL-CISO × 1.1, 나머지 × 1.6)
+  exact        정확 겹침 — 실행 구간과 각 시간의 겹친 길이로 실측을 가중 적분(accounting_check_table5.exact_integral)
+  fossil_med   대칭 화석 대리에서 하한(0.05)이 걸리는 시각만 그 리전의 하한 밖 시각 C/(1−f) 중앙값으로(프랑스 약 400 g) — 10-19 5회차 A
+  adv_comb     불리 겹침 — 프랑스만 한계 상한 + 출발지 전송 1 GB + PUE 불리(PUE 는 실행 전력에만; 전송은 망 에너지라 곱하지 않음) — 10-19 5회차 A
 기준 kg = 집에서 바로 도는 실행(합성 frontier/cast_rho0_a0.0, Azure azure/rho0_alpha_0.0; 둘 다 절감 0.00%)을 같은 회계로 다시 채점한 값.
 Δ(pp) = (비교 kg − CAST kg) ÷ 기준 kg × 100 (양수 = CAST 가 덜 배출).
 CI = analysis_alpha.pair_mode 와 같은 7일 블록 부트스트랩(B=2000, seed 0, score_from 168, 날 = submit_time//24)으로 Δkg 의 2.5/97.5 백분위를 낸 뒤
@@ -23,6 +26,7 @@ import pandas as pd
 
 from interface import carbon_2025
 from scheduler import capacity, fossil_rescore
+from scheduler.accounting_check_table5 import exact_integral
 from scheduler.analysis_alpha import BLOCK, B
 from scheduler.lca_rescore import lca_actual
 from scheduler.marginal_rescore import PROXY, SINK
@@ -42,10 +46,11 @@ PAIRS = [  # (열 이름, CAST, 비교, 기준 실행, 대조할 기존 pair jso
     ("Azure 도착 고정형", "azure/rho0_m0.5375", "azure/af_rho0_dw0.5381", "azure/rho0_alpha_0.0", "alpha_pair_azure_rho0_m0.5375.json"),
     ("Azure 빈 리전", "azure/rho0_m0.5375", "azure/fb_rho0_dw0.5184", "azure/rho0_alpha_0.0", "pair_azure_rho0_cast0.5375_vs_fb0.5184.json"),
 ]
-ACC = [("avg", "평균 계수"), ("tx_dest", "전송 목적지 귀속 0.06 kWh"), ("tx_origin", "전송 출발지 귀속 1 GB"),
+ACC = [("avg", "평균 계수"), ("exact", "정확 겹침"), ("tx_dest", "전송 목적지 귀속 0.06 kWh"), ("tx_origin", "전송 출발지 귀속 1 GB"),
        ("lca", "전과정 근사"), ("marg_fr", "한계 상한(프랑스만)"), ("fossil_0.05", "대칭 화석 대리 floor 0.05"),
        ("fossil_0.02", "  〃 floor 0.02"), ("fossil_0.1", "  〃 floor 0.1"), ("fossil_0.2", "  〃 floor 0.2"),
-       ("pue_adv", "PUE 불리(FR·CAL 1.6)"), ("pue_fav", "PUE 유리(FR·CAL 1.1)")]
+       ("pue_adv", "PUE 불리(FR·CAL 1.6)"), ("pue_fav", "PUE 유리(FR·CAL 1.1)"),
+       ("fossil_med", "대칭 화석 대리, 하한 시각은 하한 밖 중앙값"), ("adv_comb", "불리 겹침(프랑스만+출발지 1 GB+PUE 불리)")]
 # 기존 스크립트가 찍은 절감률(소수 둘째 자리) — 다시 채점한 합계가 이것을 재현해야 믿는다
 EXPECT = {("rho0/m0.5375", "marg_fr"): 37.59, ("arrival/fixed_rho0_dw0.5444", "marg_fr"): 38.49,
           ("startadmit/fb_rho0_dw0.5353", "marg_fr"): 39.75,
@@ -62,7 +67,26 @@ def windows():
     for f in FLOORS:
         fossil_rescore.FLOOR = f                      # fossil_actual 은 모듈 전역 FLOOR 를 부를 때 읽는다
         W[f"fossil_{f}"] = capacity._Windows(fossil_rescore.fossil_actual(a), p)
+    W["fossil_med"] = capacity._Windows(fossil_median(a), p)
+    W["_actual"] = a
     return W
+
+
+def fossil_median(actual):
+    """fossil_actual 과 같되, 1−CFE 가 0.05 아래인 시각은 하한 대신 그 리전의 하한 밖 시각 C/(1−CFE) 중앙값을 쓴다."""
+    df = pd.read_csv(os.path.join(ROOT, "lstm_source", "data", "carbon_intensity_test_2025.csv"), parse_dates=["timestamp"])
+    df["h"] = ((df.timestamp - carbon_2025.BASE_TIME).dt.total_seconds() / 3600).round().astype(int)
+    out = {}
+    for r, arr in actual.items():
+        s = df[df.region == r].set_index("h")
+        frac = np.full(len(arr), np.nan)
+        idx = s.index[(s.index >= 0) & (s.index < len(arr))]
+        frac[idx] = 1 - s.loc[idx, "cfe_pct"].values / 100
+        frac = pd.Series(frac).ffill().bfill().values
+        ok = frac >= 0.05
+        raw = arr / np.where(ok, frac, 1.0)
+        out[r] = np.where(ok, raw, np.median(raw[ok]))
+    return out
 
 
 def load(name):
@@ -94,14 +118,18 @@ def rescore(d, W):
     hot = d.region.isin(PUE_HOT).to_numpy()
     e["pue_adv"] = ce * np.where(hot, PUE_HI, PUE_LO)
     e["pue_fav"] = ce * np.where(hot, PUE_LO, PUE_HI)
+    e["exact"] = np.array([exact_integral(W["_actual"][r], s, x) for r, s, x in zip(d.region, d.scheduled_start, d.duration)])
+    e["fossil_med"] = at(W["fossil_med"], d.region, d.scheduled_start)
+    e["adv_comb"] = mg * np.where(hot, PUE_HI, PUE_LO) + inten_o * E_TX
     return e
 
 
 def baseline_check(d, W):
     """기존 스크립트식 기준(출발 리전·제출 시각) — 집에서 바로 도는 실행의 재채점과 같아야 한다."""
     out = {}
-    for k in ("avg", "lca", *[f"fossil_{f}" for f in FLOORS]):
+    for k in ("avg", "lca", "fossil_med", *[f"fossil_{f}" for f in FLOORS]):
         out[k] = sum(W[k].actual_mean(o, s, x) * x for o, s, x in zip(d.origin, d.submit_time, d.duration)) / 1000
+    out["exact"] = sum(exact_integral(W["_actual"][o], s, x) for o, s, x in zip(d.origin, d.submit_time, d.duration)) / 1000
     return out
 
 
