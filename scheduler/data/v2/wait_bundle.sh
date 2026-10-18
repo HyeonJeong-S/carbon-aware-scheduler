@@ -8,7 +8,7 @@ bundle_done() {  # $1 = wave file
   done < "$1"; return 0
 }
 pending=()
-for w in waveD_sweeps waveI_rho0 waveJ_transfer waveG_azure waveE_seeds waveF_phi waveH_extra; do
+for w in waveH_extra; do
   bundle_done scheduler/data/v2/$w.txt || pending+=($w)
 done
 [ -f scheduler/data/v2/main/joint_zcheck/stats.json ] || pending+=(zcheck)

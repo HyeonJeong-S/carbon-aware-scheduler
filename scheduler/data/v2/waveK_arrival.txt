@@ -1,0 +1,4 @@
+# K파(10-18, 2c): Zanotto 식 대조군 — 도착 슬롯에 리전·시각을 한 번 정하고 다시 풀지 않음(재풀이의 몫을 가름). 상한 17, ρ 3.
+--name arrival/fixed --engine arrival_fixed --alpha knee
+--name arrival/fixed_a1 --engine arrival_fixed --alpha 1.0
+--name arrival/fixed_oracle --engine arrival_fixed --alpha knee --forecast oracle

@@ -1,0 +1,6 @@
+# M파(10-18, 1회차 심사 A 대응): [7] 미룰 수 있는 작업의 도착 봉우리를 새벽 2시 → 한낮 13시로, [8] 기상 입력을 쓰는 세 리전(캘리포니아·텍사스·독일)만 SN-24h 로
+--name arrive/defer_noon --engine joint --alpha knee --jobs load_balancer/data/variants/jobs_defer_noon.csv
+--name arrive/defer_noon_time_only --engine joint --alpha knee --home-region --jobs load_balancer/data/variants/jobs_defer_noon.csv
+--name arrive/defer_noon_ignore --engine ignore --alpha knee --jobs load_balancer/data/variants/jobs_defer_noon.csv
+--name forecast/weather3_sn24 --engine joint --alpha knee --forecast lstm|US-CAL-CISO=sn24,US-TEX-ERCO=sn24,DE=sn24
+--name forecast/weather3_sn24_a1 --engine joint --alpha 1.0 --forecast lstm|US-CAL-CISO=sn24,US-TEX-ERCO=sn24,DE=sn24

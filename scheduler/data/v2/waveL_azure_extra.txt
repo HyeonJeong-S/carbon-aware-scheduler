@@ -1,0 +1,4 @@
+# L파(10-18, 2c): Azure 보강 — ρ=0 위반(헤드라인 "예약 없이도 0" 의 Azure 판), 분리형 α=1(표 5 Azure 행), Zanotto 식 대조군 Azure 판
+--name azure/rho_0 --engine joint --alpha knee --rho 0 --jobs load_balancer/data/jobs_azure.csv
+--name azure/decoupled_a1 --engine decoupled --alpha 1.0 --jobs load_balancer/data/jobs_azure.csv
+--name azure/arrival_fixed --engine arrival_fixed --alpha knee --jobs load_balancer/data/jobs_azure.csv
