@@ -656,7 +656,14 @@ def _math_spans(text, bare=False, greek=False):
         for m in GREEK_RE.finditer(text):
             if m.start() not in taken:
                 spans.append((m.start(), m.end(), m.group(1), "", "")); taken |= {m.start()}
-    return sorted(spans)
+    # 밑 글자 바로 뒤의 결합 악센트(Λ̄ 의 U+0304 등)는 밑과 같은 수식 글꼴로 — 밑만 Cambria Math, 윗줄은 Times 로 찍혀
+    # 윗줄이 Λ 꼭대기에 묻혀 "Λ ≤ Λ" 로 읽혔다(3회차 E1)
+    out = []
+    for a, b, base, sub, sup in sorted(spans):
+        if not sub and not sup and b < len(text) and text[b] in "\u0302\u0303\u0304" and not base.endswith(("\u0302", "\u0303", "\u0304")):
+            base, b = base + text[b], b + 1
+        out.append((a, b, base, sub, sup))
+    return out
 
 def _rpr_math(base_rpr, vert=None, upright=False):
     c = copy.deepcopy(base_rpr) if base_rpr is not None else etree.Element(qn("w:rPr"))
