@@ -30,6 +30,104 @@
 | ⑤ | [`scheduler/`](scheduler/) | v1 시간 이동 스케줄러, v2 CAST(`joint.py`, `run_v2.py`)와 실험 결과 `data/v2/` |
 | — | [`paper/`](paper/) · [`presentation/`](presentation/) · [`tests/`](tests/) | 논문(안내: `paper/폴더안내.txt`) · 발표 · 테스트 |
 
+### 폴더 안 (중요한 것만 — 펼쳐서 보기)
+
+<details>
+<summary>① lstm_source/ — LSTM 학습</summary>
+
+```
+lstm_source/
+├─ 5[hard_stop]Carbon_Forecast_LSTM.ipynb   학습 노트북 (논문 3.2절 학습 조건의 출처)
+├─ data/      리전별 탄소집약도·기상 원자료와 train/val/test parquet
+├─ models/    리전별 <리전>_lstm.pt, 정규화기 *_scaler.pkl (8개 리전)
+└─ logs/      평가 기록 <리전>_eval_records.csv, MAE 그림, training_summary.json
+```
+</details>
+
+<details>
+<summary>② carbon_forecast_lstm/ — 예측 모델 패키지</summary>
+
+```
+carbon_forecast_lstm/
+├─ carbon_forecast.py   추론 코드 (168시간 입력 → 24시간 예측)
+├─ models/              lstm_source/models 와 같은 배포 모델
+└─ data/                시연용 탄소집약도 CSV
+```
+</details>
+
+<details>
+<summary>③ interface/ — 공용 API · 대시보드</summary>
+
+```
+interface/
+├─ carbon_2025.py · carbon_history.py · carbon_forecast_api.py   탄소 실측·예측을 모듈에 넘기는 API
+├─ regions.py · lb_assignment.py                                  리전 목록, 로드밸런서 배정 읽기
+├─ dash_app.py                                                    대시보드 실행 진입점
+└─ dashboard/   pages/(개요·LSTM·로드밸런서·스케줄러) · lb_tabs/ · theme.py · data.py
+```
+</details>
+
+<details>
+<summary>④ load_balancer/ — 작업 자료 · v1 로드밸런서</summary>
+
+```
+load_balancer/
+├─ data/
+│   ├─ jobs.csv · jobs_azure.csv           실험 작업 (합성 · Azure VM 트레이스)
+│   ├─ variants/                           워크로드 변형 (시드 1~4, 도착률 2배, 미룰 몫 φ, 정오 정점 …)
+│   ├─ generator/                          작업 생성기 gen_jobs*.py (vmtable.csv.gz 437 MB 는 git 밖)
+│   ├─ latency_8x8*.csv                    리전 간 왕복 지연 행렬
+│   └─ lstm_eval/                          리전별 LSTM 평가 기록 (스케줄러가 읽는 예측)
+├─ framework/   v1 로드밸런서 시뮬레이터 (simulator.py, run_experiments.py) · results/
+├─ routed/      v1 α 별 라우팅 결과
+└─ docs/        읽은 논문 · 분석 · 손글씨 노트
+```
+</details>
+
+<details>
+<summary>⑤ scheduler/ — CAST 와 실험</summary>
+
+```
+scheduler/
+├─ v2 CAST (논문 v2)
+│   ├─ joint.py            CAST 본체: 매 슬롯 리전×시작 슬롯 LP, 비교 설계(다시 풀지 않는 설계 등)
+│   ├─ capacity.py         용량·예약·탄소 창 · forecasters.py 예측기(LSTM·SN-24h·완전예지)
+│   ├─ run_v2.py           실행 진입점: python -m scheduler.run_v2 --name <묶음/이름> …
+│   ├─ match_alpha.py · analysis_alpha.py    같은 지연 짝 찾기 · 부트스트랩 신뢰구간
+│   ├─ offline_bound.py    오프라인 하한 · tabulate_v2.py 표 만들기
+│   ├─ *_rescore.py · transfer_*.py          다른 회계로 다시 채점 (전과정·한계·화석·전송·코어 수)
+│   └─ prior_*.py · run_priors_v2.py         선행 정책 재현 (CICS·CASPER·Sukprasert·Caspian)
+├─ v1 (논문 v1)   timeshift.py · simulator.py · run_cli.py · reproduce.py · config.py …
+└─ data/
+    ├─ v2/                 v2 실험 결과 — 실행마다 <묶음>/<이름>/stats.json + jobs.csv.gz
+    │   ├─ main/           대표 실행 (무릎점·α=1·상한 없음·분리형·2단계 …)
+    │   ├─ alpha/ arrival/ startcheck/ startadmit/ nowonly/   고정 α 짝 · 비교 설계들
+    │   ├─ azure/          Azure 워크로드 전부
+    │   ├─ cap/ hetero/ rate/ skew/ arrive/ phi/ horizon/ lag1/ lnet/ forecast/ transfer/ rho/ rho0/ seed/ nolook/ herd/ grid/
+    │   │                  민감도·변형 (상한, 리전별 상한, 도착률, 미룰 몫, 지평, 선견, RTT 한도, 예약, 시드 …)
+    │   ├─ offline/        오프라인 하한 · priors/ 선행 정책 · analysis/ 짝·신뢰구간 JSON
+    │   ├─ queues/         실험 큐(wave*.txt, *.q)와 실행 스크립트(runq.sh 등)
+    │   ├─ logs/           실행 로그
+    │   └─ _buggy_1018*/   버그로 버린 결과 (쓰지 말 것)
+    └─ job/ oracle/ capacity_sweep*/ sensitivity/ scalability/   v1 실험 결과
+```
+</details>
+
+<details>
+<summary>paper/ — 논문</summary>
+
+```
+paper/
+├─ CAST_JOK_v2.docx · .pdf   조립 작업 자리 (Word 내보내기는 이 경로에서만)
+├─ 정리.txt                  작업 기록 · 폴더안내.txt 자세한 안내
+├─ v2/   CAST_JOK_v2_10쪽.pdf·docx (최신) · CAST_JOK_v2_28쪽.pdf · 원고/(txt 원고·식) · 보관/(회차판·모의 심사·설계)
+├─ v1/   CAST_JOK_v1.docx·pdf · 피드백 · 문서/ · 보관/
+├─ tools/     build_v2_docx.py(txt → docx 조립) · build_omml_v2.py(식) · overlap_check.py · word_to_pdf.applescript · v1 도구
+├─ diagram/   그림과 생성 스크립트 gen_*.py
+└─ 참고/      선행 논문 PDF · JOK 규정
+```
+</details>
+
 ---
 
 ## Impact
