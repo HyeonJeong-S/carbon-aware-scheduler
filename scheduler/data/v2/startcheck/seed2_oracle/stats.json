@@ -1,14 +1,14 @@
 {
  "n": 143200,
  "n_all": 146000,
- "total_carbon_kg": 9686.131940526262,
+ "total_carbon_kg": 9720.74250322628,
  "slo_violations": 0,
  "forced_admissions": 0,
  "immediate": 84608,
- "capacity_violations": 25351,
+ "capacity_violations": 24373,
  "over_cap_forced": 0,
  "over_cap_immediate": 0,
- "over_cap_normal": 25351,
+ "over_cap_normal": 24373,
  "scored_cap": {
   "US-CAL-CISO": 14,
   "US-TEX-ERCO": 14,
@@ -22,89 +22,89 @@
  "peak_by_region": {
   "US-CAL-CISO": 61,
   "US-TEX-ERCO": 28,
-  "US-NY-NYIS": 16,
+  "US-NY-NYIS": 15,
   "FR": 55,
   "DE": 6,
   "KR": 25,
   "IN": 17,
-  "JP": 37
+  "JP": 34
  },
  "hours_over_by_region": {
-  "US-CAL-CISO": 746.0150833333298,
-  "US-TEX-ERCO": 12.53680555555718,
-  "US-NY-NYIS": 0.33036111111213984,
-  "FR": 707.5303888888881,
+  "US-CAL-CISO": 732.4078888888912,
+  "US-TEX-ERCO": 12.334222222223957,
+  "US-NY-NYIS": 0.13805555555636317,
+  "FR": 674.0067499999986,
   "DE": 0.0,
-  "KR": 13.864972222221752,
+  "KR": 13.661694444445232,
   "IN": 0.6958888888884758,
-  "JP": 153.14205555555725
+  "JP": 151.56555555555383
  },
- "avg_delay_h": 2.2470652760319685,
- "p95_delay_h": 12.434922222221712,
- "avg_latency_ms": 39.82617318435754,
+ "avg_delay_h": 2.2836165112895728,
+ "p95_delay_h": 12.475366666667353,
+ "avg_latency_ms": 39.896243016759776,
  "p95_latency_ms": 137.0,
- "dw_latency_ms": 37.88081230657598,
- "home_share": 0.47985335195530726,
+ "dw_latency_ms": 37.83450138631978,
+ "home_share": 0.4794972067039106,
  "by_k": {
   "1": {
    "n": 42900,
-   "carbon_kg": 8496.775980890556,
-   "avg_delay_h": 6.93493694832945,
-   "p95_delay_h": 16.877201388888736,
-   "avg_latency_ms": 36.557435897435894,
+   "carbon_kg": 8516.53776039829,
+   "avg_delay_h": 7.035411049598551,
+   "p95_delay_h": 16.936694444444285,
+   "avg_latency_ms": 36.54615384615385,
    "forced": 0,
-   "over_cap": 21702
+   "over_cap": 21218
   },
   "2": {
    "n": 14187,
-   "carbon_kg": 1018.2990746165939,
-   "avg_delay_h": 1.709700788280354,
-   "p95_delay_h": 5.790022222222015,
-   "avg_latency_ms": 47.054345527595686,
+   "carbon_kg": 1033.0369253280367,
+   "avg_delay_h": 1.774952096207016,
+   "p95_delay_h": 5.801019444444316,
+   "avg_latency_ms": 46.87009233805597,
    "forced": 0,
-   "over_cap": 3547
+   "over_cap": 3112
   },
   "3": {
    "n": 14289,
-   "carbon_kg": 122.66528516387473,
-   "avg_delay_h": 0.0010716304694368397,
+   "carbon_kg": 122.9057292305114,
+   "avg_delay_h": 0.0009390906758115523,
    "p95_delay_h": 0.0,
-   "avg_latency_ms": 40.58282595003149,
+   "avg_latency_ms": 40.70263839316957,
    "forced": 0,
-   "over_cap": 89
+   "over_cap": 41
   },
   "4": {
    "n": 28815,
-   "carbon_kg": 39.3171773893527,
-   "avg_delay_h": 3.9736248481227375e-06,
+   "carbon_kg": 39.23849819313734,
+   "avg_delay_h": 2.9961247035675963e-06,
    "p95_delay_h": 0.0,
-   "avg_latency_ms": 39.78261322228006,
+   "avg_latency_ms": 39.88797501301406,
    "forced": 0,
-   "over_cap": 11
+   "over_cap": 2
   },
   "5": {
    "n": 43009,
-   "carbon_kg": 9.074422465917978,
-   "avg_delay_h": 7.750315837522138e-09,
+   "carbon_kg": 9.023590076331315,
+   "avg_delay_h": 0.0,
    "p95_delay_h": 0.0,
-   "avg_latency_ms": 40.48013206538167,
+   "avg_latency_ms": 40.675068009021366,
    "forced": 0,
-   "over_cap": 2
+   "over_cap": 0
   }
  },
- "alpha_mean": 0.5174697392923651,
+ "alpha_mean": 0.5176908752327747,
  "unplaced": 0,
- "solve_ms_mean": 71.3456881944773,
- "solve_ms_p95": 122.57645625140867,
- "solve_ms_max": 248.60604100103956,
+ "solve_ms_mean": 56.129933860159674,
+ "solve_ms_p95": 88.26309554970065,
+ "solve_ms_max": 322.31483399664285,
  "n_slots": 8760,
  "n_lp": 96360,
- "n_mip": 1,
+ "n_mip": 7,
  "max_vars": 2480,
- "zA_pos_slots": 2115,
- "zB_pos_slots": 426,
- "zA_sum": 273185.0,
- "zB_sum": 1820.0,
+ "zA_pos_slots": 2090,
+ "zB_pos_slots": 1244,
+ "zA_sum": 260898.0,
+ "zB_sum": 11353.0,
  "knee_degenerate": {
   "em": 0,
   "lat": 0,
@@ -119,6 +119,7 @@
  "engine": "start_check",
  "alpha_setting": "knee",
  "forecast": "oracle",
+ "carbon_now": "actual",
  "cap": 14,
  "cap_mode": "x-peak",
  "cap_json": null,
@@ -144,15 +145,15 @@
   "IN": 10,
   "JP": 11
  },
- "savings_pct": 66.18233185480081,
- "wall_s": 662.8158252079957,
+ "savings_pct": 66.06149429746684,
+ "wall_s": 521.3246047909997,
  "herding": {
   "n": 146000,
-  "n_delayed": 48266,
-  "dip_occ_mean": 11.728701117318435,
-  "dip_occ_p90": 35.0,
-  "dip_full_share": 0.3100558659217877,
-  "bottom3_start_share": 0.5882178866600436,
-  "hours_at_or_over_cap": 2806
+  "n_delayed": 48197,
+  "dip_occ_mean": 11.442388268156424,
+  "dip_occ_p90": 34.0,
+  "dip_full_share": 0.308659217877095,
+  "bottom3_start_share": 0.5673827918298232,
+  "hours_at_or_over_cap": 2851
  }
 }
