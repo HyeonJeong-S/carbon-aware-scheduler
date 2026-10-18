@@ -87,7 +87,9 @@ def fig_alpha():
         # ● 를 ○ 보다 조금 작게(s 14 → 9) 그려 ○ 안에 ● 가 보이게 한다.
         zo = 4 if filled else 0
         ax.plot([h[0] for h in H], [100 * (1 - h[1] / base) for h in H], color=INK if filled else GRAY, lw=1.1, zorder=2)   # 선은 둘 다 점 아래(CAST 선이 분리형 ○ 를 꿰지 않게)
-        ax.scatter(xs, ys, s=5 if filled else 14, facecolor=INK if filled else "white", edgecolor=INK, lw=0.5 if filled else 0.8, zorder=3 + zo)
+        # 10-18(87 점검2 [2]): ○ 를 키우고(s 14 → 30, 테두리 0.8 → 0.7) ● 는 그대로 작게(s 6) — ○ 안지름(약 4.8 pt)이 ● 지름(2.4 pt)의
+        # 두 배라 두 점이 거의 같은 자리(α=0~0.3, 0.9, 1)에서도 고리와 점 사이 흰 틈이 남아 "○ 안의 ●" 로 둘 다 보인다.
+        ax.scatter(xs, ys, s=6 if filled else 30, facecolor=INK if filled else "white", edgecolor=INK, lw=0.5 if filled else 0.7, zorder=3 + zo)
         kx, ky = r["knee"][0], 100 * (1 - r["knee"][1] / base)
         knee_marker(ax, kx, ky, filled=filled, zo=zo)
         # 라벨은 양 끝 α 와 무릎점만. 결합(●)은 위·왼쪽, 분리형(○)은 아래·오른쪽에 적어 서로 피한다(렌더 확인 10-17).
@@ -97,11 +99,20 @@ def fig_alpha():
         # 10-18: 두 계열의 α=1 점은 같은 자리(120 ms, 95.7/95.3 %)라 라벨 하나만 점 아래에 — 위 라벨은 격자 100 에 얹히고 축 위로 나갔다
         if not filled:
             ax.annotate("α=1", (xs[-1], ys[-1]), textcoords="offset points", xytext=(-4, dy), fontsize=F_ANN, ha="right")
+        # 10-18(87 점검2 [2]): "knee" 두 라벨이 어느 설계 것인지 적었다 — "CAST knee" / "Decoupled knee"
         if filled:
-            ax.annotate("knee", (kx, ky), textcoords="offset points", xytext=(-4, 8), fontsize=F_ANN, ha="right")
+            ax.annotate("CAST knee", (kx, ky), textcoords="offset points", xytext=(-4, 8), fontsize=F_ANN, ha="right")
         else:
-            ax.annotate("knee", (kx, ky), textcoords="offset points", xytext=(10, -5), fontsize=F_ANN, ha="left")
-        ax.plot([], [], color=INK if filled else GRAY, lw=1.1, marker="o", ms=2.4 if filled else 3.5, mew=0.5 if filled else 0.8, mfc=INK if filled else "white", mec=INK,
+            ax.annotate("Decoupled knee", (kx, ky), textcoords="offset points", xytext=(10, -5), fontsize=F_ANN, ha="left")
+        # 같은 지연 짝(×): 무릎점과 같은 작업당 평균 지연을 내는 고정 α 실행. 본문 판정(분리형 무릎점이 같은 지연의 고정 α 보다
+        # 6.62 %p 뒤짐)을 그림에서 보이게 — 회색 보조선은 α=0.4~0.5 를 직선으로 이어 그 자리의 실제 값보다 낮다.
+        # 흰 테두리(path effect)로 CAST 무릎점의 검은 ● 위에서도 × 가 보인다.
+        pair = stats("alpha/m0.5687" if filled else "alpha/decoupled_m0.4375")
+        if pair:
+            import matplotlib.patheffects as pe
+            ax.scatter([pair["avg_latency_ms"]], [pair["savings_pct"]], marker="x", s=20, color=INK, lw=0.9, zorder=12,
+                       path_effects=[pe.withStroke(linewidth=1.8, foreground="white")])
+        ax.plot([], [], color=INK if filled else GRAY, lw=1.1, marker="o", ms=2.45 if filled else 5.5, mew=0.5 if filled else 0.7, mfc=INK if filled else "white", mec=INK,
                 label="CAST" if filled else "Decoupled")   # 표 5·본문과 같은 이름
         drawn += 1
     if not drawn:
@@ -109,6 +120,7 @@ def fig_alpha():
     ax.set_xlabel("Mean latency (ms)", fontsize=F_LABEL)
     ax.set_ylabel("Carbon savings (%)", fontsize=F_LABEL)
     ax.set_xlim(-6, 130); ax.set_ylim(-4, 100)
+    ax.scatter([], [], marker="x", s=20, color=INK, lw=0.9, label="Fixed α, same latency")   # 87 점검2 [2]: 같은 지연 짝
     ax.legend(fontsize=F_LEG, frameon=False, loc="lower right", handlelength=2.0)
     save(fig, "alpha")
 
@@ -147,7 +159,7 @@ def fig_capsweep():
     ax.set_xscale("log"); ax.xaxis.set_minor_locator(NullLocator()); ax.xaxis.set_minor_formatter(NullFormatter())
     ax.set_xticks([0.75, 1, 1.25, 1.5, 2]); ax.set_xticklabels(["0.75×", "1×", "1.25×", "1.5×", "2×"], fontsize=F_TICK)
     ax.set_xlim(0.65, 2.3); ax.set_ylim(25, 70)
-    ax.set_xlabel("Capacity (× baseline peak)", fontsize=F_LABEL)
+    ax.set_xlabel("Ceiling (× baseline peak)", fontsize=F_LABEL)   # 10-18(87 점검2 [14]): "Capacity" → 본문·그림 6·7·11 과 같은 "Ceiling"
     ax.set_ylabel("Carbon savings (%)", fontsize=F_LABEL)
     ax.legend(loc="lower right", fontsize=F_LEG, frameon=False, handlelength=2.0)
     save(fig, "capsweep"); plt.close(fig)
@@ -183,8 +195,15 @@ def where_scatter(ax, r):
 def where_hours(ax, r):
     hc = np.array(r.get("ignore", {}).get("local_hist_CAL", [0] * 24)); hf = np.array(r.get("ignore", {}).get("local_hist_FR", [0] * 24))
     x = np.arange(24)
-    ax.bar(x - 0.2, 100 * hc / max(hc.sum(), 1e-9), color=INK, width=0.4, zorder=3, label="California")
-    ax.bar(x + 0.2, 100 * hf / max(hf.sum(), 1e-9), facecolor="white", edgecolor=INK, lw=0.6, width=0.4, zorder=3, label="France")
+    # 10-18(87 점검2 [13]): 높이 0 인 막대는 그리지 않는다(흰 막대는 높이 0 이어도 테두리가 축 위에 검은 줄로 찍혔다).
+    # 흰 막대 테두리 0.6 → 0.4 — 1% 미만의 낮은 흰 막대(프랑스 18·20시)가 테두리만으로 검은 막대처럼 보였다.
+    # 막대는 축선(zorder 2.5) 아래에 두어 낮은 막대의 아래 테두리가 축선에 묻히게 한다.
+    # 렌더(400%): 0.4 로도 프랑스 18시(0.12%)는 높이 0.5 pt 라 검은 조각으로 보였다 → 두 계열 모두 0.5% 미만은 그리지 않는다
+    # (캘리포니아 16·17시 0.13·0.16%, 프랑스 18·20시 0.12·0.25% — 합 0.66%. 캡션에 한 구절).
+    MIN_PCT = 0.5
+    pc, pf = 100 * hc / max(hc.sum(), 1e-9), 100 * hf / max(hf.sum(), 1e-9)
+    ax.bar(x[pc >= MIN_PCT] - 0.2, pc[pc >= MIN_PCT], color=INK, width=0.4, zorder=2, label="California")
+    ax.bar(x[pf >= MIN_PCT] + 0.2, pf[pf >= MIN_PCT], facecolor="white", edgecolor=INK, lw=0.4, width=0.4, zorder=2, label="France")
     ax.set_xticks([0, 6, 12, 18]); ax.set_xlim(-0.7, 23.7)
     ax.set_xlabel("Local hour", fontsize=F_LABEL)
     ax.set_ylabel("Share of hours over ceiling (%)", fontsize=F_LABEL)
@@ -235,6 +254,10 @@ def fig_priors():
         if n in ("baseline", "suk_lb"):   # 10-18: suk_lb 는 v1 로드밸런서 리전 위의 옛 행 — 표 7 의 (ours) 는 suk_lb_v2knee
             continue
         # 10-18(89 점검 [20]): CASPER ○ 가 α=1 선에 꿰였다 → 흰 채움 ○ 를 곡선·점선(zorder ≤4) 위로 올려 선을 가린다
+        # 10-18(87 점검2 [15]): ○ 뒤에 흰 원(테두리 없음, s 60)을 깔아 선이 ○ 앞에서 끊기게 — CASPER ○(α=1 곡선 위)·
+        # Suk. temporal (ours) ○(무릎점 가로 점선 73.39 위)·Suk. spatial+temporal ○(α=1 가로 점선 위)가 선에 꿰인 것처럼 보였다.
+        # 흰 원은 곡선·점선(zorder ≤4) 위, 라벨(5) 아래.
+        ax.scatter([s["required_capacity"]], [s["savings_pct"]], s=60, facecolor="white", edgecolor="none", zorder=4.5)
         ax.scatter([s["required_capacity"]], [s["savings_pct"]], s=24, facecolor="white", edgecolor=INK, lw=0.9, zorder=6)
         lab, dx, dy, ha = labels.get(n, (n, 6, -1, "left"))
         # 10-18: 흰 바탕(테두리 없음, pad 0.4) — y 격자(60·20)가 Caspian·Suk. temporal (home) 글자를 지나갔다. 가리는 것은 격자뿐:
@@ -261,10 +284,11 @@ def fig_priors():
         if ig:
             ax.axhline(ig["savings_pct"], color=col, lw=0.6, ls=(0, (1, 1.6)), zorder=1, label=lab)
     ax.axvline(13, color=AUX_GRAY, lw=0.6, ls=(0, (3, 2)), zorder=1)
-    ax.text(12.3, 45, "baseline peak", fontsize=F_ANN - 0.6, color="#555555", ha="right", va="center", rotation=90,
+    # 10-18(87 점검2 [15]): 6.5 → 6.6 pt(인쇄 6.0), 회색 #555 → #333
+    ax.text(12.3, 45, "baseline peak", fontsize=F_LEG, color="#333333", ha="right", va="center", rotation=90,
             bbox=dict(facecolor="white", edgecolor="none", pad=0.3))   # 10-18(89 [20]): 12.7 → 12.3 로 13 점선에서 떼고, 흰 바탕은 격자 40 만 가린다   # 10-18 렌더: 가로로 두면 y축이나 17 점선을 가로질러 세로로   # 10-18: 오른쪽이면 17 점선을 가로질러 왼쪽으로   # 아래쪽(위는 ceiling 라벨)
     ax.axvline(17, color=INK, lw=0.6, ls=(0, (1, 1.6)), zorder=1)          # 본문 상한 17
-    ax.text(17.4, 103, "ceiling 17", fontsize=F_ANN - 0.6, color=INK, ha="left", va="bottom")
+    ax.text(17.8, 103, "Ceiling 17", fontsize=F_LEG, color=INK, ha="left", va="bottom")   # 10-18: 6.5 → 6.6 pt, 그림 6·7 과 같은 "Ceiling 17"
     ax.set_xscale("log"); ax.set_xlim(6, 260); ax.set_ylim(0, 108)   # 10-18: 상한 7 점이 잘려 6 부터
     ax.set_xticks([10, 20, 50, 100, 200]); ax.set_xticklabels(["10", "20", "50", "100", "200"], fontsize=F_TICK)
     ax.set_xlabel("Required capacity (jobs)", fontsize=F_LABEL)

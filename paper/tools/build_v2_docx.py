@@ -142,6 +142,17 @@ def add_sect(p, sect):
     if ppr is None: ppr = etree.SubElement(p, qn("w:pPr")); p.insert(0, ppr)
     strip_sect(p); ppr.append(copy.deepcopy(sect))
 
+CAP_JC = "center"   # 87 [19]: JOK 게재본 캡션은 가운데 정렬. v1 틀은 그림 캡션이 양쪽(문서 기본 jc=both 물려받음), 표 캡션이 양쪽·왼쪽 섞임
+
+def caption(template, text):
+    """캡션 단락: 틀 그대로 + 정렬만 CAP_JC. 양쪽 정렬은 짧은 줄에서 낱말 사이가 크게 벌어졌다(19쪽 그림 9 국문 등)."""
+    p = no_overflow(para_from(template, text)); ppr = p.find(qn("w:pPr"))
+    for e in ppr.findall(qn("w:jc")): ppr.remove(e)
+    jc = etree.Element(qn("w:jc")); jc.set(qn("w:val"), CAP_JC)
+    anchor = next((ppr.find(qn(t)) for t in ("w:textAlignment", "w:textboxTightWrap", "w:outlineLvl", "w:divId", "w:cnfStyle", "w:rPr", "w:sectPr", "w:pPrChange") if ppr.find(qn(t)) is not None), None)
+    (anchor.addprevious(jc) if anchor is not None else ppr.append(jc))
+    return p
+
 # ── 그림 ──────────────────────────────────────────────────────────────────
 def stack_ab(files):
     """두 png 를 (a)(b) 라벨과 함께 세로로 합친다 → diagram/<a>_ab.png"""
@@ -162,7 +173,7 @@ def figure_elems(T, fig, prev_p):
     path = stack_ab(files) if len(files) > 1 else os.path.join(DIAG, files[0] + ".png")
     full = fig["width"] == "전폭"
     fp = copy.deepcopy(T["figp_full"] if full else T["figp"]); clear_runs(fp)
-    kr = para_from(T["cap_kr"], fig["kr"]); en = para_from(T["cap_en"], fig["en"])
+    kr = caption(T["cap_kr"], fig["kr"]); en = caption(T["cap_en"], fig["en"])
     if full:
         if prev_p is not None: add_sect(prev_p, T["sect_body"])
         add_sect(en, T["sect_fig"])
@@ -184,7 +195,7 @@ def table_fits_column(rows):
     return need <= 195.6 - 4, need
 
 def table_elems(T, tbl, full=False):
-    cap_kr = para_from(T["tcap_kr"], tbl["kr"]); cap_en = para_from(T["tcap_en"], tbl["en"])
+    cap_kr = caption(T["tcap_kr"], tbl["kr"]); cap_en = caption(T["tcap_en"], tbl["en"])
     t = copy.deepcopy(T["table"]); rows = tbl["rows"]; ncol = max(len(r) for r in rows)
     # 셀 좌우 여백을 2pt 로(기본 5.4pt 는 단 폭 표에서 열을 잡아먹는다 — 10-17 표 2·5 꺾임)
     tblpr = t.find(qn("w:tblPr"))
@@ -218,7 +229,8 @@ def table_elems(T, tbl, full=False):
         widths = [int(x + extra) for x in need]; widths[-1] += total - sum(widths)
     for w in widths: etree.SubElement(grid, qn("w:gridCol")).set(qn("w:w"), str(w))
     # 숫자 열(본문 칸이 전부 숫자·범위·—·⟦ ⟧)만 오른쪽, 글자 열은 왼쪽(92 지적: 표 1 Region)
-    NUM = re.compile(r"^[\d.,%/–\-—+()\[\]⟦⟧ ×]*$")
+    # 음수 기호 −(U+2212)와 신뢰구간의 "to"도 숫자 열로 — 표 6 의 Δ·CI 두 열만 왼쪽 정렬이던 것(87 [18])
+    NUM = re.compile(r"^(?:[\d.,%/–\-−—+()\[\]⟦⟧ ×]|to)*$")
     numeric = [all(NUM.match(r[c]) for r in rows[1:] if c < len(r)) for c in range(ncol)]
     trs = t.findall(qn("w:tr")); head_tr, body_tr = trs[0], trs[1]
     for tr in trs: t.remove(tr)
@@ -306,8 +318,11 @@ def eq_display(p, om, n):
     txt_run(f"({n})")
     return p
 
-ALG_SZ = 15        # 7.5pt(89 [5]: 7.3pt 안팎 — Word 글자 크기는 0.5pt 단위)
+ALG_SZ = 14        # 7pt — 표 글자(TBL_SZ)와 같다. 7.5pt 에서는 10·11행이 단폭을 넘어 "← x^α*", "α*" 만 다음 줄로 갈렸다(87 [16])
 ALG_W = 3912       # 단폭 195.6pt(twips)
+# 국문 제목: v1 알고리즘 제목 꼴("Algorithm 1  제목", 상자 첫 줄)을 국문에도 — 그림·표가 국·영문 두 줄 캡션인 것과 맞춘다(87 [16]).
+# 원고에 "알고리즘 N  …" 줄이 있으면 그것을 쓰고, 없으면 아래 이름을 쓴다.
+ALG_KR = {1: "결합 롤링 배정"}
 
 def _el(tag, parent=None, **attrs):
     e = etree.SubElement(parent, qn(tag)) if parent is not None else etree.Element(qn(tag))
@@ -351,12 +366,80 @@ def float_top(*ps):
         if anchor is not None: anchor.addprevious(fr)
         else: ppr.append(fr)
 
+FLOAT_ALL = True     # 87 [4][5][6][7]: 그림·표를 모두 같은 방식(띄운 바깥 표)으로. 단폭은 단 위, 전폭은 쪽 위.
+
+def float_box(children, full=False):
+    """그림(그림 단락 + 캡션 두 줄) 또는 표(캡션 두 줄 + 표)를 한 칸짜리 바깥 표에 넣고 그 바깥 표를 띄운다(tblpPr).
+    - framePr(88 회차의 그림 틀)는 표를 품지 못해 표 캡션과 표를 한 틀로 못 묶었고, 틀과 띄운 표는 서로 피하지 않아 겹쳤다
+      (12쪽 전폭 표 3 위에 그림 5 틀이 겹침). 그림도 같은 바깥 표로 띄우면 tblOverlap=never 로 서로 비켜 쌓인다.
+    - 단폭: 그 단의 본문 위(가로 기준 = 단). 전폭: 쪽 본문 위(가로 기준 = 여백, 가운데) — 두 단이 모두 그 아래로 흐른다.
+      섹션 나누기로 만든 전폭 표는 쪽 가운데에 끼어 위 본문이 왼쪽→오른쪽→표 아래 왼쪽으로 읽혔다(87 [7]).
+    - 띄운 표는 바로 뒤 단락에 매인다. 그 단락이 놓인 단(전폭은 쪽)의 위로 간다."""
+    W = 8040 if full else ALG_W
+    tbl = _el("w:tbl"); pr = _el("w:tblPr", tbl)
+    _el("w:tblpPr", pr, leftFromText=0, rightFromText=0, topFromText=0, bottomFromText=FLOAT_GAP,
+        vertAnchor="margin", horzAnchor=("margin" if full else "text"), tblpXSpec=("center" if full else "left"), tblpYSpec="top")
+    _el("w:tblOverlap", pr, val="never")
+    _el("w:tblW", pr, w=W, type="dxa")
+    b = _el("w:tblBorders", pr)
+    for side in ("top", "left", "bottom", "right", "insideH", "insideV"): _el("w:" + side, b, val="nil")
+    _el("w:tblLayout", pr, type="fixed")
+    mar = _el("w:tblCellMar", pr)
+    for side in ("top", "left", "bottom", "right"): _el("w:" + side, mar, w=0, type="dxa")
+    _el("w:tblLook", pr, val="0000")
+    _el("w:gridCol", _el("w:tblGrid", tbl), w=W)
+    tr = _el("w:tr", tbl); _el("w:cantSplit", _el("w:trPr", tr))
+    tc = _el("w:tc", tr); _el("w:tcW", _el("w:tcPr", tc), w=W, type="dxa")
+    for k, c in enumerate(children):
+        ppr = c.find(qn("w:pPr")) if c.tag == qn("w:p") else None
+        if ppr is not None:
+            for e in ppr.findall(qn("w:framePr")): ppr.remove(e)
+            sp = ppr.find(qn("w:spacing"))
+            if sp is not None and k == 0: sp.set(qn("w:before"), "0")                    # 틀 맨 위 — 단 머리에서 빈 곳일 뿐
+            if sp is not None and k == len(children) - 1: sp.set(qn("w:after"), "0")     # 틀 아래 여백은 bottomFromText 로
+        tc.append(c)
+    end = _el("w:p", tc); ppr = _el("w:pPr", end)                 # 칸은 단락으로 끝나야 한다 — 높이 1pt
+    _el("w:spacing", ppr, before=0, after=0, line=20, lineRule="exact")
+    rp = _el("w:rPr", ppr); _el("w:sz", rp, val=2); _el("w:szCs", rp, val=2)
+    return tbl
+
+FLOAT_GAP = 220       # 띄운 그림·표와 아래 본문 사이 11pt(v1 그림 캡션 아래 12pt 와 비슷하게)
+
+# 띄운 그림·표의 자리 옮김: 원고 위치에서 본문 단락 n개 앞(−)·뒤(+)로. Word 는 띄운 것을 뒤로 미뤄 두지 못해서,
+# 매인 단락이 단 아래에 놓여 그림이 그 단에 안 들어가면 단락째 다음 단으로 넘어가 앞 단 아래가 빈다(87 [4][5][6]).
+# 그 단락보다 한두 단락 앞에 매면 그림이 그 단 위로 가고 본문이 아래를 채운다. 값은 조판 결과를 보고 정한다(--shift 로 시험).
+# 10-18 2회차 값(그때 원고 기준). 원고가 바뀌면 다시 맞춘다: 조립 → export_pdf → --report 로 단 아래 빈 곳과 그림·표 자리를 보고
+# --shift 로 시험. 요령: 단폭 그림이 다음 단 머리로 넘어가 앞 단 아래가 비면 그 그림을 −1, −2.
+# 전폭 표는 매인 단락이 오른쪽 단에 놓이면 그 쪽 위에 못 가고 다음 쪽으로 단락째 넘어가므로, 매인 단락이 왼쪽 단에 오도록 앞(−)이나 뒤(+)로.
+# 절 제목 바로 뒤에는 두지 말 것(제목의 '다음 문단과 함께'가 띄운 표에 걸려 제목만 다음 쪽으로 감).
+FLOAT_SHIFT = {("tbl", 3): -3, ("tbl", 6): -1, ("fig", 9): -1}
+
+def apply_shift(blocks, shift):
+    """("fig"|"tbl", 번호) → n. 그림·표가 아닌 블록(단락·절 제목·식) n개를 건너 앞(−)·뒤(+)로 옮긴다."""
+    out = list(blocks)
+    for (kind, n), d in shift.items():
+        i = next((k for k, (kk, v) in enumerate(out) if kk == kind and v["n"] == n), None)
+        if i is None or not d: continue
+        item = out.pop(i); j = i; cnt = 0
+        while cnt < abs(d) and (j > 0 if d < 0 else j < len(out)):
+            if d < 0: j -= 1; cnt += out[j][0] not in ("fig", "tbl")
+            else: cnt += out[j][0] not in ("fig", "tbl"); j += 1
+        out.insert(j, item)
+    return out
+
 def spacer(keep=False, h=80):
     p = _el("w:p"); ppr = _el("w:pPr", p)
     if keep: _el("w:keepNext", ppr)
     _el("w:spacing", ppr, before=0, after=0, line=h, lineRule="exact")
     rp = _el("w:rPr", ppr); _el("w:sz", rp, val=4); _el("w:szCs", rp, val=4)
     return p
+
+NBSP = "\u00a0"
+def alg_keep(txt):
+    """대입 하나가 두 줄로 갈리지 않게(87 [16]): '; '로 나뉜 문장 가운데 짧은 것(16자 이하, 예: "Q ← Q ∖ {j}")은
+    낱말 사이를 줄 나눔 없는 공백으로 묶는다. 줄은 '; ' 뒤에서 바뀐다."""
+    parts = txt.split("; ")
+    return "; ".join(x.replace(" ", NBSP) if len(x) <= 16 else x for x in parts)
 
 def alg_elem(T, lines):
     """알고리즘 → 한 칸짜리 표(위·아래 괘선, v1 Algorithm 1 상자와 같은 1pt 선). 89 [5]:
@@ -367,14 +450,15 @@ def alg_elem(T, lines):
     for side in ("top", "bottom"): _el("w:" + side, b, val="single", sz=8, space=0, color="000000")
     _el("w:tblLayout", pr, type="fixed")
     mar = _el("w:tblCellMar", pr)
-    for side, w in (("top", 50), ("left", 40), ("bottom", 50), ("right", 40)): _el("w:" + side, mar, w=w, type="dxa")
+    for side, w in (("top", 50), ("left", 20), ("bottom", 50), ("right", 20)): _el("w:" + side, mar, w=w, type="dxa")
     _el("w:tblLook", pr, val="0000")
     _el("w:gridCol", _el("w:tblGrid", tbl), w=ALG_W)
     tr = _el("w:tr", tbl); _el("w:cantSplit", _el("w:trPr", tr))
     tc = _el("w:tc", tr); _el("w:tcW", _el("w:tcPr", tc), w=ALG_W, type="dxa")
     base = _el("w:rPr"); _el("w:sz", base, val=ALG_SZ); _el("w:szCs", base, val=ALG_SZ)
     bold = copy.deepcopy(base); bold.insert(0, _el("w:b"))
-    NUM_TAB, STEP = 200, 170                # 줄 번호 오른쪽 끝 10pt, 들여쓰기 한 단 8.5pt
+    # 줄 번호 오른쪽 끝 9pt("10:" 7pt 폭 8.9pt), 번호와 본문 사이 3pt, 들여쓰기 한 단 6.5pt(87 [16]: 10행을 한 줄에 — 전에는 10/5/8.5pt)
+    NUM_TAB, GAP, STEP = 180, 60, 130
     def para(left=0, hang=0, tabs=(), bottom=False):
         p = _el("w:p", tc); ppr = _el("w:pPr", p)
         _el("w:keepNext", ppr); _el("w:keepLines", ppr)
@@ -383,22 +467,29 @@ def alg_elem(T, lines):
         if tabs:
             tb = _el("w:tabs", ppr)
             for kind, pos in tabs: _el("w:tab", tb, val=kind, pos=pos)
-        _el("w:spacing", ppr, before=0, after=0, line=190, lineRule="exact")   # 9.5pt
+        _el("w:spacing", ppr, before=0, after=0, line=180, lineRule="exact")   # 9pt(7pt 글자)
         _el("w:ind", ppr, left=left, hanging=hang)
         _el("w:jc", ppr, val="left")
         return p
     def tab_run(): r = _el("w:r"); r.append(copy.deepcopy(base)); _el("w:tab", r); return r
+    kr = next((ln.strip() for ln in lines if ln.strip().startswith("알고리즘 ")), None)
+    lines = [ln for ln in lines if not ln.strip().startswith("알고리즘 ")]
+    def title(p, txt):                                       # "Algorithm 1  제목" — 번호는 굵게, 제목은 보통(v1 꼴: 번호 뒤 두 칸)
+        mm = re.match(r"^((?:Algorithm|알고리즘) \d+)(.*)$", txt)
+        p.append(make_run(mm.group(1) if mm else txt, bold))
+        if mm and mm.group(2): p.append(make_run(mm.group(2), base))
     for k, ln in enumerate(lines):
         m = re.match(r"^\s*(\d+):(\s*)(.*)$", ln)
-        if k == 0:                                           # "Algorithm 1  제목" — 머리 줄, 아래 가는 선
-            p = para(bottom=True); mm = re.match(r"^(Algorithm \d+)(.*)$", ln.strip())
-            p.append(make_run(mm.group(1) if mm else ln.strip(), bold))
-            if mm and mm.group(2): p.append(make_run(mm.group(2), base))
+        if k == 0:                                           # 머리: 국문 제목 줄 + 영문 제목 줄(그림·표 캡션처럼 국문 먼저), 아래 가는 선
+            mm = re.match(r"^Algorithm (\d+)", ln.strip())
+            if kr is None and mm and int(mm.group(1)) in ALG_KR: kr = f"알고리즘 {mm.group(1)}  {ALG_KR[int(mm.group(1))]}"
+            if kr: title(para(), kr)
+            title(para(bottom=True), ln.strip())
         elif m:                                              # " 9:     본문" — 번호는 오른쪽 탭, 본문은 깊이만큼
-            depth = max(0, (len(m.group(2)) - 1) // 2); c = NUM_TAB + 100 + depth * STEP
+            depth = max(0, (len(m.group(2)) - 1) // 2); c = NUM_TAB + GAP + depth * STEP
             p = para(left=c + STEP, hang=c + STEP, tabs=(("right", NUM_TAB), ("left", c)))
             p.append(tab_run()); p.append(make_run(m.group(1) + ":", base)); p.append(tab_run())
-            for r in math_runs(m.group(3).strip(), base, bare=True): p.append(r)
+            for r in math_runs(alg_keep(m.group(3).strip()), base, bare=True): p.append(r)
         else:                                                # Input: / Output:
             mm = re.match(r"^(\w+:)\s*(.*)$", ln.strip())
             p = para(left=STEP * 2, hang=STEP * 2)
@@ -418,9 +509,13 @@ SYM_RE = re.compile(r"(?<![A-Za-z0-9가-힣_^])([A-Za-zα-ωΑ-Ω℧ℓ][\u0302\
                     r"(?:\^(?:\{([^{}]{1,8})\}|(\([a-z]\)|[A-Za-z0-9α-ω]{1,3})))?(?![A-Za-z0-9_])")   # 뒤에 한글 조사가 바로 붙어도("d_j다") 잡는다
 BARE_RE = re.compile(r"(?<![A-Za-z0-9α-ωΑ-Ω._/@%\-])([A-Za-zα-ωΑ-Ω])(?![A-Za-z0-9α-ωΑ-Ω._/@\-])")
 STAR_RE = re.compile(r"(?<![A-Za-z0-9])([A-Za-zα-ω])\*")                      # 알고리즘의 α* (위첨자 *)
+# 영문 단락(영문 캡션·표 칸·영문 초록)의 그리스 낱글자: 본문과 같은 수식 이탤릭으로(87 [20]: 표·캡션의 α 가 Times 직립이었다).
+# 라틴 낱글자는 영문에서 낱말과 가릴 수 없어 그대로 둔다. "Fixed-α" 처럼 붙임표 뒤도 잡는다.
+GREEK_RE = re.compile(r"(?<![A-Za-z0-9α-ωΑ-Ω._/@%])([α-ωΑ-Ω])(?![A-Za-z0-9α-ωΑ-Ω_])")
+PANEL_RE = re.compile(r"(?:^|(?<=[\s(\d]))\(([b-h])\)")                           # 그림 칸 이름 "(b)", "그림 9(b)" — 변수가 아니다(87 [13] 나)
 UPRIGHT = {"cap", "def", "max", "min", "Σ", "*"}
 
-def _math_spans(text, bare=False):
+def _math_spans(text, bare=False, greek=False):
     """(시작, 끝, 밑, 첨자, 위첨자) 목록. 첨자/위첨자 없는 낱글자는 한국어 문장에서만(bare=True 면 늘 — 알고리즘)."""
     spans = []
     for m in SYM_RE.finditer(text):
@@ -434,10 +529,15 @@ def _math_spans(text, bare=False):
             if m.start() not in taken:
                 spans.append((m.start(), m.end(), m.group(1), "", "*")); taken |= set(range(m.start(), m.end()))
     korean = sum(1 for c in text if "가" <= c <= "힣") / max(1, len(text))
+    panel = {m.start(1) for m in PANEL_RE.finditer(text)} if not bare else set()
     if bare or (korean >= 0.25 and "@" not in text):
         for m in BARE_RE.finditer(text):
-            if m.start() not in taken and m.group(1) not in ("a",):
-                spans.append((m.start(), m.end(), m.group(1), "", ""))
+            if m.start() not in taken and m.group(1) not in ("a",) and m.start() not in panel:
+                spans.append((m.start(), m.end(), m.group(1), "", "")); taken |= {m.start()}
+    if greek:
+        for m in GREEK_RE.finditer(text):
+            if m.start() not in taken:
+                spans.append((m.start(), m.end(), m.group(1), "", "")); taken |= {m.start()}
     return sorted(spans)
 
 def _rpr_math(base_rpr, vert=None, upright=False):
@@ -448,13 +548,13 @@ def _rpr_math(base_rpr, vert=None, upright=False):
     if vert: v = etree.Element(qn("w:vertAlign")); v.set(qn("w:val"), vert); c.append(v)
     return c
 
-def math_runs(text, base_rpr, bare=False):
+def math_runs(text, base_rpr, bare=False, greek=False, spans=None):
     """글 한 줄 → run 목록(기호는 Cambria Math 이탤릭·첨자). 본문 mathify 와 알고리즘이 같이 쓴다."""
     out = []
     def add(txt, rpr):
         if txt: out.append(make_run(txt, rpr))
     last = 0
-    for a, b, base, sub, sup in _math_spans(text, bare=bare):
+    for a, b, base, sub, sup in (spans if spans is not None else _math_spans(text, bare=bare, greek=greek)):
         add(text[last:a], base_rpr)
         add(base, _rpr_math(base_rpr, upright=(base in UPRIGHT)))
         if sub: add(sub, _rpr_math(base_rpr, "subscript", upright=(sub in UPRIGHT)))
@@ -472,13 +572,19 @@ def mathify_paragraph(p):
     if not runs: return 0
     if any(f.get(qn("w:ascii")) == MATH for f in p.iter(qn("w:rFonts"))): return 0   # 이미 기호를 조판한 단락(알고리즘)
     text = "".join(t.text or "" for t in p.iter(qn("w:t")))
-    if text.startswith(("Algorithm", "[", "Fig.", "Table")) or re.match(r"^\[\d+\]", text): return 0
-    spans = _math_spans(text)
-    if not spans: return 0
-    base_rpr = runs[0].find(qn("w:rPr"))
-    for r in runs: p.remove(r)
-    for r in math_runs(text, base_rpr): p.append(r)
-    return len(spans)
+    if re.match(r"^\[\d+\]", text): return 0                                         # 참고문헌
+    # 영문 캡션(Fig./Table)·표 칸·영문 초록도 그리스 낱글자를 수식 서체로(87 [20]). 라틴 낱글자는 한국어 단락에서만(_math_spans)
+    n = 0
+    for r in runs:                                     # run 마다 따로 — 초록처럼 굵은 머리말 run 의 서식을 지키려고
+        t = r.find(qn("w:t"))
+        if t is None or not t.text or any(ch.tag not in (qn("w:rPr"), qn("w:t")) for ch in r): continue   # 탭·줄바꿈이 든 run 은 두기
+        txt = t.text
+        spans = _math_spans(txt, greek=True)
+        if not spans: continue
+        new = math_runs(txt, r.find(qn("w:rPr")), spans=spans)
+        for x in new: r.addprevious(x)
+        p.remove(r); n += len(spans)
+    return n
 
 def mathify_doc(doc):
     n = 0
@@ -487,8 +593,11 @@ def mathify_doc(doc):
 
 
 # ── 조립 ──────────────────────────────────────────────────────────────────
-def build(src, out):
+def build(src, out, shift=None):
     head, blocks = parse(src)
+    sh = dict(FLOAT_SHIFT); sh.update(shift or {})
+    if FLOAT_ALL and sh:
+        blocks = apply_shift(blocks, sh); print("  자리 옮김:", ", ".join(f"{'그림' if k == 'fig' else '표'} {n} {d:+d}" for (k, n), d in sh.items() if d))
     doc = docx.Document(V1); T = templates(doc); body = doc.element.body
     final_sect = body.find(qn("w:sectPr"))
     for e in list(body):
@@ -501,10 +610,11 @@ def build(src, out):
     tb = T["title_block"]
     add(para_from(tb[0], head["제목"], keep_sect=True)); add(para_from(tb[1], head["Title"], keep_sect=True))
     for e in tb[2:5]: add(copy.deepcopy(e))
-    add(lead_para(tb[5], "초록", head["초록"])); add(para_from(tb[6], "주제어: " + head["주제어"], keep_sect=True))
-    add(lead_para(tb[7], "Abstract", head["Abstract"])); add(para_from(tb[8], "Keywords: " + head["Keywords"], keep_sect=True))
+    # 초록도 문장부호 내밀기를 끈다 — 영문 초록 "64.44–71.93%" 의 %가 오른쪽 여백으로 6pt 나갔다(2회차 조립)
+    add(no_overflow(lead_para(tb[5], "초록", head["초록"]))); add(para_from(tb[6], "주제어: " + head["주제어"], keep_sect=True))
+    add(no_overflow(lead_para(tb[7], "Abstract", head["Abstract"]))); add(para_from(tb[8], "Keywords: " + head["Keywords"], keep_sect=True))
     prev_p = None
-    for kind, val in blocks:
+    for k, (kind, val) in enumerate(blocks):
         if kind == "h1": add(para_from(T["h1"], val))
         elif kind == "h2": add(para_from(T["h2"], val))
         elif kind == "p": add(no_overflow(para_from(T["body"], val)))
@@ -512,16 +622,25 @@ def build(src, out):
         elif kind == "alg":                                # 상자 위·아래 4pt 띄움(빈 단락, 높이 4pt) — 본문이 괘선에 붙지 않게
             add(spacer(keep=True)); add(alg_elem(T, val)); add(spacer())
         elif kind == "fig":
-            fp, path, width, kr, en = figure_elems(T, val, prev_p)
-            add(fp); pictures.append((fp, path, width)); add(kr); add(en)
-            if val["width"] == "단폭" and FLOAT_FIGS: float_top(fp, kr, en)
+            fp, path, width, kr, en = figure_elems(T, val, None if FLOAT_ALL else prev_p)
+            pictures.append((fp, path, width))
+            if FLOAT_ALL:
+                if val["width"] == "전폭": strip_sect(en)
+                add(float_box([fp, kr, en], full=(val["width"] == "전폭")))
+                if k + 1 < len(blocks) and blocks[k + 1][0] in ("fig", "tbl", "alg"): add(spacer(h=20))   # 이웃 표와 한 표로 합쳐지지 않게
+            else:
+                add(fp); add(kr); add(en)
+                if val["width"] == "단폭" and FLOAT_FIGS: float_top(fp, kr, en)
         elif kind == "tbl":
             ncol = max(len(r) for r in val["rows"])
             if not val["explicit"] and ncol >= 5:      # 표기 없고 열 5개 이상: 단폭에 들어가면 단폭, 아니면 전폭(89 [13]; 전에는 무조건 전폭)
                 fits, need = table_fits_column(val["rows"]); val["width"] = "단폭" if fits else "전폭"
                 print(f"  표 {val['n']}: 열 {ncol}개, 어림 폭 {need:.0f}pt → {val['width']}")
             kr, en, t = table_elems(T, val, full=(val["width"] == "전폭"))
-            if val["width"] == "전폭":                      # 전폭 표: 앞 단락에서 2단 섹션을 끝내고, 표 뒤 빈 단락이 1단 섹션을 끝낸다
+            if FLOAT_ALL:
+                add(float_box([kr, en, t], full=(val["width"] == "전폭")))
+                if k + 1 < len(blocks) and blocks[k + 1][0] in ("fig", "tbl", "alg"): add(spacer(h=20))   # 이웃 표와 한 표로 합쳐지지 않게
+            elif val["width"] == "전폭":                      # 전폭 표: 앞 단락에서 2단 섹션을 끝내고, 표 뒤 빈 단락이 1단 섹션을 끝낸다
                 if prev_p is not None: add_sect(prev_p, T["sect_body"])
                 add(kr); add(en); add(t)
                 tail = para_from(T["body"], ""); add_sect(tail, T["sect_fig"]); add(tail)
@@ -529,7 +648,7 @@ def build(src, out):
                 add(kr); add(en); add(t); add(spacer(h=120))
         elif kind == "refs":
             add(para_from(T["ref_h"], "참고문헌"))
-            for item in val: add(para_from(T["ref_item"], item))
+            for item in val: add(no_overflow(para_from(T["ref_item"], item)))
     for fp, path, width in pictures:                       # 그림은 문단이 문서에 붙은 뒤 넣는다(관계 id 때문)
         Paragraph(fp, doc._body).add_run().add_picture(path, width=Pt(width))
     n_math = mathify_doc(doc)
@@ -538,6 +657,32 @@ def build(src, out):
     n_p = len(body.findall(qn("w:p"))); n_t = len(body.findall(qn("w:tbl")))
     print(f"wrote {out}: 문단 {n_p}, 표 {n_t}, 그림 {len(pictures)}, 식 {sum(1 for k, _ in blocks if k == 'eq')}, 참고문헌 {sum(len(v) for k, v in blocks if k == 'refs')}")
 
+def layout_report(pdf):
+    """내보낸 PDF 에서 단 아래 빈 곳(40pt 넘는 것)과 그림·표의 자리(국문 캡션 첫 줄)를 적는다 — FLOAT_SHIFT 를 맞출 때 본다."""
+    import pymupdf
+    d = pymupdf.open(pdf); MID, BOT = 258.6, 652
+    print(f"{pdf}: {len(d)}쪽")
+    for i, pg in enumerate(d):
+        rs = [pymupdf.Rect(b["bbox"]) for b in pg.get_text("dict")["blocks"]] + [x["rect"] for x in pg.get_drawings()]
+        rs = [r for r in rs if 40 < r.y0 and r.y1 < 680]
+        if not rs or i == 0 or i == len(d) - 1: continue
+        for col, (x0, x1) in (("L", (50, MID)), ("R", (MID, 470))):
+            ys = [r.y1 for r in rs if r.x0 < x1 - 2 and r.x1 > x0 + 2]
+            if ys and BOT - max(ys) > 40: print(f"  {i + 1}쪽 {col}단 아래 {BOT - max(ys):.0f}pt 빔")
+        for b in pg.get_text("dict")["blocks"]:
+            for l in b.get("lines", [])[:1]:
+                t = "".join(x["text"] for x in l["spans"]).strip()
+                m = re.match(r"^(그림|표) (\d+) ", t)
+                if m and l["bbox"][0] < 470: print(f"    {m.group(1)} {m.group(2)}: {i + 1}쪽 {'L' if l['bbox'][0] < MID else 'R'} y{l['bbox'][1]:.0f}")
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(); ap.add_argument("--in", dest="src", default=os.path.join(DRAFT, "99_원고.txt"))
-    ap.add_argument("--out", default=os.path.join(ROOT, "paper", "CAST_JOK_v2.docx")); a = ap.parse_args(); build(a.src, a.out)
+    ap.add_argument("--out", default=os.path.join(ROOT, "paper", "CAST_JOK_v2.docx"))
+    ap.add_argument("--shift", default="", help="자리 옮김 시험: fig5=-1,tbl3=1 (FLOAT_SHIFT 위에 덮어씀)")
+    ap.add_argument("--report", metavar="PDF", help="조립하지 않고 내보낸 PDF 의 빈 곳·그림표 자리만 적는다")
+    a = ap.parse_args()
+    if a.report: layout_report(a.report); sys.exit()
+    sh = {}
+    for x in filter(None, a.shift.split(",")):
+        m = re.match(r"^(fig|tbl)(\d+)=([+-]?\d+)$", x.strip()); sh[(m.group(1), int(m.group(2)))] = int(m.group(3))
+    build(a.src, a.out, sh)

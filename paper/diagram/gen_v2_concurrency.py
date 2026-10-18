@@ -41,9 +41,9 @@ def main():
     fig, ax = plt.subplots(figsize=(215 / 72.0, 184 / 72.0), dpi=500)
     ax.fill_between(xa, ya, color="#c8c8c8", lw=0, zorder=1, label="Capacity ignored")
     ax.plot(xb, yb, color=INK, lw=0.8, zorder=3, label="CAST, knee")   # 10-18(89 점검 [10]): 계열 이름을 표 3·7 과 같게 "CAST, knee"
-    ax.axhline(cap, color=INK, lw=0.6, ls=(0, (1, 1)))
-    ax.text(win_hi - win_lo, cap + 0.8, f"Ceiling {cap}", ha="right", va="bottom", fontsize=7.7,
-            bbox=dict(facecolor="white", edgecolor="none", pad=1.0))
+    ax.axhline(cap, color=INK, lw=1.0, ls=(0, (4, 1.6)), zorder=2, label=f"Ceiling {cap}")   # 10-18(87 점검2 [12]): 점선 → 그림 6(gen_v2_fig7.py) 상한 선과 같은 파선(lw 1.0, 4/1.6)
+    # 10-18(87 점검2 [12]): 선 위 "Ceiling 17" 글자를 범례 셋째 항목으로 옮겼다. 선 위에 두면 어디든 회색 봉우리(용량 무시)를
+    # 흰 바탕이 가리거나(오른쪽 끝: day 189.8, 왼쪽 끝: day 184.7 의 18~21 구간), 바탕을 빼면 격자 20 이 글자를 지난다(렌더 확인).
     pa = max(ya); ia = ya.index(pa)
     ax.annotate(f"{pa}", (xa[ia], pa), textcoords="offset points", xytext=(-4, -16),
                 fontsize=8.2, fontweight="bold", ha="right", va="top")
@@ -58,7 +58,11 @@ def main():
     for sp in ("left", "bottom"):
         ax.spines[sp].set_linewidth(0.7)
     ax.grid(axis="y", color="#dddddd", lw=0.4)
-    ax.legend(loc="upper right", fontsize=7.1, frameon=False, handlelength=2.2)
+    # 10-18(87 점검2 [12]): 범례 오른쪽 위 → 왼쪽 위. 셋째 항목(Ceiling 17)이 생기며 범례 표식이 day 187.85 의 63 봉우리와
+    # "63" 글자에 닿았다(오른쪽 위에서도 첫 두 표식이 봉우리를 지났다). 왼쪽 위(184~186, 45 이상)는 비어 있다.
+    # 흰 바탕(테두리 없음): 격자 60 이 "CAST, knee" 글자 윗부분을 지났다(렌더 확인) — 가리는 것은 격자뿐
+    leg = ax.legend(loc="upper left", fontsize=7.1, frameon=True, fancybox=False, handlelength=2.2, borderpad=0.2)
+    leg.get_frame().set_facecolor("white"); leg.get_frame().set_edgecolor("none"); leg.get_frame().set_alpha(1.0)
     fig.tight_layout(pad=0.5)
     out = os.path.join(_HERE, "v2_fig9_concurrency.png")
     fig.savefig(out); fig.savefig(out.replace(".png", ".pdf"))

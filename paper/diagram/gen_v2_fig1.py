@@ -72,6 +72,19 @@ def sb(t, rest="", size=None):
     return f'<tspan font-size="{size}" dy="1.5"{st}>{t}</tspan><tspan dy="-1.5">{rest}</tspan>'
 
 
+SUB = 6.4   # 10-18(87 점검2 [8]): 첨자 최소 6.3 pt(전폭 배율 0.995 라 인쇄도 6.3 pt 이상). 첨자가 붙는 수식 라벨은 FT(8) 로 키워
+            # 첨자/본 글자 비 0.8 을 지킨다 — FN(6.5) 라벨에 6.4 첨자를 달면 같은 크기라 첨자로 안 읽힌다.
+
+
+def subsup(sub, sup, size=SUB, dx_sub=1.0):
+    """아래첨자(글자, 기울임)와 위첨자를 같은 자리에 겹쳐 쌓는다 — 본문 Ĉ_r^(t) 꼴. 위첨자는 dx 로 아래첨자 시작점까지 되돌린다.
+    위첨자 괄호·숫자는 세우고 글자만 기울인다(본문 식과 같게)."""
+    m = f' font-family="{MATH}" font-style="italic"'
+    sup_inner = "".join(f'<tspan{m}>{c}</tspan>' if c.isalpha() else c for c in sup)
+    return (f'<tspan font-size="{size}" dy="2.0"{m}>{sub}</tspan>'
+            f'<tspan font-size="{size}" dx="-{dx_sub}" dy="-6.0">{sup_inner}</tspan><tspan dy="4.0"></tspan>')   # 렌더: dx 2.4 면 위첨자 "(" 가 Ĉ 의 갓에 닿았다
+
+
 def it(t):
     """수식 글자 — MATH 서체 기울임(모듈 설명 참조)."""
     return f'<tspan font-family="{MATH}" font-style="italic">{t}</tspan>'
@@ -237,7 +250,8 @@ def fig_architecture_v2():
     # "한 문제의 두 축"을 보인다. 아이콘은 v1 처럼 제목 왼쪽. 테두리 48~112, 상자 두 개 세로 쌓기.
     # 테두리는 회색 가는 실선(점선은 이 그림에서 "장부 되먹임" 뜻으로 이미 쓰임 — 92 지적)
     L += [box(JX, 48, JW, 64, sw=1.0, stroke="#bfbfbf"),
-          rtxt(JC, 56.5, FN, f'One LP per slot · knee {it("α")}', "One LP per slot · knee α", JX + JW - 3, anchor="middle"),
+          # 10-18(87 점검2 [20]): α 를 기본 서체 직립으로 — 그림 3~11(matplotlib, Apple SD Gothic Neo 직립 α)과 같은 모양
+          rtxt(JC, 56.5, FN, 'One LP per slot · knee α', "One LP per slot · knee α", JX + JW - 3, anchor="middle"),
           box(JX + 5, 60, JW - 10, 23, sw=0.8),
           ic_globe(JX + 9, 65.5, 0.50),
           txt(JX + 23, 69, "Load balancer", bold=True, size=FT, xmax=JX + JW - 6),
@@ -255,7 +269,8 @@ def fig_architecture_v2():
 
     # 예측 → 24 h 곡선 → 배정 (v1 의 아래 길 그대로; Ĉ(t) → Spatial 직행은 없어짐)
     L += [arr(142, 82, 142, 97, 1.0),
-          rtxt(146, 92, FN, f'{it("Ĉ")}{sb("r", "(")}{it("t")})', "Ĉr(t)", 190),
+          # 10-18(87 점검2 [8]): Ĉ_r(t) → 본문·식 (8) 과 같은 Ĉ_r^(t) (위첨자 (t) = 슬롯 t 에 발행된 예측). 8 pt, 첨자 6.4 pt
+          rtxt(146, 92, FT, f'{it("Ĉ")}{subsup("r", "(t)")}', "Ĉr(t)", 190),
           '<rect x="122" y="98" width="42" height="24" fill="#fff"/>',
           box(124, 99, 38, 16, sw=0.8), spark(127, 101, 32, 12),
           dot(143, 113, 1.6),
@@ -265,7 +280,9 @@ def fig_architecture_v2():
     # 되먹임 ① 점선: 장부의 남은 용량 n_r(τ) — v1 의 a_r(t) 고리 자리(상자 오른쪽)
     L += [path(f"M{JX + JW},84 L312,84 L312,96 L{JX + JW},96", sw=0.9, dash="3 1.8"),
           # 라벨은 고리 위 테두리 바깥 — "ledger" 단어는 캡션이 설명하므로 뺀다(글자 최소)
-          rtxt(315, 81, FN, f'{it("n")}{sb("r", "(")}{it("τ")})', "nr(τ)", anchor="end")]
+          # 10-18(87 점검2 [8]): 첨자 5.2 → 6.4 pt, 라벨 6.5 → 8 pt(첨자 비 0.8)
+          # 렌더(400%): 8 pt 로는 회색 테두리(300)·CAST 테두리(316) 사이 틈이 0.5~0.7 pt 라 7.5 pt 로, 두 테두리 가운데(307.6)에 맞춘다
+          rtxt(307.6, 81, 7.5, f'{it("n")}{sb("r", "(", size=6.3)}{it("τ")})', "nr(τ)", anchor="middle")]
 
     # 되먹임 ② 굵은 자기 고리: i ≥ 1 작업은 확정하지 않고 다음 슬롯 LP 로 (상자 아래)
     L += [path(f"M{JX + JW - 18},112 L{JX + JW - 18},126 L{JX + 20},126 L{JX + 20},113.5", sw=1.8),
@@ -276,10 +293,10 @@ def fig_architecture_v2():
     # 출력선은 점선 고리(100~114) 아래 y=126 에서 곧장 오른쪽으로 뺀다(v1 과 같은 이유).
     L += [txt(402, 13, "Execution (region, time)", anchor="end", size=FN, xmax=403)]
     RX, RS = 338, 0.42
-    rows = [(20, "1"), (44, "2"), (68, "3"), (106, "n")]
+    rows = [(20, "1"), (44, "2"), (68, "3"), (106, "8")]   # 10-18(87 점검2 [8]): R_n → R_8 — 리전은 여덟이고 n 은 n_r(τ) 와 겹친다
     for ry, name in rows:
         L.append(ic_rack(RX, ry, RS))
-        L.append(rtxt(RX + 30 * RS + 5, ry + 34 * RS * 0.72, FT, "R" + sb(name, size=6.0), "R" + name, bold=True))
+        L.append(rtxt(RX + 30 * RS + 5, ry + 34 * RS * 0.72, FT, "R" + sb(name, size=SUB), "R" + name, bold=True))   # 첨자 6.0 → 6.4 pt
     cx = RX + 30 * RS / 2
     L += [dot(cx, 90, 1.3), dot(cx, 95.5, 1.3), dot(cx, 101, 1.3)]
     ytop = 20 + 34 * RS / 2
@@ -366,7 +383,7 @@ def main():
     try:
         from PIL import Image
         im = Image.open(full)
-        x0, y0, x1, y1 = 196, 0, 336, 150      # 배정 상자 + 되먹임 둘 + 지연 입력 (pt)
+        x0, y0, x1, y1 = 196, 0, 336, min(150, h)      # 배정 상자 + 되먹임 둘 + 지연 입력 (pt). 10-18: 캔버스 138 아래 검은 띠가 잘려 들어가 h 로 자름
         crop = im.crop((int(x0 * z), int(y0 * z), int(x1 * z), int(y1 * z)))
         zp = os.path.join(HERE, NAME + "_zoom.png")
         crop.save(zp)

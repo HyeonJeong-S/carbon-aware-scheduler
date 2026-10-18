@@ -89,6 +89,15 @@ def main():
         # 10-18(89 점검 [3](a)): 본문의 예(맨 아래 행)만 굵은 테두리 1.4 — 캡션 "굵은 테두리가 본문의 예"
         a3.barh(ri, min(x1, x_hi) - max(x0, x_lo), left=max(x0, x_lo), height=0.62,
                 facecolor=fc, edgecolor=INK, lw=1.4 if j["id"] == highlight_id else 0.6, zorder=3)
+        # 10-18(87 점검2 [1]): 용량 무시가 원하던 시각(점선 상자)을 9건 모두에 — 자료에 tau_unconstrained 가 없거나 창 밖(전날)이면 생략.
+        # 흰 채움으로 레일을 끊어 이중선이 아니라 상자로 보이게 하고, 실행 상자(zorder 3)보다 뒤(2.5)·얇게(0.5) 둔다 —
+        # 같은 행에서 두 상자가 겹치면(16~19시대) 실행 상자가 위에 온다. 예시 행은 굵게(1.4) 그대로.
+        tu = j.get("tau_unconstrained")
+        if tu is not None and tu + j["dur"] > x_lo and tu < x_hi:
+            hl = j["id"] == highlight_id
+            a3.barh(ri, min(tu + j["dur"], x_hi) - max(tu, x_lo), left=max(tu, x_lo), height=0.62,
+                    facecolor="white", edgecolor=INK, lw=1.4 if hl else 0.5,
+                    ls=(0, (1.6, 1.0)) if hl else (0, (2.4, 1.6)), zorder=2.5)
         if forced and x0 < 20 < x1 and (forced_end is None or x1 > forced_end):
             forced_end, forced_row, forced_x0 = x1, ri, x0
         if highlight_job is not None and j["id"] == highlight_id:
@@ -97,8 +106,7 @@ def main():
         hj, hr = highlight_job, highlight_row
         wx0, wx1 = hj["tau_unconstrained"], hj["tau_unconstrained"] + hj["dur"]
         ax0, ax1 = hj["tau"], hj["tau"] + hj["dur"]
-        a3.barh(hr, min(wx1, x_hi) - max(wx0, x_lo), left=max(wx0, x_lo), height=0.62,
-                facecolor="none", edgecolor=INK, lw=1.4, ls=(0, (1.6, 1.0)), zorder=4)   # 10-18: 본문의 예 — 굵게(점선 무늬는 lw 에 비례해 늘어나므로 1.6/1.0)
+        # 예시 행의 점선 상자는 위 행 반복에서 굵게(1.4, 점선 무늬 1.6/1.0 — lw 에 비례해 늘어남) 그렸다.
         box_cx = (max(wx0, x_lo) + min(wx1, x_hi)) / 2
         bar_cx = (max(ax0, x_lo) + min(ax1, x_hi)) / 2
         pct = 100 * (hj["rate_actual"] / hj["rate_unconstrained"] - 1)
@@ -124,7 +132,7 @@ def main():
     full = occ >= cap
     a2.bar(t[~full], occ[~full], width=0.74, facecolor="white", edgecolor=INK, lw=0.7)
     a2.bar(t[full], occ[full], width=0.74, facecolor=EXCEPT_GRAY, edgecolor=INK, lw=0.7)
-    a2.axhline(cap, color=INK, lw=1.0, ls=(0, (4, 1.6)))
+    a2.axhline(cap, color=INK, lw=1.0, ls=(0, (4, 1.6)))   # 그림 7(gen_v2_concurrency.py)의 상한 선과 같은 파선(87 점검2 [12])
     # 10-18(89 점검 [18]): 흰 bbox 가 굵은 상한 점선 위쪽 절반을 덮었다 → bbox 를 빼고 선에서 조금 띄운다
     a2.text(11.5, cap + 1.5, f"Ceiling {cap}", ha="left", va="bottom", fontsize=NOTE, zorder=5)
     YTOP2 = cap * 1.55   # 10-18: 1.4 → 1.55 — bbox 를 뺀 "Ceiling 17" 을 선 위로 띄우니 범례 글자에 닿아 위 여백을 늘렸다(렌더 확인)

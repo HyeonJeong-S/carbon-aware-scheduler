@@ -85,15 +85,19 @@ def main():
                 lw=0.25 + 2.3 * (keep / mx), alpha=0.9, zorder=1)
 
     # 도착 리전 — 받은 양에 비례한 사각형
+    # 10-18(87 점검2 [10]): 최소 높이 0.055 를 빼고 높이를 몫에 정비례로 — 최소 높이 때문에 0.1%(독일)·0.7%·1.6%·2.4%·5.9%
+    # 상자가 거의 같은 높이로 보였다. 가장 큰 상자(프랑스 51.6%)를 HMAX 로 두고 나머지는 그 비율. 아주 작은 몫은 테두리 선만 남는다
+    # (독일 0.1% ≈ 0.1 pt — 납작한 선으로 보이는 것이 맞는 모습).
+    HMAX = 0.28
     for j in range(n):
-        h = 0.055 + 0.20 * (recv[j] / recv.max())
+        h = HMAX * (recv[j] / recv.max())
         ax.add_patch(plt.Rectangle((xs[j] - 0.34, yb - h), 0.68, h,
                                    facecolor=INK if recv[j] > tot * 0.2 else "white",
                                    edgecolor=INK, lw=0.8, zorder=4))
         # 2026-09-24: 라벨을 상자마다 다른 높이에 두니 키 큰 상자에서는 글자가
         # 상자 아래 테두리에 얹혔고, 검은 상자에서는 검은 글자가 묻혔다(지면 확인).
         # 가장 큰 상자보다 아래의 한 줄에 모두 맞춘다 — 열 위치가 상자를 가리킨다.
-        ax.text(xs[j], yb - 0.255 - 0.05, f"{recv[j]/tot*100:.0f}%", ha="center",
+        ax.text(xs[j], yb - HMAX - 0.05, f"{recv[j]/tot*100:.0f}%", ha="center",
                 va="top", fontsize=6.8,
                 fontweight="bold" if recv[j] > tot * 0.2 else "normal")
 
@@ -115,7 +119,7 @@ def main():
     ax.text(-0.85, yt + 0.02, "Origin", fontsize=6.8, ha="right", va="bottom")
     ax.text(-0.85, yb - 0.02, "Destination", fontsize=6.8, ha="right", va="top")
     ax.set_xlim(-1.15, n + 0.15)
-    ax.set_ylim(-0.46, 1.62)
+    ax.set_ylim(-0.49, 1.62)   # 10-18: 상자 최대 높이 0.255 → 0.28 이라 아래 % 줄을 0.03 내렸다
     ax.axis("off")
     # 2026-09-24 b6 배분(그림 10장 통합 점검): "선 굵기 = 옮긴 작업 수"는 캡션
     # ("선 굵기가 옮긴 작업 수다")과 그대로 겹쳤다 — 뺀다. 회색 세로선·아래

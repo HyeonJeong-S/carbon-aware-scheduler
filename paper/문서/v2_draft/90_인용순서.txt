@@ -12,25 +12,26 @@
  [8]  Bahreini 등, Caspian, MASCOTS 2024                          1장 3단락       (v1 [8])
  [9]  Zanotto 등, FGCS 2027                                       1장 3단락       신규
  [10] Feng 등, COAST, arXiv:2609.05443, 2026                     1장 5단락       신규(10-18 사용자 결정)
- [11] Wiesner 등, Let's Wait Awhile, Middleware'21 pp.260-272     2장 1단락       신규
- [12] Hanafy 등, CarbonScaler, POMACS 7(3) 2023                   2장 1단락       신규
- [13] Hanafy 등, GAIA (Going Green for Less Green), ASPLOS'24 pp.479-496   2장 1단락   신규
- [14] Xu 등, GREEN, NSDI'25 pp.999-1014                         2장 1단락       신규(10-18 사용자 결정)
- [15] Attenni 등, SUSCOM 2026 (accepted)                          2장 2단락       (v1 [9] 갱신)
- [16] Lechowicz 등, CarbonClipper, POMACS 9(1) 2025               2장 2단락       신규
- [17] Hall 등, IEEE TPWRS 2025                                    2장 2단락       신규
- [18] Maji 등, DACF, e-Energy 2022                                3.1             (v1 [13])
- [19] Schrijver, Theory of Linear and Integer Programming, 1986, Thm 19.1     3.3   신규
- [20] Hoffman & Kruskal, 1956                                     3.3             신규
- [21] Branke 등, Finding Knees in Multi-objective Optimization, PPSN VIII   3.4 (무릎점 정의)   신규
- [22] Zeleny, Compromise Programming, 1973                        3.4             신규
- [23] Electricity Maps API Documentation                          4.1             (v1 [10] 갱신)
- [24] Electricity Maps Methodology                                4.1             (v1 [11] 갱신)
- [25] Microsoft, Azure Network Round-Trip Latency Statistics      4.1             (v1 [12])
- [26] Cortez 등, Resource Central, SOSP'17                        4.1             신규
- [27] Reiss, Tumanov, Ganger, Katz, Kozuch, Heterogeneity and Dynamicity of Clouds at Scale: Google Trace Analysis, SoCC 2012   4.1 (등급 근거)   신규
- [28] Aslan, Mayers, Koomey, France, Electricity Intensity of Internet Data Transmission, J. Industrial Ecology   4.3 (전송 에너지, M10)   신규
- [29] Maji 등, CarbonCast, BuildSys 2022                          5장             (v1 [14])
+ [11] Han 등, 수요반응 동기화, J. Phys. Complexity 3(2) 2022   1장 5단락   신규(2회차)
+ [12] Wiesner 등, Let's Wait Awhile, Middleware'21 pp.260-272     2장 1단락       신규
+ [13] Hanafy 등, CarbonScaler, POMACS 7(3) 2023                   2장 1단락       신규
+ [14] Hanafy 등, GAIA (Going Green for Less Green), ASPLOS'24 pp.479-496   2장 1단락   신규
+ [15] Xu 등, GREEN, NSDI'25 pp.999-1014                         2장 1단락       신규(10-18 사용자 결정)
+ [16] Attenni 등, SUSCOM 2026 (accepted)                          2장 2단락       (v1 [9] 갱신)
+ [17] Lechowicz 등, CarbonClipper, POMACS 9(1) 2025               2장 2단락       신규
+ [18] Hall 등, IEEE TPWRS 2025                                    2장 2단락       신규
+ [19] Maji 등, DACF, e-Energy 2022                                3.1             (v1 [13])
+ [20] Schrijver, Theory of Linear and Integer Programming, 1986, Thm 19.1     3.3   신규
+ [21] Hoffman & Kruskal, 1956                                     3.3             신규
+ [22] Branke 등, Finding Knees in Multi-objective Optimization, PPSN VIII   3.4 (무릎점 정의)   신규
+ [23] Zeleny, Compromise Programming, 1973                        3.4             신규
+ [24] Electricity Maps API Documentation                          4.1             (v1 [10] 갱신)
+ [25] Electricity Maps Methodology                                4.1             (v1 [11] 갱신)
+ [26] Microsoft, Azure Network Round-Trip Latency Statistics      4.1             (v1 [12])
+ [27] Cortez 등, Resource Central, SOSP'17                        4.1             신규
+ [28] Reiss, Tumanov, Ganger, Katz, Kozuch, Heterogeneity and Dynamicity of Clouds at Scale: Google Trace Analysis, SoCC 2012   4.1 (등급 근거)   신규
+ [29] Aslan, Mayers, Koomey, France, Electricity Intensity of Internet Data Transmission, J. Industrial Ecology   4.3 (전송 에너지, M10)   신규
+ [30] Maji 등, CarbonCast, BuildSys 2022                          5장             (v1 [14])
 
 주의
  · 4.2~4.8 에 새 문헌이 들어가면 4.1 의 [23]~[26] 뒤, 5장 CarbonCast 앞에 끼고 CarbonCast 가 맨 끝으로 밀린다.

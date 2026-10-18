@@ -1,0 +1,131 @@
+86_그림수정_2회차 — 87_점검2_E그림조판 의 그림 항목 반영 (2026-10-18)
+고친 곳: paper/diagram/gen_v2_fig1.py · gen_v2_fig4.py · gen_v2_routing.py · gen_v2_fig7.py · gen_v2_concurrency.py · gen_v2_figs.py 만.
+원고(paper/문서/…)·실험 결과(scheduler/data/…)·build_v2_docx.py·gen_v2_data.py 는 손대지 않았다. 그림 2·3 그대로. 커밋 안 함.
+확인 방법: 그린 뒤 PNG(약 500 dpi, 단폭 그림은 원본 크기가 화면 400% 이상)를 PIL 로 부분 크롭(필요하면 1.4~1.5배 확대)해 직접 봤다.
+           겹침·잘림이 보이면 고치고 다시 봤다(아래 "렌더에서 걸려 고친 것").
+그림 안 숫자: 모든 그림이 같은 원자료를 그대로 읽는다. 새로 읽는 자료는 그림 8 의 × 두 점(stats.json)뿐.
+최소 글자(파일 기준): 모든 그림 6.3 pt 이상(그림 1 첨자 6.3~6.4, 나머지 그림 최소 6.6). 단폭 0.91배 인쇄 6.0 pt, 그림 1 은 0.995배.
+
+────────────────────────────────────────
+그림 1  v2_fig1_pipeline (gen_v2_fig1.py)  [8, 20]
+  바꾼 것
+    - 예측 라벨 Ĉ_r(t) → Ĉ_r^(t) (본문·식 (8) 꼴: 아래첨자 r 과 위첨자 (t) 를 같은 자리에 겹쳐 쌓음). 라벨 6.5 → 8 pt, 첨자 6.4 pt.
+    - n_r(τ) 라벨 6.5 → 7.5 pt, 첨자 r 5.2 → 6.3 pt. 회색 테두리(300 pt)와 CAST 테두리(316 pt) 가운데(307.6)에 맞춤.
+    - R_n → R_8, 첨자 6.0 → 6.4 pt.
+    - [20] "knee α" 의 α 를 Times 기울임 → 기본 서체(Apple SD Gothic Neo) 직립. 그림 3~11 의 α(matplotlib, 같은 서체 직립)와 같은 모양.
+      (ℓ, o, r, τ, Ĉ, n, i, C 같은 수식 변수는 그대로 기울임.)
+    - (부수) _zoom.png 크롭이 캔버스(138 pt) 아래로 넘어가 검은 띠가 찍히던 것을 캔버스 높이에서 자름(논문에는 안 쓰는 파일).
+  렌더에서 걸려 고친 것: 위첨자를 아래첨자 시작점까지 2.4 pt 되돌리니 "(" 가 Ĉ 의 갓에 닿아 1.0 pt 로. n_r(τ) 를 8 pt 로 하니
+    양쪽 테두리와 틈 0.5~0.7 pt 라 7.5 pt 로 줄이고 가운데 맞춤.
+  확인(400%): Ĉ_r^(t) 의 r·(t) 가 갓·화살표와 떨어짐, n_r(τ) 양쪽 테두리와 떨어짐, R_8 정상. 폭 검사 "전부 들어감". 그림 크기 404×138 pt 그대로.
+  "장부(ledger)" 라벨은 넣지 않았다(캡션에서 빼기로 함).
+
+그림 4  v2_fig4_slot (gen_v2_fig4.py)  [9]
+  바꾼 것
+    - i=0 의 ○(France 1.0, Korea 0.0)가 왼쪽 축선·눈금에 걸리던 것: 네 변 모두 같은 흰 여백(약 2.6 pt; 가로 −0.95~23.95, 세로 0.2 행)을
+      두었다. 왼쪽만 넓히면 흰 띠가 "0 gCO₂ 칸"처럼 읽히므로 액자 여백처럼 네 변 같게. 칸 위치·색은 그대로.
+      행 이름 눈금 표식(왼쪽 안쪽 2.6 pt)도 ○ 에 닿아 없앴다(행 이름만 남김).
+    - 라벨 "0.4–0.5 (knee)" → "0.4–0.5 (knee at 0.5)".
+  확인(400%): i=0 의 ○ 둘이 축선과 약 3 pt 떨어짐. 라벨이 그림 오른쪽 끝 안. 최소 글자 6.6 pt.
+
+그림 5  v2_fig5_routing (gen_v2_routing.py)  [10]
+  바꾼 것: 아래 상자 높이에서 최소 높이(0.055)를 빼고 몫에 정비례(프랑스 51.6% = 0.28, 나머지 그 비율). 아래 % 줄을 0.03 내림.
+  결과: 캘리포니아 27.3%·일본 10.2%·한국 5.9% 는 높이 차가 보이고, 뉴욕 2.4%·텍사스 1.6%·인도 0.7%·독일 0.1% 는 납작한 선(테두리)으로 보인다.
+  확인: 상자·% 라벨·흐름선 겹침 없음. 흐름 8개(옮긴 물량의 93.9%)와 % 숫자(27·2·2·52·0·6·1·10) 그대로.
+  참고: 선 굵기는 0.25 + 2.3 × 건수/최대 건수 라 "비례" 가 아니라 "건수에 따라 굵어진다"가 정확하다.
+
+그림 6  v2_fig7_day (gen_v2_fig7.py)  [1, 12]
+  바꾼 것
+    - 용량 무시가 준 시각(점선 상자)을 자료(tau_unconstrained)가 있는 모든 행에 그렸다. 흰 채움으로 창 선(레일)을 끊어 이중선이 아니라 상자로 보인다.
+      실행 상자(zorder 3)보다 뒤(2.5)·얇게(lw 0.5). 예시 행(맨 아래, j_027644)은 굵게(1.4) 그대로. 강조 작업 고르는 규칙·자료는 그대로.
+    - 9건 중 8건에 점선 상자가 있다. 맨 위 행(j_137061, CAST 0시 UTC 실행)은 용량 무시가 전날 19시 UTC(tau_unconstrained = −5)를 줘 그림 밖이라 없다.
+    - 8건의 용량 무시 시각: 18·18·19·20·21·21·21·21시 UTC — 모두 탄소 골(18~22시 UTC)이다. 겹치는 행 두 개
+      (j_009372: 실행 16~19.4, 원함 18~21.4 / j_009333: 실행 19~22.6, 원함 18~21.6)는 점선 상자가 실행 상자 뒤로 들어간다.
+    - 상한 선은 그대로(파선 lw 1.0, 4/1.6) — 그림 7 을 이것에 맞췄다.
+  확인(원본 500 dpi): 점선 상자 안에서 레일이 끊겨 상자로 보임, 겹친 두 행에서 실선 상자가 위, 19시 안내선·라벨·화살표와 겹침 없음. 최소 글자 6.6 pt.
+  그림 크기 그대로(215 × 276 pt, 인쇄 높이 약 251 pt).
+
+그림 7  v2_fig9_concurrency (gen_v2_concurrency.py)  [12]
+  바꾼 것
+    - 상한 선: 점선(lw 0.6, 1/1) → 그림 6 과 같은 파선(lw 1.0, 4/1.6).
+    - 선 위 "Ceiling 17" 글자를 범례 셋째 항목("Ceiling 17", 파선)으로 옮겼다.
+    - 범례를 오른쪽 위 → 왼쪽 위로, 흰 바탕(테두리 없음).
+  렌더에서 걸려 고친 것: 흰 바탕 글자를 오른쪽 끝에 두면 day 189.8 의 회색 봉우리 18~21 구간을, 왼쪽 끝에 두면 day 184.7 봉우리를 가렸다
+    → 범례로. 범례가 오른쪽 위면 셋째 항목 표식이 63 봉우리와 "63" 글자에 닿아(첫 두 표식도 원래 봉우리를 지났다) 왼쪽 위로.
+    격자 60 이 "CAST, knee" 윗부분을 지나 흰 바탕.
+  확인: 범례·63·봉우리 겹침 없음. 63·17 그대로. 최소 글자 7.1 pt.
+
+그림 8  v2_alpha (gen_v2_figs.py alpha)  [2, 20]
+  바꾼 것
+    - 같은 지연 짝을 × 로: CAST 쪽 alpha/m0.5687(47.71 ms, 72.86%), 분리형 쪽 alpha/decoupled_m0.4375(22.95 ms, 55.49%).
+      각 stats.json 의 avg_latency_ms·savings_pct 를 읽는다(baseline_kg 28,625.46 이 무릎점 파일과 같음을 확인). 흰 테두리(path effect)로
+      CAST 무릎점 과녁의 검은 ● 위에서도 × 가 보인다. 범례 셋째 항목 "Fixed α, same latency".
+    - 무릎점 라벨 "knee" → "CAST knee" / "Decoupled knee".
+    - ○ 를 키움(s 14 → 30, 테두리 0.8 → 0.7), ● 는 작게 그대로(s 6). ○ 안지름(약 4.8 pt)이 ● 지름(2.4 pt)의 두 배라 두 점이 거의 같은 자리
+      (α=0~0.3, 0.9, 1)에서도 고리와 점 사이 흰 틈이 남아 "○ 안의 ●" 로 둘 다 보인다.
+  확인(1.5배 확대): 분리형 × 가 분리형 무릎점 위로 6.6 %p(약 9.5 pt) 떨어져 보이고 과녁 고리에 닿지 않음. CAST × 는 CAST 과녁 안
+    (0.93 %p 위, 1.3 pt) — 거의 같은 자리라는 것이 그대로 보인다. α=0~0.3 에서 ○ 안 ● 보임. 라벨·범례 겹침 없음. 최소 글자 6.6 pt.
+  숫자: 무릎점 47.85 ms·71.93%, 23.40 ms·48.88%(그대로), × 두 점 위. 분리형 차 55.49 − 48.88 = 6.62 %p(본문과 같음).
+
+그림 9  v2_where_ab (gen_v2_figs.py where)  [13]
+  바꾼 것: (b) 두 계열 모두 0.5% 미만 막대는 그리지 않는다(높이 0 포함). 빈 막대 테두리 0.6 → 0.4, 막대를 축선 아래(zorder 2)로.
+    생략된 막대: 캘리포니아 16·17시(0.13·0.16%), 프랑스 18·20시(0.12·0.25%) — 합 0.66%. 높이 0 막대(프랑스 19시 등)도 안 그린다.
+  렌더에서 걸려 고친 것: 테두리 0.4 만으로는 프랑스 18시(높이 약 0.5 pt)가 여전히 검은 조각으로 보여 0.5% 문턱을 더했다.
+  확인: 낮은 흰 막대(0.6~1.4%)가 흰 막대로 보임. 캘리포니아 9~12시 합 74.2%, 프랑스 0~4시 합 57.4% 막대 그대로. (a) 변경 없음.
+  (v2_where.png·v2_where_hours.png 도 같은 함수라 함께 다시 그려졌다.)
+
+그림 10  v2_capsweep (gen_v2_figs.py capsweep)  [14]
+  바꾼 것: x 축 이름 "Capacity (× baseline peak)" → "Ceiling (× baseline peak)".
+  확인: 축 이름이 그림 폭 안. 점 30.03·38.76·46.14·52.17·60.22, ■ 64.09, 점선 62.70 그대로.
+
+그림 11  v2_priors (gen_v2_figs.py priors)  [15, 20]
+  바꾼 것
+    - 선행 정책 ○ 뒤에 흰 원(테두리 없음, s 60, zorder 4.5)을 깔아 곡선·가로 점선이 ○ 앞에서 끊긴다 — CASPER ○(α=1 곡선 위),
+      Suk. temporal (ours) ○(무릎점 가로 점선 위), Suk. spatial+temporal ○(α=1 가로 점선 위)가 선에 꿰인 것처럼 보이지 않는다.
+    - "baseline peak" 6.5 → 6.6 pt, 회색 #555 → #333. "ceiling 17" → "Ceiling 17"(그림 6·7 과 같은 표기), 6.5 → 6.6 pt, 17 점선에서 조금 더 뗌.
+    - x 축 "Required capacity (jobs)" 그대로.
+  확인(400%): 세 ○ 양쪽에서 선이 끊기고 ○ 고리가 온전. 라벨·범례 겹침 없음. 선행 6점·CAST 14점·가로 점선 73.39/95.97 그대로. 최소 글자 6.6 pt.
+
+[20] α 표기(그림끼리): 그림 1·4·8·10·11 의 α 가 모두 기본 서체 직립 α, 표기 "α=0", "α=1", "knee α", "CAST, α=1" 꼴로 같다.
+
+────────────────────────────────────────
+원고 담당이 고칠 캡션(국·영) — 지금 99_원고.txt 문장을 바탕으로 바뀐 곳만
+
+그림 4 — ●/○ 뜻 더함 ([9](다))
+  국문: 그림 4 한 슬롯에서 α에 따른 배정. 2025년 5월 26일 19시(UTC)에 한국에서 제출된 k=1 작업 하나(실행 17분, 마감까지 14시간)이며, 칸은 리전 × 향후 24 슬롯이고 진할수록 예측 탄소집약도가 높다. ●는 무릎점(α=0.5)이 고른 칸, ○는 다른 α가 고른 칸이며 옆 숫자는 그 칸을 고른 α의 범위다.
+  영문: Fig. 4 Assignment by α at one slot. One k=1 job submitted in Korea at 19:00 UTC on 26 May 2025 (17 min run, 14 h to deadline); cells are region × next 24 slots, darker for higher forecast carbon intensity. The filled dot is the cell chosen at the knee (α=0.5), hollow dots those chosen at other α, labelled with the range of α that chose them.
+
+그림 5 — 높이 정비례, 선 굵기 ([10])
+  국문: … 회색 세로선은 홈에 남은 몫, 선 굵기는 옮긴 건수에 따라 굵어지고, 아래 상자 높이는 리전별로 실행된 몫에 정비례하며(몫이 2% 남짓 이하인 리전은 납작한 선으로 보인다) 검은 칠은 그 몫이 20%를 넘는 리전이다.
+  영문: … Gray verticals are the share kept at the origin, line width grows with the number of jobs moved, lower box heights are strictly proportional to each region's share of executions (regions at about 2% or less appear as flat lines), and black fill marks regions above 20%.
+
+그림 6 — 점선 상자 8건 ([1])
+  국문: … 가는 선이 창, 실선 상자가 CAST의 실행 구간, 점선 상자가 용량 무시에서 받은 시각이며(맨 위 행은 전날 19시 UTC라 그림 밖), 굵은 테두리(맨 아래 행)가 본문의 예다. 아래 단은 CAST의 동시 실행과 상한 17이다.
+  영문: … Thin lines are windows, solid boxes CAST's executed intervals and dashed boxes the slots received under capacity ignored (off the frame for the top row, at 19:00 UTC the previous day), with the bold outlines (bottom row) marking the example in the text; the bottom panel shows CAST's concurrency against the ceiling of 17.
+  본문 확인: 점선 상자 8건이 모두 18~21시 UTC(탄소 골)에 있으므로 "그 골이 이미 상한까지 찼기 때문" 서술은 그림과 맞는다. [11] "굵은 막대" → "실선 상자" 는 원고 쪽 그대로.
+
+그림 7 — 파선, 날짜 ([12])
+  국문: 그림 7 캘리포니아의 동시 실행, 용량 무시와 CAST. 연중 한 주(day 184~190, 1월 1일을 0으로 센 날로 7월 4~10일)이며 회색 채움이 용량 무시, 검은 선이 CAST, 파선이 상한 17이다.
+  영문: Fig. 7 California concurrent executions under capacity ignored and CAST. One week of the year (days 184–190 counted from 0 on 1 January, i.e. 4–10 July); gray fill is capacity ignored, the black line CAST, and the dashed line the ceiling of 17.
+  (영문은 이미 "dashed" 라 날짜 구절만. day 187 = 7월 7일 — 그림 6 의 날과 같다. 확인: h=3499 = 145일×24+19 = 2025-05-26 19시 이므로 0부터 센다.)
+
+그림 8 — × 더함 ([2])
+  국문: 그림 8 고정 α 곡선과 슬롯별 무릎점. ●와 검은 선은 CAST, ○와 회색 선은 분리형의 고정 α 열한 점(0, 0.1, …, 1)이며, 선은 점을 이은 보조선이고 과녁 표식이 각 설계의 무릎점, ×는 무릎점과 같은 평균 지연을 내는 고정 α(CAST 0.5687, 분리형 0.4375)다.
+  영문: Fig. 8 Fixed-α curves and per-slot knee points. Filled dots with the black line are CAST and hollow dots with the gray line the decoupled design at eleven fixed α (0, 0.1, …, 1); lines only connect the points, target markers are each design's knee point, and crosses are the fixed α giving the same mean latency as each knee (0.5687 for CAST, 0.4375 for decoupled).
+
+그림 9 — 0.5% 미만 생략 ([13](다)) + 영문 never → barely([13](가), 원고 쪽 지적 그대로)
+  국문 (b) 끝에 더함: … 채운 막대가 캘리포니아, 빈 막대가 프랑스이며 0.5% 미만인 막대는 생략했다.
+  영문: … and small circles mark regions that barely exceed it. (b) … normalised per region; California filled, France hollow, with bars below 0.5% omitted.
+
+그림 10 — 캡션 변경 없음(그림 쪽 x 축만 바뀜). [14](나) "표 3·표 7" → "표 3·표 4" 는 원고 쪽 지적 그대로.
+
+그림 1·11 — 캡션 변경 없음. (그림 1 의 "장부" 문구는 원고 담당이 빼기로 한 대로.)
+
+────────────────────────────────────────
+다시 그리는 명령
+  ./.venv/bin/python paper/diagram/gen_v2_fig1.py        (Chrome — 이번에는 샌드박스 안에서도 돌았다)
+  ./.venv/bin/python paper/diagram/gen_v2_fig4.py
+  ./.venv/bin/python paper/diagram/gen_v2_routing.py
+  ./.venv/bin/python paper/diagram/gen_v2_fig7.py
+  ./.venv/bin/python paper/diagram/gen_v2_concurrency.py
+  ./.venv/bin/python paper/diagram/gen_v2_figs.py alpha | where | capsweep | priors

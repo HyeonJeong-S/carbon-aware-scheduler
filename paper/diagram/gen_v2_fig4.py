@@ -82,14 +82,18 @@ def main():
         # 하이픈과 같은 모양이라 대시 한 글자만 Helvetica 로 찍는다(숫자는 그림의 다른 글자와 같은 서체).
         parts = [f"{a0:.1f}"] if a0 == a1 else [f"{a0:.1f}", DASH, f"{a1:.1f}"]
         if a0 <= knee <= a1:
-            parts[-1] += " (knee)"
+            # 10-18(87 점검2 [9]): "(knee)" 만 붙이면 0.4·0.5 둘 다 무릎점처럼 읽혔다 — 무릎점 α 를 밝힌다
+            parts[-1] += f" (knee at {knee:.1f})" if a0 != a1 else " (knee)"
         label_parts(ax, max(b["pos"]) + 0.8, y, parts)
     ax.scatter([], [], marker="o", s=34, facecolor=INK, edgecolor=INK, lw=0.8, label="knee α")
     ax.scatter([], [], marker="o", s=20, facecolor="white", edgecolor=INK, lw=0.8, label="other α")
     ax.set_yticks(range(len(regions))); ax.set_yticklabels([SHORT[g] for g in regions], fontsize=TICK)
     ax.set_xticks([0, 6, 12, 18]); ax.tick_params(labelsize=TICK)
+    ax.tick_params(axis="y", length=0, pad=3.5)   # 10-18(87 점검2 [9]): 행 이름 눈금 표식이 i=0 의 ○ 에 닿았다 — 행 이름만으로 충분
     ax.set_xlabel("Start offset $i$ (slots)", fontsize=LAB)
-    ax.set_xlim(-0.5, 23.5); ax.set_ylim(len(regions) - 0.5, -0.5)
+    # 10-18(87 점검2 [9]): i=0 의 ○(France 1.0, Korea 0.0)가 왼쪽 축선·눈금에 걸렸다. 왼쪽만 넓히면 흰 띠가 "0 gCO₂" 칸처럼
+    # 읽히므로 네 변 모두 같은 흰 여백(약 2.6 pt: 가로 0.45 칸, 세로 0.2 행)을 두어 액자 여백으로 읽히게 한다. 칸 위치·색은 그대로.
+    ax.set_xlim(-0.95, 23.95); ax.set_ylim(len(regions) - 0.3, -0.7)
     ax.legend(fontsize=NOTE, frameon=False, ncol=2, loc="lower left", bbox_to_anchor=(0, 1.02),
               handlelength=1.2, columnspacing=1.0, handletextpad=0.4, borderaxespad=0)
     cb = fig.colorbar(im, ax=ax, fraction=0.035, pad=0.03, ticks=[0, vmax // 2, vmax])
