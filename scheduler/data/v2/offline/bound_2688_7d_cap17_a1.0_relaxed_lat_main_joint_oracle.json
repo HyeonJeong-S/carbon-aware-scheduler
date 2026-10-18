@@ -1,0 +1,22 @@
+{
+ "start_h": 2688,
+ "days": 7,
+ "cap": 17,
+ "alpha": 1.0,
+ "n_jobs": 2800,
+ "baseline_kg": 478.3631714808232,
+ "lp_kg": 138.64159032294222,
+ "lp_savings_pct": 71.0175033136931,
+ "lp_overflow": 0.0,
+ "lp_latency_ms": 30.36209599274935,
+ "lp_dw_latency_ms": 26.033391134090582,
+ "lp_objective": 209.42838417362856,
+ "lp_fractional_vars": 2,
+ "lp_wall_s": 2.594347916005063,
+ "n_vars": 147592,
+ "match_run": "main/joint_oracle",
+ "run_kg": 151.90636761986482,
+ "lat_budget_dw_ms": 26.033391134090586,
+ "gap_pp": 2.772951198533971,
+ "gap_of_remaining_pct": 8.73220622990393
+}

@@ -1,0 +1,17 @@
+{
+ "start_h": 2688,
+ "days": 7,
+ "cap": 17,
+ "alpha": 1.0,
+ "n_jobs": 2800,
+ "baseline_kg": 478.3631714808232,
+ "lp_kg": 12.212707714406084,
+ "lp_savings_pct": 97.44697994274928,
+ "lp_overflow": 0.0,
+ "lp_latency_ms": 119.25428571428571,
+ "lp_dw_latency_ms": 122.09199043498444,
+ "lp_objective": 18.448198964359605,
+ "lp_fractional_vars": 52,
+ "lp_wall_s": 1.1950606249956763,
+ "n_vars": 147592
+}
