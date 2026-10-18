@@ -1,0 +1,5 @@
+[0] nowonly_lstm 1384s | [nowonly/lstm] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 8,189.7 kg  절감 71.39%  위반 0  초과 0.0h  마감위반 0  지연 47.1/46.6ms  cap 17 ρ 3  벽시계 22.9분  → /Users/jongha/Desktop/Gi
+[0] nowonly_azure 1526s | [nowonly/azure] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 104,141.2 kg  절감 51.22%  위반 0  초과 0.0h  마감위반 0  지연 38.5/40.5ms  cap 43 ρ 13  벽시계 25.3분  → /Users/jongha/Deskt
+[0] nowonly_oracle 1706s | [nowonly/oracle] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 9,619.1 kg  절감 66.40%  위반 0  초과 0.0h  마감위반 0  지연 39.5/38.2ms  cap 17 ρ 3  벽시계 28.3분  → /Users/jongha/Desktop/
+[0] nowonly_sn24 1744s | [nowonly/sn24] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 10,339.0 kg  절감 63.88%  위반 0  초과 0.0h  마감위반 0  지연 38.5/36.5ms  cap 17 ρ 3  벽시계 29.0분  → /Users/jongha/Desktop/G
+ALL DONE

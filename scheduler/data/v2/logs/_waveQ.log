@@ -1,0 +1,29 @@
+10:41 시작 nolook_lstm
+10:41 시작 nolook_lstm_rho0
+10:41 시작 nolook_oracle
+10:41 시작 nolook_azure
+10:41 시작 nolook_azure_rho0
+10:41 시작 dw_sn24
+10:41 시작 dw_azure
+10:41 시작 azs1_m
+10:41 시작 azs2_m
+10:41 시작 af_s1
+10:41 시작 af_s2
+10:41 시작 af_s3
+10:41 시작 af_s4
+10:41 시작 af_oracle
+10:46 끝 af_s2 (0)
+10:46 끝 af_s1 (0)
+10:48 끝 af_s4 (0)
+10:50 끝 af_s3 (0)
+10:50 끝 af_oracle (0)
+10:56 끝 azs2_m (0)
+11:22 끝 dw_sn24 (0)
+11:28 끝 nolook_lstm (0)
+11:28 끝 nolook_lstm_rho0 (0)
+11:31 끝 dw_azure (0)
+11:37 끝 nolook_azure (0)
+11:39 끝 nolook_oracle (0)
+11:41 끝 nolook_azure_rho0 (0)
+11:45 끝 azs1_m (0)
+11:45 큐 끝

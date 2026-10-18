@@ -1,0 +1,55 @@
+10:54 시작 af_knee
+10:54 시작 af_oracle_knee
+10:54 시작 af_a1
+10:54 시작 af_azure
+10:54 시작 af_azure_a1
+10:57 끝 af_a1 (0)
+10:57 시작 afm_main
+10:57 끝 af_azure_a1 (0)
+10:57 시작 afm_oracle
+11:05 끝 afm_main (0)
+11:05 시작 afm_s1
+11:08 끝 afm_s1 (0)
+11:08 시작 afm_s2
+11:11 끝 afm_oracle (0)
+11:11 끝 afm_s2 (0)
+11:11 시작 afm_s3
+11:11 시작 afm_s4
+11:12 끝 af_knee (0)
+11:12 시작 sc_lstm
+11:13 끝 af_oracle_knee (0)
+11:13 시작 sc_mix0.75
+11:13 끝 af_azure (0)
+11:13 시작 sc_mix0.5
+11:14 끝 afm_s3 (0)
+11:14 끝 afm_s4 (0)
+11:14 시작 sc_mix0.25
+11:14 시작 sc_oracle
+11:28 끝 sc_lstm (0)
+11:28 시작 sc_sn24
+11:29 끝 sc_mix0.75 (0)
+11:29 시작 sc_s1
+11:29 끝 sc_mix0.5 (0)
+11:29 끝 sc_oracle (0)
+11:29 시작 sc_s1_o
+11:30 시작 sc_s2
+11:30 끝 sc_mix0.25 (0)
+11:30 시작 sc_s2_o
+11:40 끝 sc_sn24 (0)
+11:40 시작 sc_s3
+11:40 끝 sc_s1 (0)
+11:41 시작 sc_s3_o
+11:41 끝 sc_s1_o (0)
+11:41 시작 sc_s4
+11:41 끝 sc_s2_o (0)
+11:42 시작 sc_s4_o
+11:42 끝 sc_s2 (0)
+11:42 시작 sc_azure
+11:49 끝 sc_s3 (0)
+11:49 시작 sc_azure_o
+11:50 끝 sc_s3_o (0)
+11:51 끝 sc_s4 (0)
+11:51 끝 sc_s4_o (0)
+11:52 끝 sc_azure (0)
+11:58 끝 sc_azure_o (0)
+11:58 큐 끝

@@ -1,0 +1,17 @@
+[0] startcheck_mix0.75 612s | [startcheck/mix0.75] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 9,363.8 kg  절감 67.29%  위반 18856  초과 1083.9h  마감위반 0  지연 41.3/40.8ms  cap 17 ρ 3  벽시계 10.1분  → /Users/jong
+[0] startcheck_lstm 634s | [startcheck/lstm] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 9,547.5 kg  절감 66.65%  위반 16363  초과 933.3h  마감위반 0  지연 41.6/40.9ms  cap 17 ρ 3  벽시계 10.5분  → /Users/jongha/D
+[0] startcheck_mix0.5 653s | [startcheck/mix0.5] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 9,338.2 kg  절감 67.38%  위반 20167  초과 1159.9h  마감위반 0  지연 40.5/40.5ms  cap 17 ρ 3  벽시계 10.8분  → /Users/jongh
+[0] startcheck_mix0.25 673s | [startcheck/mix0.25] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 9,436.9 kg  절감 67.03%  위반 21905  초과 1218.7h  마감위반 0  지연 39.6/39.6ms  cap 17 ρ 3  벽시계 11.1분  → /Users/jong
+[0] startcheck_oracle 676s | [startcheck/oracle] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 9,609.6 kg  절감 66.43%  위반 23295  초과 1231.6h  마감위반 0  지연 38.4/38.7ms  cap 17 ρ 3  벽시계 11.2분  → /Users/jongh
+[0] startcheck_sn24 649s | [startcheck/sn24] 채점 143,200건(시뮬 146,000)  기준 28,625.5 kg  결과 10,237.8 kg  절감 64.24%  위반 22728  초과 1214.0h  마감위반 0  지연 38.9/38.5ms  cap 17 ρ 3  벽시계 10.7분  → /Users/jongha
+[0] startcheck_seed1 648s | [startcheck/seed1] 채점 143,200건(시뮬 146,000)  기준 28,489.1 kg  결과 9,666.9 kg  절감 66.07%  위반 18785  초과 1194.9h  마감위반 0  지연 41.0/40.3ms  cap 15 ρ 3  벽시계 10.7분  → /Users/jongha
+[0] startcheck_seed1_oracle 654s | [startcheck/seed1_oracle] 채점 143,200건(시뮬 146,000)  기준 28,489.1 kg  결과 9,651.7 kg  절감 66.12%  위반 24807  초과 1475.0h  마감위반 0  지연 37.9/38.3ms  cap 15 ρ 3  벽시계 10.8분  → /Users
+[0] startcheck_seed2_oracle 641s | [startcheck/seed2_oracle] 채점 143,200건(시뮬 146,000)  기준 28,642.2 kg  결과 9,740.1 kg  절감 65.99%  위반 26201  초과 1645.7h  마감위반 0  지연 37.6/38.0ms  cap 14 ρ 2  벽시계 10.6분  → /Users
+[0] startcheck_seed2 703s | [startcheck/seed2] 채점 143,200건(시뮬 146,000)  기준 28,642.2 kg  결과 9,615.6 kg  절감 66.43%  위반 20277  초과 1406.0h  마감위반 0  지연 41.0/40.6ms  cap 14 ρ 2  벽시계 11.6분  → /Users/jongha
+[0] startcheck_seed3 575s | [startcheck/seed3] 채점 143,200건(시뮬 146,000)  기준 28,696.9 kg  결과 9,639.1 kg  절감 66.41%  위반 16446  초과 940.0h  마감위반 0  지연 41.7/40.7ms  cap 17 ρ 2  벽시계 9.5분  → /Users/jongha/D
+[0] startcheck_seed4 570s | [startcheck/seed4] 채점 143,200건(시뮬 146,000)  기준 28,592.1 kg  결과 9,631.5 kg  절감 66.31%  위반 19013  초과 1234.1h  마감위반 0  지연 40.8/40.0ms  cap 15 ρ 2  벽시계 9.4분  → /Users/jongha/
+[0] startcheck_seed4_oracle 573s | [startcheck/seed4_oracle] 채점 143,200건(시뮬 146,000)  기준 28,592.1 kg  결과 9,586.3 kg  절감 66.47%  위반 25413  초과 1500.0h  마감위반 0  지연 37.7/38.4ms  cap 15 ρ 2  벽시계 9.5분  → /Users/
+[0] startcheck_seed3_oracle 615s | [startcheck/seed3_oracle] 채점 143,200건(시뮬 146,000)  기준 28,696.9 kg  결과 9,605.7 kg  절감 66.53%  위반 23381  초과 1238.8h  마감위반 0  지연 38.3/38.8ms  cap 17 ρ 2  벽시계 10.2분  → /Users
+[0] startcheck_azure 593s | [startcheck/azure] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 119,631.6 kg  절감 43.97%  위반 6620  초과 105.4h  마감위반 0  지연 43.2/44.5ms  cap 43 ρ 13  벽시계 9.8분  → /Users/jongh
+[0] startcheck_azure_oracle 536s | [startcheck/azure_oracle] 채점 143,165건(시뮬 146,016)  기준 213,513.4 kg  결과 120,811.5 kg  절감 43.42%  위반 12798  초과 215.1h  마감위반 0  지연 43.6/43.9ms  cap 43 ρ 13  벽시계 8.8분  → /Use
+ALL DONE
