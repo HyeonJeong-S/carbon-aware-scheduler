@@ -1,0 +1,22 @@
+{
+ "start_h": 2688,
+ "days": 7,
+ "cap": 17,
+ "alpha": 1.0,
+ "n_jobs": 2800,
+ "baseline_kg": 478.3631714808232,
+ "lp_kg": 116.57263931165944,
+ "lp_savings_pct": 75.63093351212706,
+ "lp_overflow": 0.0,
+ "lp_latency_ms": 39.688157881515,
+ "lp_dw_latency_ms": 31.972581864637476,
+ "lp_objective": 176.09160016866966,
+ "lp_fractional_vars": 2,
+ "lp_wall_s": 2.7783275000037975,
+ "n_vars": 147592,
+ "match_run": "alpha/m0.5750",
+ "run_kg": 127.70264051351607,
+ "lat_budget_dw_ms": 31.972581864637462,
+ "gap_pp": 2.3266843823705217,
+ "gap_of_remaining_pct": 8.715560741031528
+}

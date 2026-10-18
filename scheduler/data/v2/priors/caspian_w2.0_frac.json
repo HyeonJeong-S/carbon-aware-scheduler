@@ -1,0 +1,118 @@
+{
+ "name": "caspian_w2.0_frac",
+ "at_cap": {
+  "n": 143200,
+  "n_all": 146000,
+  "total_carbon_kg": 9348.32086707926,
+  "slo_violations": 5611,
+  "forced_admissions": 0,
+  "immediate": 0,
+  "capacity_violations": 1545,
+  "over_cap_forced": 0,
+  "over_cap_immediate": 0,
+  "over_cap_normal": 1545,
+  "scored_cap": {
+   "US-CAL-CISO": 17,
+   "US-TEX-ERCO": 17,
+   "US-NY-NYIS": 17,
+   "FR": 17,
+   "DE": 17,
+   "KR": 17,
+   "IN": 17,
+   "JP": 17
+  },
+  "peak_by_region": {
+   "US-CAL-CISO": 36,
+   "US-TEX-ERCO": 6,
+   "US-NY-NYIS": 5,
+   "FR": 23,
+   "DE": 5,
+   "KR": 4,
+   "IN": 4,
+   "JP": 5
+  },
+  "hours_over_by_region": {
+   "US-CAL-CISO": 45.1803888888885,
+   "US-TEX-ERCO": 0.0,
+   "US-NY-NYIS": 0.0,
+   "FR": 29.588138888886746,
+   "DE": 0.0,
+   "KR": 0.0,
+   "IN": 0.0,
+   "JP": 0.0
+  },
+  "avg_delay_h": 0.9523630477963995,
+  "p95_delay_h": 0.0,
+  "avg_latency_ms": 115.61985335195531,
+  "p95_latency_ms": 238.0,
+  "dw_latency_ms": 84.27194434610192,
+  "home_share": 0.1595810055865922,
+  "by_k": {
+   "1": {
+    "n": 42974,
+    "carbon_kg": 9190.769564995368,
+    "avg_delay_h": 3.1735092950259327,
+    "p95_delay_h": 25.17531805555525,
+    "avg_latency_ms": 105.00872620654349,
+    "forced": 0,
+    "over_cap": 503
+   },
+   "2": {
+    "n": 14200,
+    "carbon_kg": 139.00085163048834,
+    "avg_delay_h": 0.0,
+    "p95_delay_h": 0.0,
+    "avg_latency_ms": 120.43943661971831,
+    "forced": 0,
+    "over_cap": 153
+   },
+   "3": {
+    "n": 14455,
+    "carbon_kg": 13.402644929515773,
+    "avg_delay_h": 0.0,
+    "p95_delay_h": 0.0,
+    "avg_latency_ms": 120.33607748184019,
+    "forced": 0,
+    "over_cap": 148
+   },
+   "4": {
+    "n": 28656,
+    "carbon_kg": 4.169153279530579,
+    "avg_delay_h": 0.0,
+    "p95_delay_h": 0.0,
+    "avg_latency_ms": 120.19629396984925,
+    "forced": 0,
+    "over_cap": 296
+   },
+   "5": {
+    "n": 42915,
+    "carbon_kg": 0.9786522443106292,
+    "avg_delay_h": 0.0,
+    "p95_delay_h": 0.0,
+    "avg_latency_ms": 120.00640801584528,
+    "forced": 0,
+    "over_cap": 445
+   }
+  },
+  "required_capacity": 36,
+  "p999_by_region": {
+   "US-CAL-CISO": 28,
+   "US-TEX-ERCO": 4,
+   "US-NY-NYIS": 4,
+   "FR": 19,
+   "DE": 4,
+   "KR": 4,
+   "IN": 4,
+   "JP": 4
+  },
+  "p999": 28,
+  "min_cap_0.1pct_hours_over": 28,
+  "label": "caspian",
+  "violations_at_cap12": 19683,
+  "wall_s": 9395.264363209004,
+  "baseline_kg": 28625.461808413354,
+  "savings_pct": 67.34263737072119,
+  "omega1": 2.0,
+  "fractional": true
+ }
+}
