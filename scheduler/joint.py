@@ -165,7 +165,7 @@ def summarize(out, regions, cap_d, score_from=0.0, alpha_log=None, extra=None):
     return st
 
 
-COMMIT_MODES = ("arrival_fixed", "arrival_fixed_exact", "start_check", "start_admit")
+COMMIT_MODES = ("arrival_fixed", "arrival_fixed_exact", "start_check", "start_admit", "start_admit_replan")
 
 
 def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
@@ -174,7 +174,9 @@ def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
               t_start=None, score_from=0.0, mode="joint", penalties=None, record_alpha=True, record_slots=None):
     """반환 (out, stats). cap/rho 는 int 또는 {리전: int}."""
     assert mode in ("joint", "decoupled", "greedy", "arrival_fixed", "start_check", "now_only", "no_lookahead",
-                    "arrival_fixed_exact", "start_admit")
+                    "arrival_fixed_exact", "start_admit", "start_admit_replan")
+    # start_admit_replan(10-18, 5회차 B[2]): start_admit 과 같되, 시작 순간에 자리가 없으면 같은 리전 다음 정시로 미루는 대신
+    # 대기 집합 Q 로 되돌려 그 슬롯의 LP 가 리전·시각을 다시 고르게 한다(남의 미래 계획은 여전히 보지 않음).
     # start_admit(10-18, 4회차 B[3]·C[1]): start_check 처럼 도착 슬롯에 리전·시각을 정하되 다른 작업의 계획은 보지 않고,
     # 정한 시각이 오면 그 순간의 장부로 다시 확인해 자리가 있으면 시작, 없으면 한 슬롯 미루고, 여유가 다하면 강제로 들인다
     # ("시작할 때 입장 통제" 를 단 정직한 꼴).
@@ -300,6 +302,8 @@ def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
                 late_ok = (pj["deadline"] - pj["duration"] - t) >= 1
                 if running_committed(pr, t) < cap_d[pr]:
                     emit(pj, pr, float(t), False, False, pa)
+                elif late_ok and mode == "start_admit_replan":
+                    Q.append(pj)
                 elif late_ok:
                     pending.append([pj, pr, t + 1, pa])
                 else:
@@ -517,7 +521,7 @@ def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
                 if mode == "decoupled" and jj < nQ and j["id"] not in fixed_region:
                     fixed_region[j["id"]] = var_r[v]
                 if var_i[v] != 0:
-                    if mode == "start_admit":
+                    if mode in ("start_admit", "start_admit_replan"):
                         pending.append([j, var_r[v], var_start[v], a_used]); started.add(jj)
                         continue
                     if mode not in ("arrival_fixed", "arrival_fixed_exact", "start_check"):

@@ -29,7 +29,7 @@ EQ = {
  "11b": r"\sum_{(j,i)\ni\sigma}x_{jri}+n_{r}(\sigma)\le\mathrm{cap}_{r}+z^{A}_{r\sigma}",        # 미래 슬롯 σ∈[t+1,t+H] 는 해설 문장에
  12: r"\sum_{(j,i)\ni\sigma,\ j\in Q^{\mathrm{def}}}x_{jri}+n_{r}(\sigma) @@ \qquad\le\mathrm{cap}_{r}-\rho_{r}+z^{B}_{r\sigma}",   # ∀ r, σ∈[t+1,t+H] 는 해설 문장에. 한 줄이면 번호 (12)가 식에 붙는다(89 [7]) — 두 줄
  13: r"\alpha^{*}=\underset{\alpha\in\mathcal{A}}{\mathrm{arg\,min}}\sqrt{\tilde{\lambda}_{\alpha}^{2}+\tilde{e}_{\alpha}^{2}}",
- 14: r"E_{j}\approx P\,d_{j}\,\frac{1}{|T_{j}|}\sum_{\tau\in T_{j}}C_{r(j)}(\tau)",
+ 14: r"E_{j}\approx P\,d_{j}\,\frac{1}{|T_{j}|}\sum_{\sigma\in T_{j}}C_{r(j)}(\sigma)",   # 5회차 E: 슬롯 첨자 τ → σ(τ_j 는 시작 시각)
 }
 
 W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"

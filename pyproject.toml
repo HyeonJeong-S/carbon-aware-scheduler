@@ -77,6 +77,7 @@ ignore = [
 "scheduler/transfer_breakeven.py" = ["E702", "SIM115"]
 "scheduler/azure_cores_rescore.py" = ["SIM115"]
 "scheduler/lca_rescore.py" = ["SIM115"]
+"scheduler/marginal_rescore.py" = ["SIM115"]
 "scheduler/forecasters.py" = ["E702", "E701"]
 "scheduler/prior_sukprasert.py" = ["E702", "E701", "B007", "F841", "RUF005"]
 "tests/test_joint.py" = ["E702", "E701", "F841", "RUF059", "B007"]
