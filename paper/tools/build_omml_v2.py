@@ -19,26 +19,61 @@ EQ = {
  3: r"Z=\sum_{r\in R}\int\max\{0,\,n_{r}(t)-\mathrm{cap}_{r}\}\,dt",
  4: r"s_{j}\le\tau_{j},\quad\tau_{j}+d_{j}\le D_{j}\qquad\forall j\in J",
  5: r"\ell(o_{j},r(j))\le L_{j}\qquad\forall j\in J",
- 6: r"n_{r}(t)\le\mathrm{cap}_{r}+z_{r}(t),\quad z_{r}(t)\ge 0\qquad\forall r\in R,\ \forall t",
+ 6: r"n_{r}(t)\le\mathrm{cap}_{r}+z_{r}(t),\ z_{r}(t)\ge 0\quad\forall r\in R,\ \forall t",        # 간격을 넓히면 단폭을 넘어 번호 (6)이 다음 줄로 떨어진다
  7: r"c_{j}(r,i)=d_{j}\left[\alpha\,\tilde{C}_{j}(r,i)+(1-\alpha)\,\tilde{\ell}(o_{j},r)\right]",
  8: r"\tilde{C}_{j}(r,i)=\frac{\hat{C}_{r}^{(t)}(t+i,\,d_{j})}{\max_{r',t'}\hat{C}_{r'}^{(t)}(t')},\qquad\tilde{\ell}(o,r)=\frac{\ell(o,r)}{244}",
  9: r"\min\ \sum_{j\in Q}\sum_{r,i}c_{j}(r,i)\,x_{jri}+M_{A}\sum_{r,\tau}z^{A}_{r\tau} @@ \qquad+M_{B}\sum_{r,\tau\ge t+1}z^{B}_{r\tau}+\varepsilon\sum_{j\in Q}\sum_{r,i}i\,x_{jri}",
- 10: r"\sum_{r,i}x_{jri}=1\qquad\forall j\in Q",
+ 10: r"\sum_{r,i}x_{jri}=1,\qquad\forall j\in Q",                                      # "= 1, ∀j"(89 [24]: 붙어 있던 것)
  11: r"\sum_{(j,i)\ni\tau}x_{jri}+n_{r}(\tau)\le\mathrm{cap}_{r}+z^{A}_{r\tau}",        # ∀ r, τ∈[t,t+H] 는 해설 문장에(단 폭)
- 12: r"\sum_{(j,i)\ni\tau,\ j\in Q^{\mathrm{def}}}x_{jri}+n_{r}(\tau)\le\mathrm{cap}_{r}-\rho_{r}+z^{B}_{r\tau}",   # ∀ r, τ∈[t+1,t+H] 는 해설 문장에
- 13: r"\alpha^{*}=\underset{\alpha\in A}{\mathrm{arg\,min}}\sqrt{\tilde{\lambda}_{\alpha}^{2}+\tilde{e}_{\alpha}^{2}}",
+ 12: r"\sum_{(j,i)\ni\tau,\ j\in Q^{\mathrm{def}}}x_{jri}+n_{r}(\tau) @@ \qquad\le\mathrm{cap}_{r}-\rho_{r}+z^{B}_{r\tau}",   # ∀ r, τ∈[t+1,t+H] 는 해설 문장에. 한 줄이면 번호 (12)가 식에 붙는다(89 [7]) — 두 줄
+ 13: r"\alpha^{*}=\underset{\alpha\in\mathcal{A}}{\mathrm{arg\,min}}\sqrt{\tilde{\lambda}_{\alpha}^{2}+\tilde{e}_{\alpha}^{2}}",
  14: r"E_{j}\approx P\,d_{j}\,\frac{1}{|T_{j}|}\sum_{\tau\in T_{j}}C_{r(j)}(\tau)",
 }
 
 W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 
+M_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"
+# \quad·\qquad 는 MathML <mspace> 가 되어 Word XSL 에서 사라진다(식 (4)(10) "1∀j" 붙음, 89 [24]).
+# 자리표시 글자로 바꿔 변환한 뒤 m:t 안에서 전각 공백(U+2003)으로 되돌린다.
+SPACES = [(r"\qquad", "QQSPACE", "  "), (r"\quad", "QSPACE", " ")]
+FUNCS = {"min", "max", "argmin", "arg min", "arg min", "log", "exp"}   # 함수 이름은 바른 글꼴(89 [24]: min 이 이탤릭)
+
 def _one(tex):
+    for tx, ph, _ in SPACES: tex = tex.replace(tx, r"\mathrm{%s}" % ph)
     mml = l2m.convert(tex)
     doc = etree.fromstring(mml.encode("utf-8"))
     res = etree.XSLT(etree.parse(XSL))(doc)
     root = res.getroot()
-    ns = {"m": "http://schemas.openxmlformats.org/officeDocument/2006/math"}
-    return (root if root.tag.endswith("}oMath") else root.find(".//m:oMath", ns)), ns
+    ns = {"m": M_NS}
+    om = root if root.tag.endswith("}oMath") else root.find(".//m:oMath", ns)
+    for t in om.iter("{%s}t" % M_NS):
+        for _, ph, sp in SPACES:
+            if t.text and ph in t.text: t.text = t.text.replace(ph, sp)
+    for r in list(om.iter("{%s}r" % M_NS)):                 # "∫max{0," 처럼 한 run 에 섞인 함수 이름은 떼어 낸다
+        t = r.find("{%s}t" % M_NS)
+        if t is None or not t.text or r.find("{%s}rPr" % M_NS) is not None: continue
+        parts = [x for x in re.split(r"(?<![A-Za-z])(min|max)(?![A-Za-z])", t.text) if x]
+        if len(parts) < 2: continue
+        t.text = parts[0]; at = r
+        for x in parts[1:]:
+            nr = etree.Element("{%s}r" % M_NS); etree.SubElement(nr, "{%s}t" % M_NS).text = x
+            at.addnext(nr); at = nr
+    for r in om.iter("{%s}r" % M_NS):                       # min·max 바른 글꼴
+        t = r.find("{%s}t" % M_NS)
+        if t is not None and (t.text or "").strip() in FUNCS:
+            rp = r.find("{%s}rPr" % M_NS)
+            if rp is None: rp = etree.Element("{%s}rPr" % M_NS); r.insert(0, rp)
+            for e in rp.findall("{%s}sty" % M_NS): rp.remove(e)
+            etree.SubElement(rp, "{%s}sty" % M_NS).set("{%s}val" % M_NS, "p")
+    for lu in list(om.iter("{%s}limUpp" % M_NS)):           # \tilde → latex2mathml 이 <mover>~ 로 내고 XSL 이 limUpp(위 한계)로
+        lim = lu.find("{%s}lim" % M_NS)                     # 만든다 — 물결이 글자 왼쪽 위로 비껴 찍혔다(식 7·8·13). 악센트(m:acc)로 바꾼다
+        if lim is None or "".join(lim.itertext()).strip() not in ("~", "˜"): continue
+        acc = etree.Element("{%s}acc" % M_NS); apr = etree.SubElement(acc, "{%s}accPr" % M_NS)
+        etree.SubElement(apr, "{%s}chr" % M_NS).set("{%s}val" % M_NS, "̃")
+        acc.append(lu.find("{%s}e" % M_NS)); lu.getparent().replace(lu, acc)
+    for g in om.iter("{%s}grow" % M_NS):                   # Σ 가 안의 Σ 를 감싸며 커지지 않게(식 (9) 첫 Σ 만 큼)
+        g.set("{%s}val" % M_NS, "0")
+    return om, ns
 
 def to_omml(tex):
     """"@@" 에서 줄을 바꾼다(단 폭 195.6pt 를 넘는 식용, 10-17): 조각을 따로 변환해 한 oMath 로 잇고 사이에 수동 줄바꿈을 넣는다."""

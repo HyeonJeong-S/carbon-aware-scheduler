@@ -38,18 +38,25 @@ def load(name):
     return df, st
 
 
+def _slot_mean(arr, start, dur):
+    """capacity._Windows.actual_mean 과 같은 규약: floor(start) 부터 ceil(dur) 슬롯의 평균."""
+    n = len(arr); a = min(max(int(math.floor(start)), 0), n - 1); b = min(a + max(1, int(math.ceil(dur))), n)
+    return float(sum(arr[a:b]) / (b - a))
+
+
 def _pick_highlight(jobs):
     """강조할 작업 하나: 원하던 자리(용량 무시 시작)가 그날 액자 안(0~24h)에 있고, 실제 시작의 탄소가 원하던 자리보다
     가장 많이 높은 작업 — 자료 규칙으로 고른다(손으로 고르지 않음). 없으면 첫 작업."""
     def disjoint(j):   # 원하던 자리와 실제 자리가 겹치지 않아야 점선 상자와 막대가 따로 보인다(첫 판 j_100613 은 0.6h 짜리라 안 보였음)
         a0, a1 = j["tau_unconstrained"], j["tau_unconstrained"] + j["dur"]; b0, b1 = j["tau"], j["tau"] + j["dur"]
         return a1 <= b0 or b1 <= a0
-    ok = [j for j in jobs if j["tau_unconstrained"] is not None and 0 <= j["tau_unconstrained"] < 24
-          and j["rate_unconstrained"] and j["rate_actual"] > j["rate_unconstrained"] and disjoint(j)]
+    ok = [j for j in jobs if j["tau_unconstrained"] is not None and 0 <= j["tau_unconstrained"] < 24 and disjoint(j)]
     if not ok:
         return jobs[0]["id"] if jobs else None
-    # 추가 배출(실행시간 × 강도 차)이 가장 큰 작업
-    return max(ok, key=lambda j: j["dur"] * (j["rate_actual"] - j["rate_unconstrained"]))["id"]
+    # 10-18(1회차 점검): 본문 회계(실행 시간 동안의 슬롯 평균)로 재면 이날 밀린 작업들의 배출 차는 −10~+4% 로 작아서
+    # "추가 배출이 가장 큰 작업" 은 0.6시간짜리 끝자락 작업이 뽑혀 보이지 않았다. 그림의 뜻(상한이 작업을 원하던 자리에서
+    # 밀어낸다)에 맞게 "밀린 시간 × 실행 시간" 이 가장 큰 작업을 고른다. 배출 차는 그림에 적지 않는다.
+    return max(ok, key=lambda j: j["dur"] * abs(j["tau"] - j["tau_unconstrained"]))["id"]
 
 
 def events(df, region, lo, hi):
@@ -158,8 +165,10 @@ def main(argv=None):
         jobs.append(dict(id=r.job_id, s=round(r.submit_time - d0, 4), tau=round(r.scheduled_start - d0, 4), dur=round(r.duration, 4),
                          D=round(r.submit_time + r.window + r.duration - d0, 4), window=round(r.window, 4), forced=bool(r.forced), k=int(r.k),
                          tau_unconstrained=(round(tau_c - d0, 4) if tau_c is not None else None),
-                         rate_actual=float(actual[CAL][int(math.floor(r.scheduled_start))]),
-                         rate_unconstrained=(float(actual[CAL][int(math.floor(tau_c))]) if tau_c is not None else None)))
+                         # 10-18(1회차 점검): 시작 한 시간의 강도가 아니라 본문 회계(식 (14), capacity._Windows.actual_mean)와 같은
+                         # "실행 시간 동안의 슬롯 평균" 으로 — 시작 시각 강도로 잰 +7.5% 는 회계로는 0% 였다.
+                         rate_actual=_slot_mean(actual[CAL], r.scheduled_start, r.duration),
+                         rate_unconstrained=(_slot_mean(actual[CAL], tau_c, r.duration) if tau_c is not None else None)))
     json.dump(dict(day=day, region=CAL, window_threshold_h=float(cand.window.min()) if len(cand) else 0.0, frame_x_lo=-0.8,
                    highlight_id=_pick_highlight(jobs), jobs=jobs, run=args.main, counter=counter_name),
               open(os.path.join(HERE, "v2_fig4_gantt_data.json"), "w"), indent=1)

@@ -169,7 +169,7 @@ def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
               n_hours=None, l_net_max=None, home_region=False, spatial_only=False,
               t_start=None, score_from=0.0, mode="joint", penalties=None, record_alpha=True, record_slots=None):
     """반환 (out, stats). cap/rho 는 int 또는 {리전: int}."""
-    assert mode in ("joint", "decoupled", "greedy")
+    assert mode in ("joint", "decoupled", "greedy", "arrival_fixed")   # arrival_fixed: 도착 슬롯에 (리전, 시각)을 한 번 정하고 다시 풀지 않음(Zanotto 식 대조군, 2026-10-18)
     W = capacity._Windows(actual, pred24)
     cap_d = _as_region_dict(cap, regions)
     rho_d = _as_region_dict(rho, regions, 0)
@@ -417,6 +417,11 @@ def run_joint(jobs, actual, pred24, cap, regions, latency_ms, *,
             if mode == "decoupled" and jj < nQ and j["id"] not in fixed_region:
                 fixed_region[j["id"]] = var_r[v]
             if var_i[v] != 0:
+                if mode != "arrival_fixed":
+                    continue
+                # arrival_fixed: 미래 시작도 지금 확정(자리를 미리 점유, 이후 재풀이 없음)
+                emit(j, var_r[v], var_start[v], False, False, a_used)
+                started.add(jj)
                 continue
             is_def = jj < nQ
             start = var_start[v]

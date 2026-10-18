@@ -36,6 +36,19 @@ SHORT = {"US-CAL-CISO": "California", "US-TEX-ERCO": "Texas", "US-NY-NYIS": "New
          "DE": "Germany", "KR": "Korea", "IN": "India", "JP": "Japan"}
 
 
+DASH = object()   # 엔대시 자리표
+
+
+def label_parts(ax, x, y, parts):
+    """글자 조각을 기준선에 맞춰 이어 붙인다. DASH 자리만 Helvetica 엔대시."""
+    from matplotlib.offsetbox import AnnotationBbox, HPacker, TextArea
+    kids = [TextArea("–" if q is DASH else q, textprops=dict(fontsize=NOTE, **({"family": "Helvetica"} if q is DASH else {})))
+            for q in parts]
+    box = HPacker(children=kids, align="baseline", pad=0, sep=0.4)
+    ab = AnnotationBbox(box, (x, y), xycoords="data", box_alignment=(0, 0.5), frameon=False, pad=0, zorder=4)
+    ax.add_artist(ab)
+
+
 def main():
     r = json.load(open(os.path.join(HERE, "v2_slot3499_full.json")))
     job = json.load(open(os.path.join(HERE, "v2_slot3499.json")))["kr_jobs"][0]
@@ -65,10 +78,12 @@ def main():
             ax.scatter([i], [y], marker="o", s=34 if is_knee else 20, facecolor=INK if is_knee else "white",
                        edgecolor=INK, lw=0.8, zorder=3)
         a0, a1 = min(b["alphas"]), max(b["alphas"])
-        lab = f"{a0:g}" if a0 == a1 else f"{a0:g}–{a1:g}"
+        # 10-18(89 점검 [12]): 표 1 과 같은 표기 — 소수 한 자리(0.0·1.0)와 엔대시. Apple SD Gothic Neo 의 엔대시는
+        # 하이픈과 같은 모양이라 대시 한 글자만 Helvetica 로 찍는다(숫자는 그림의 다른 글자와 같은 서체).
+        parts = [f"{a0:.1f}"] if a0 == a1 else [f"{a0:.1f}", DASH, f"{a1:.1f}"]
         if a0 <= knee <= a1:
-            lab += " (knee)"
-        ax.text(max(b["pos"]) + 0.8, y, lab, fontsize=NOTE, va="center", ha="left", zorder=4)
+            parts[-1] += " (knee)"
+        label_parts(ax, max(b["pos"]) + 0.8, y, parts)
     ax.scatter([], [], marker="o", s=34, facecolor=INK, edgecolor=INK, lw=0.8, label="knee α")
     ax.scatter([], [], marker="o", s=20, facecolor="white", edgecolor=INK, lw=0.8, label="other α")
     ax.set_yticks(range(len(regions))); ax.set_yticklabels([SHORT[g] for g in regions], fontsize=TICK)
@@ -85,7 +100,7 @@ def main():
     for e in (".png", ".pdf"):
         fig.savefig(os.path.join(HERE, "v2_fig4_slot" + e))
     print("wrote v2_fig4_slot — 작업", job, "무릎점 α", knee, "띠",
-          [(SHORT[b["reg"]], sorted(b["pos"]), f"{min(b['alphas']):g}–{max(b['alphas']):g}") for b in bands])
+          [(SHORT[b["reg"]], sorted(b["pos"]), f"{min(b['alphas']):.1f}–{max(b['alphas']):.1f}") for b in bands])
 
 
 if __name__ == "__main__":

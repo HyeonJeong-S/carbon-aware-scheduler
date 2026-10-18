@@ -40,7 +40,7 @@ def main():
     day0 = win_lo // 24
     fig, ax = plt.subplots(figsize=(215 / 72.0, 184 / 72.0), dpi=500)
     ax.fill_between(xa, ya, color="#c8c8c8", lw=0, zorder=1, label="Capacity ignored")
-    ax.plot(xb, yb, color=INK, lw=0.8, zorder=3, label="CAST (knee α)")
+    ax.plot(xb, yb, color=INK, lw=0.8, zorder=3, label="CAST, knee")   # 10-18(89 점검 [10]): 계열 이름을 표 3·7 과 같게 "CAST, knee"
     ax.axhline(cap, color=INK, lw=0.6, ls=(0, (1, 1)))
     ax.text(win_hi - win_lo, cap + 0.8, f"Ceiling {cap}", ha="right", va="bottom", fontsize=7.7,
             bbox=dict(facecolor="white", edgecolor="none", pad=1.0))

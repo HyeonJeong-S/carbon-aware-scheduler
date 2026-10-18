@@ -139,8 +139,8 @@ def ic_cloud(x, y, s=1.0, label=""):
          f'<path d="M12,14 a7,7 0 0,1 13,-4 a6,6 0 0,1 10,5 a5.5,5.5 0 0,1 -1,11 '
          f'L10,26 a6,6 0 0,1 2,-12 z" fill="{INK}"/>',
          f'<circle cx="8" cy="9" r="5" fill="{INK}"/>',
-         f'<text x="21" y="24" font-size="7" fill="#fff" text-anchor="middle" '
-         f'font-weight="bold">CO₂</text>', "</g>"]
+         # 10-18(89 점검 [9]): 구름 속 흰 글자 "CO₂" 를 지웠다 — 인쇄 4.9 pt 로 읽히지 않고 바로 아래 "Carbon intensity" 라벨이 같은 말이다
+         "</g>"]
     if label:
         g.append(txt(x + 21 * s, y + 38 * s, label, anchor="middle", size=FT, xmax=x + 21 * s + 40))
     return "\n".join(g)
@@ -205,7 +205,7 @@ def fig_architecture_v2():
     """fig_architecture()(gen_figs.py) 를 복사해 가운데만 바꿨다. 좌표는 v1 과 같다:
     입력 왼쪽·위, CAST 둥근 상자 84~316, 리전 랙 세로 목록 338~. 높이만 155 → 170
     (배정 상자 아래 자기 고리 자리)."""
-    W, H = 404, 150
+    W, H = 404, 138    # 10-18(89 점검 [9]): 150 → 138 — CAST 상자 바닥(136.6) 아래 12 pt 빈 띠를 잘랐다
     L = [head(W, H, "그림 1 CAST v2 전체 구조 (전단)")]
 
     # ── 입력 ① 작업: 왼쪽 위 (v1 그대로) ──
@@ -333,8 +333,11 @@ def chrome(svg_path, out, pw, ph, pdf=False):
     else:
         args += [f"--window-size={pw},{ph}", f"--screenshot={out}"]
     try:
-        subprocess.run(args + [pathlib.Path(html).resolve().as_uri()],
-                       check=True, capture_output=True, timeout=60)
+        t0 = __import__("time").time()
+        r = subprocess.run(args + [pathlib.Path(html).resolve().as_uri()], capture_output=True, timeout=60)
+        # 10-18: Chrome 이 파일을 다 쓴 뒤 종료 감시(Teardown watchdog)에 걸려 2 를 돌려줄 때가 있다 — 파일이 새로 써졌으면 통과
+        if r.returncode != 0 and not (os.path.exists(out) and os.path.getmtime(out) >= t0 - 1):
+            raise subprocess.CalledProcessError(r.returncode, args, r.stdout, r.stderr)
     finally:
         os.remove(html)
     print("wrote", out)

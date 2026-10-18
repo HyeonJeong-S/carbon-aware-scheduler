@@ -1,6 +1,6 @@
 <!-- 그림 1 CAST v2 전체 구조 (전단) · gen_v2_fig1.py 로 생성 (직접 편집 금지)
      1단위 = 1pt, 폭 404pt. 100% 크기로 삽입할 것. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 404 150" width="404pt" height="150pt"
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 404 138" width="404pt" height="138pt"
      xml:space="preserve"
      font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif"
      font-size="9" fill="#000000">
@@ -8,7 +8,7 @@
   <marker id="a" viewBox="0 0 10 10" refX="9.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
     <path d="M0,0 L10,5 L0,10 z" fill="#000000"/></marker>
 </defs>
-<rect width="404" height="150" fill="#fff"/>
+<rect width="404" height="138" fill="#fff"/>
 <g transform="translate(8,5) scale(0.68)">
 <path d="M6,0 h18 l5,5 v19 h-23 z" fill="#fff" stroke="#000000" stroke-width="1.3"/>
 <path d="M3,3 h18 l5,5 v19 h-23 z" fill="#fff" stroke="#000000" stroke-width="1.3"/>
@@ -21,7 +21,6 @@
 <g transform="translate(27,56) scale(0.7)">
 <path d="M12,14 a7,7 0 0,1 13,-4 a6,6 0 0,1 10,5 a5.5,5.5 0 0,1 -1,11 L10,26 a6,6 0 0,1 2,-12 z" fill="#000000"/>
 <circle cx="8" cy="9" r="5" fill="#000000"/>
-<text x="21" y="24" font-size="7" fill="#fff" text-anchor="middle" font-weight="bold">CO₂</text>
 </g>
 <text x="41.7" y="82.6" text-anchor="middle" font-size="8">Carbon intensity</text>
 <text x="41.7" y="90" text-anchor="middle" font-size="6.5">History · per region · 1 h</text>

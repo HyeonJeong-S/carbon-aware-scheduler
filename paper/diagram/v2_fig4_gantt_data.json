@@ -15,8 +15,8 @@
    "forced": false,
    "k": 1,
    "tau_unconstrained": -5.0,
-   "rate_actual": 78.0,
-   "rate_unconstrained": 31.0
+   "rate_actual": 96.5,
+   "rate_unconstrained": 30.499999000000003
   },
   {
    "id": "j_009372",
@@ -28,8 +28,8 @@
    "forced": false,
    "k": 1,
    "tau_unconstrained": 18.0,
-   "rate_actual": 86.0,
-   "rate_unconstrained": 80.0
+   "rate_actual": 81.75,
+   "rate_unconstrained": 81.75
   },
   {
    "id": "j_009333",
@@ -41,8 +41,8 @@
    "forced": false,
    "k": 1,
    "tau_unconstrained": 18.0,
-   "rate_actual": 80.0,
-   "rate_unconstrained": 80.0
+   "rate_actual": 84.75,
+   "rate_unconstrained": 81.75
   },
   {
    "id": "j_027624",
@@ -81,7 +81,7 @@
    "k": 1,
    "tau_unconstrained": 20.0,
    "rate_actual": 80.0,
-   "rate_unconstrained": 81.0
+   "rate_unconstrained": 83.5
   },
   {
    "id": "j_027644",
@@ -93,8 +93,8 @@
    "forced": false,
    "k": 1,
    "tau_unconstrained": 19.0,
-   "rate_actual": 86.0,
-   "rate_unconstrained": 80.0
+   "rate_actual": 82.33333333333333,
+   "rate_unconstrained": 82.33333333333333
   },
   {
    "id": "j_100631",
@@ -119,8 +119,8 @@
    "forced": false,
    "k": 1,
    "tau_unconstrained": 21.0,
-   "rate_actual": 80.0,
-   "rate_unconstrained": 86.0
+   "rate_actual": 80.5,
+   "rate_unconstrained": 89.0
   }
  ],
  "run": "main/joint",

@@ -54,10 +54,15 @@ def main():
     a1.plot(t, car, color=INK, lw=1.3)
     # 최저는 현지 하루(UTC 7시 = 현지 0시 이후) 안에서 찾는다 — UTC 0~6시는 전날 저녁 꼬리라 거기 찍히면 그림이 거짓말을 한다
     lo = 7 + int(np.argmin(car[7:]))
+    # 10-18(89 점검 [3](d)): 18·19시가 모두 80 으로 같으면 argmin 은 18 을 고른다. 동률이면 용량 무시 배정 시각(19시,
+    # 세 단을 꿰는 안내선·본문 "현지 12시 = 19시 UTC")에 찍는다.
+    if highlight_job is not None:
+        hu = int(round(highlight_job["tau_unconstrained"]))
+        if 7 <= hu < 24 and car[hu] <= car[lo] + 1e-6:
+            lo = hu
     a1.scatter([lo], [car[lo]], s=26, marker="v", color=INK, zorder=4)
-    # 글자는 표식 아래 빈 자리에 — 위·옆은 곡선의 급강하(13~14시)가 지나간다(렌더 확인). 흰 배경은 안내선만 가린다.
-    a1.annotate("Carbon minimum", (lo, car[lo]), textcoords="offset points", xytext=(0, -11), ha="center", va="top",
-                fontsize=NOTE, zorder=5, bbox=dict(facecolor="white", edgecolor="none", pad=0.8))
+    # 10-18(89 점검 [18]): 흰 bbox 가 아래 축선을 15~22시에서 끊었다 → bbox 를 빼고 표식과 축선 사이 빈 띠 가운데로 올린다.
+    a1.text(lo, 34, "Carbon minimum", ha="center", va="center", fontsize=NOTE, zorder=5)
     GUIDE = "#333333"
     if highlight_job is not None:
         wx0_top = highlight_job["tau_unconstrained"]
@@ -81,8 +86,9 @@ def main():
         if D0 <= x_hi:
             a3.plot([D0, D0], [ri - 0.15, ri + 0.15], color=INK, lw=0.7, zorder=2)
         x0, x1 = j["tau"], j["tau"] + j["dur"]
+        # 10-18(89 점검 [3](a)): 본문의 예(맨 아래 행)만 굵은 테두리 1.4 — 캡션 "굵은 테두리가 본문의 예"
         a3.barh(ri, min(x1, x_hi) - max(x0, x_lo), left=max(x0, x_lo), height=0.62,
-                facecolor=fc, edgecolor=INK, lw=0.6, zorder=3)
+                facecolor=fc, edgecolor=INK, lw=1.4 if j["id"] == highlight_id else 0.6, zorder=3)
         if forced and x0 < 20 < x1 and (forced_end is None or x1 > forced_end):
             forced_end, forced_row, forced_x0 = x1, ri, x0
         if highlight_job is not None and j["id"] == highlight_id:
@@ -92,19 +98,19 @@ def main():
         wx0, wx1 = hj["tau_unconstrained"], hj["tau_unconstrained"] + hj["dur"]
         ax0, ax1 = hj["tau"], hj["tau"] + hj["dur"]
         a3.barh(hr, min(wx1, x_hi) - max(wx0, x_lo), left=max(wx0, x_lo), height=0.62,
-                facecolor="none", edgecolor=INK, lw=0.7, ls=(0, (2, 1.3)), zorder=4)
+                facecolor="none", edgecolor=INK, lw=1.4, ls=(0, (1.6, 1.0)), zorder=4)   # 10-18: 본문의 예 — 굵게(점선 무늬는 lw 에 비례해 늘어나므로 1.6/1.0)
         box_cx = (max(wx0, x_lo) + min(wx1, x_hi)) / 2
         bar_cx = (max(ax0, x_lo) + min(ax1, x_hi)) / 2
         pct = 100 * (hj["rate_actual"] / hj["rate_unconstrained"] - 1)
-        label_y = n_rows + EXTRA_ROWS / 2 - 0.4
-        label_x0 = 0.5
-        a3.annotate(f"Capacity-ignored slot · CAST slot (+{pct:.1f}%)", (label_x0, label_y),
-                    ha="left", va="center", fontsize=NOTE, zorder=6)
-        leader_from_x = label_x0 + 16.2
-        for cx in (box_cx, bar_cx):
-            a3.annotate("", xy=(cx, hr + 0.33), xytext=(leader_from_x, label_y),
-                        arrowprops=dict(arrowstyle="-|>", color=INK, lw=0.6, mutation_scale=5,
-                                         shrinkA=1.0, shrinkB=1.5, connectionstyle="arc3,rad=0.12"), zorder=6)
+        # 10-18(89 점검 [3](b)(c)): 한 줄 라벨("Capacity-ignored slot · CAST slot")은 상자 순서(왼쪽 CAST, 오른쪽 용량 무시)와
+        # 거꾸로였고 두 화살표가 "%)" 를 가로질렀다 → 라벨 둘을 두 줄로 나눠 각자 화살표 하나. 화살표는 글자 오른쪽 끝에서
+        # 나가(relpos) 글자를 지나지 않는다. 윗줄 CAST(왼쪽 상자), 아랫줄 용량 무시(오른쪽 상자, 안내선 왼쪽에서 끝남).
+        ar = dict(arrowstyle="-|>", color=INK, lw=0.6, mutation_scale=5, shrinkA=1.5, shrinkB=1.5,
+                  connectionstyle="arc3,rad=0.15", relpos=(1.0, 0.5))
+        a3.annotate("CAST slot", xy=(bar_cx - 0.3, hr + 0.33), xytext=(ax0 - 0.6, hr + 1.0),
+                    ha="right", va="center", fontsize=NOTE, zorder=6, arrowprops=ar)
+        a3.annotate("Capacity-ignored slot", xy=(box_cx - 0.3, hr + 0.33), xytext=(wx0 - 0.8, hr + 1.85),
+                    ha="right", va="center", fontsize=NOTE, zorder=6, arrowprops=ar)
         a3.plot([wx0, wx0], [-0.85, n_rows + EXTRA_ROWS - 0.15], color=GUIDE, lw=0.9, ls=(0, (3, 2)), zorder=0.5)
     a3.set_ylim(n_rows + EXTRA_ROWS - 0.15, -0.85)
     a3.set_yticks([])
@@ -119,14 +125,15 @@ def main():
     a2.bar(t[~full], occ[~full], width=0.74, facecolor="white", edgecolor=INK, lw=0.7)
     a2.bar(t[full], occ[full], width=0.74, facecolor=EXCEPT_GRAY, edgecolor=INK, lw=0.7)
     a2.axhline(cap, color=INK, lw=1.0, ls=(0, (4, 1.6)))
-    a2.text(11.5, cap + 0.8, f"Ceiling {cap}", ha="left", fontsize=NOTE, zorder=5,
-            bbox=dict(facecolor="white", edgecolor="none", pad=1.0))
-    a2.set_ylim(0, cap * 1.4)
+    # 10-18(89 점검 [18]): 흰 bbox 가 굵은 상한 점선 위쪽 절반을 덮었다 → bbox 를 빼고 선에서 조금 띄운다
+    a2.text(11.5, cap + 1.5, f"Ceiling {cap}", ha="left", va="bottom", fontsize=NOTE, zorder=5)
+    YTOP2 = cap * 1.55   # 10-18: 1.4 → 1.55 — bbox 를 뺀 "Ceiling 17" 을 선 위로 띄우니 범례 글자에 닿아 위 여백을 늘렸다(렌더 확인)
+    a2.set_ylim(0, YTOP2)
     a2.set_yticks([0, cap])
     a2.set_xlim(x_lo, x_hi)
     if highlight_job is not None:
         hour = int(round(highlight_job["tau_unconstrained"]))
-        a2.plot([highlight_job["tau_unconstrained"]] * 2, [cap * 1.4, occ[hour]], color=GUIDE, lw=0.9, ls=(0, (3, 2)), zorder=0.5)
+        a2.plot([highlight_job["tau_unconstrained"]] * 2, [YTOP2, occ[hour]], color=GUIDE, lw=0.9, ls=(0, (3, 2)), zorder=0.5)
     a2.set_xticks([0, 6, 12, 18])
     a2.set_xlabel("Hour of day (UTC; local time is 7 h earlier)", fontsize=LAB)
     a2.set_ylabel("Concurrent executions", fontsize=LAB, labelpad=1)
