@@ -1,0 +1,1 @@
+afaz_rho0|./.venv/bin/python -m scheduler.match_alpha --engine arrival_fixed --target 36.72 --lo 0.45 --hi 0.55 --prefix azure/af_rho0_m --extra "--rho 0 --jobs load_balancer/data/jobs_azure.csv" --max-runs 4
