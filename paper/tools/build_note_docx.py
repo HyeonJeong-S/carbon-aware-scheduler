@@ -46,9 +46,14 @@ def _para(doc, text, size=10, bold=False, space_after=3, indent=None, color=None
 def _table(doc, rows):
     ncol = max(len(r) for r in rows)
     t = doc.add_table(rows=len(rows), cols=ncol); t.style = "Table Grid"; t.alignment = WD_TABLE_ALIGNMENT.CENTER
+    t.autofit = False
+    need = [max(4.0, sum(len(r[j]) if j < len(r) else 0 for r in rows) / len(rows)) ** 0.8 for j in range(ncol)]  # 칸 폭 = 글자 수에 맞춤
+    floor = [14.0 if max(len(r[j]) if j < len(r) else 0 for r in rows) <= 6 else 26.0 for j in range(ncol)]   # 항목 번호 칸이 쪼개지지 않게
+    rest = 170 - sum(floor)
+    widths = [Mm(f + rest * w / sum(need)) for f, w in zip(floor, need)]
     for i, r in enumerate(rows):
         for j in range(ncol):
-            c = t.cell(i, j); c.text = ""
+            c = t.cell(i, j); c.text = ""; c.width = widths[j]
             p = c.paragraphs[0]; p.paragraph_format.space_after = Pt(0); p.paragraph_format.line_spacing = 1.1
             _font(p.add_run(r[j] if j < len(r) else ""), 8.5, i == 0)
     doc.add_paragraph().paragraph_format.space_after = Pt(2)
