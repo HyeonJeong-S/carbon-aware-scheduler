@@ -22,10 +22,12 @@ EQ = {
  6: r"n_{r}(t)\le\mathrm{cap}_{r}+z_{r}(t),\ z_{r}(t)\ge 0\quad\forall r\in R,\ \forall t",        # 간격을 넓히면 단폭을 넘어 번호 (6)이 다음 줄로 떨어진다
  7: r"c_{j}(r,i)=d_{j}\left[\alpha\,\tilde{C}_{j}(r,i)+(1-\alpha)\,\tilde{\ell}(o_{j},r)\right]",
  8: r"\tilde{C}_{j}(r,i)=\frac{\hat{C}_{r}^{(t)}(t+i,\,d_{j})}{\max_{r',t'}\hat{C}_{r'}^{(t)}(t')},\qquad\tilde{\ell}(o,r)=\frac{\ell(o,r)}{244}",
- 9: r"\min\ \sum_{j\in Q}\sum_{r,i}c_{j}(r,i)\,x_{jri}+M_{A}\sum_{r,\tau}z^{A}_{r\tau} @@ \qquad+M_{B}\sum_{r,\tau\ge t+1}z^{B}_{r\tau}+\varepsilon\sum_{j\in Q}\sum_{r,i}i\,x_{jri}",
+ # 식 9: 합의 몸을 {}로 묶는다 — 안 묶으면 XSL 이 c_j 만 Σ 의 몸(m:e)에 넣고 "(r,i)" 를 Σ 밖에 두어 c_j 와 괄호 사이가 벌어졌다(84 [10])
+ 9: r"\min\ \sum_{j\in Q}\sum_{r,i}{c_{j}(r,i)\,x_{jri}}+M_{A}\sum_{r,\kappa}z^{A}_{r\kappa} @@ \qquad+M_{B}\sum_{r,\sigma\ge t+1}z^{B}_{r\sigma}+\varepsilon\sum_{j\in Q}\sum_{r,i}i\,x_{jri}",   # 3회차 B[10]: κ 는 순간 u∈U_t 와 미래 슬롯 σ 를 함께(해설 문장). 세 줄로 나누면 Word 가 가운데 줄 Σ 를 크게 그렸다
  10: r"\sum_{r,i}x_{jri}=1,\qquad\forall j\in Q",                                      # "= 1, ∀j"(89 [24]: 붙어 있던 것)
- 11: r"\sum_{(j,i)\ni\tau}x_{jri}+n_{r}(\tau)\le\mathrm{cap}_{r}+z^{A}_{r\tau}",        # ∀ r, τ∈[t,t+H] 는 해설 문장에(단 폭)
- 12: r"\sum_{(j,i)\ni\tau,\ j\in Q^{\mathrm{def}}}x_{jri}+n_{r}(\tau) @@ \qquad\le\mathrm{cap}_{r}-\rho_{r}+z^{B}_{r\tau}",   # ∀ r, τ∈[t+1,t+H] 는 해설 문장에. 한 줄이면 번호 (12)가 식에 붙는다(89 [7]) — 두 줄
+ "11a": r"\sum_{(j,0)\ni u}x_{jr0}+n_{r}(u)\le\mathrm{cap}_{r}+z^{A}_{ru}",   # 3회차 B[10]: 지금 슬롯의 시작 순간 행. (j,0)∋u = 지금 시작하는 j 의 실행 [max(t,s_j), +d_j) 가 u 를 포함(해설 문장에)
+ "11b": r"\sum_{(j,i)\ni\sigma}x_{jri}+n_{r}(\sigma)\le\mathrm{cap}_{r}+z^{A}_{r\sigma}",        # 미래 슬롯 σ∈[t+1,t+H] 는 해설 문장에
+ 12: r"\sum_{(j,i)\ni\sigma,\ j\in Q^{\mathrm{def}}}x_{jri}+n_{r}(\sigma) @@ \qquad\le\mathrm{cap}_{r}-\rho_{r}+z^{B}_{r\sigma}",   # ∀ r, σ∈[t+1,t+H] 는 해설 문장에. 한 줄이면 번호 (12)가 식에 붙는다(89 [7]) — 두 줄
  13: r"\alpha^{*}=\underset{\alpha\in\mathcal{A}}{\mathrm{arg\,min}}\sqrt{\tilde{\lambda}_{\alpha}^{2}+\tilde{e}_{\alpha}^{2}}",
  14: r"E_{j}\approx P\,d_{j}\,\frac{1}{|T_{j}|}\sum_{\tau\in T_{j}}C_{r(j)}(\tau)",
 }
@@ -71,6 +73,9 @@ def _one(tex):
         acc = etree.Element("{%s}acc" % M_NS); apr = etree.SubElement(acc, "{%s}accPr" % M_NS)
         etree.SubElement(apr, "{%s}chr" % M_NS).set("{%s}val" % M_NS, "̃")
         acc.append(lu.find("{%s}e" % M_NS)); lu.getparent().replace(lu, acc)
+    for npr in om.iter("{%s}naryPr" % M_NS):                # 10-18: 줄을 나눈 식 (9) 둘째 줄의 Σ 만 한계가 아래로 내려갔다 — 모든 Σ 를 옆 첨자(subSup)로 통일
+        for e in npr.findall("{%s}limLoc" % M_NS): npr.remove(e)
+        etree.SubElement(npr, "{%s}limLoc" % M_NS).set("{%s}val" % M_NS, "subSup")
     for g in om.iter("{%s}grow" % M_NS):                   # Σ 가 안의 Σ 를 감싸며 커지지 않게(식 (9) 첫 Σ 만 큼)
         g.set("{%s}val" % M_NS, "0")
     return om, ns
@@ -93,7 +98,7 @@ def main():
         open(os.path.join(OUT, f"eq{n}.tex"), "w", encoding="utf-8").write(tex + "\n")
         txt = "".join(om.xpath(".//m:t/text()", namespaces=ns))
         cnt = {k: len(om.xpath(f".//m:{k}", namespaces=ns)) for k in ("d", "f", "rad", "nary", "sSub", "sSup", "sSubSup", "acc", "bar")}
-        print(f"({n:2d}) {txt[:90]:90s} | " + " ".join(f"{k}{v}" for k, v in cnt.items() if v))
+        print(f"({str(n):>3s}) {txt[:90]:90s} | " + " ".join(f"{k}{v}" for k, v in cnt.items() if v))
     print("wrote", OUT)
 
 if __name__ == "__main__":

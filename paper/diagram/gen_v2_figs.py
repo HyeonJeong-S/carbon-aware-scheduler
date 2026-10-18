@@ -101,7 +101,8 @@ def fig_alpha():
             ax.annotate("α=1", (xs[-1], ys[-1]), textcoords="offset points", xytext=(-4, dy), fontsize=F_ANN, ha="right")
         # 10-18(87 점검2 [2]): "knee" 두 라벨이 어느 설계 것인지 적었다 — "CAST knee" / "Decoupled knee"
         if filled:
-            ax.annotate("CAST knee", (kx, ky), textcoords="offset points", xytext=(-4, 8), fontsize=F_ANN, ha="right")
+            # 10-18(84 점검3 [8]): 라벨이 과녁에서 약 10 ms 왼쪽·8 %p 위로 떨어져 있었다 → 과녁 고리 바로 왼쪽(고리 반지름 6.1 pt + 틈)에 붙였다
+            ax.annotate("CAST knee", (kx, ky), textcoords="offset points", xytext=(-8, 3), fontsize=F_ANN, ha="right", va="center")
         else:
             ax.annotate("Decoupled knee", (kx, ky), textcoords="offset points", xytext=(10, -5), fontsize=F_ANN, ha="left")
         # 같은 지연 짝(×): 무릎점과 같은 작업당 평균 지연을 내는 고정 α 실행. 본문 판정(분리형 무릎점이 같은 지연의 고정 α 보다
@@ -110,8 +111,10 @@ def fig_alpha():
         pair = stats("alpha/m0.5687" if filled else "alpha/decoupled_m0.4375")
         if pair:
             import matplotlib.patheffects as pe
-            ax.scatter([pair["avg_latency_ms"]], [pair["savings_pct"]], marker="x", s=20, color=INK, lw=0.9, zorder=12,
-                       path_effects=[pe.withStroke(linewidth=1.8, foreground="white")])
+            # 10-18(84 점검3 [8]): CAST × 가 과녁 안에 묻혀 거의 안 보였다 → 선 0.9 → 1.3, 크기 20 → 30, 흰 테두리 1.8 → 2.6.
+            # zorder 12 는 과녁(●4+4, 고리 5+4)보다 위 — 범례 표식도 같은 굵기로.
+            ax.scatter([pair["avg_latency_ms"]], [pair["savings_pct"]], marker="x", s=30, color=INK, lw=1.3, zorder=12,
+                       path_effects=[pe.withStroke(linewidth=2.6, foreground="white")])
         ax.plot([], [], color=INK if filled else GRAY, lw=1.1, marker="o", ms=2.45 if filled else 5.5, mew=0.5 if filled else 0.7, mfc=INK if filled else "white", mec=INK,
                 label="CAST" if filled else "Decoupled")   # 표 5·본문과 같은 이름
         drawn += 1
@@ -120,7 +123,7 @@ def fig_alpha():
     ax.set_xlabel("Mean latency (ms)", fontsize=F_LABEL)
     ax.set_ylabel("Carbon savings (%)", fontsize=F_LABEL)
     ax.set_xlim(-6, 130); ax.set_ylim(-4, 100)
-    ax.scatter([], [], marker="x", s=20, color=INK, lw=0.9, label="Fixed α, same latency")   # 87 점검2 [2]: 같은 지연 짝
+    ax.scatter([], [], marker="x", s=30, color=INK, lw=1.3, label="Fixed α, same latency")   # 87 점검2 [2]: 같은 지연 짝
     ax.legend(fontsize=F_LEG, frameon=False, loc="lower right", handlelength=2.0)
     save(fig, "alpha")
 
@@ -181,12 +184,17 @@ def where_scatter(ax, r):
     # 모든 원에 같은 식이라 넓이 대비(넓이 ∝ 몫)는 그대로.
     ax.scatter(xs, ys, s=[9 + 180 * ho.get(g, 0) for g in regs], facecolor="white", edgecolor=INK, lw=0.9, zorder=3)
     # 10-18(89 점검 [19]): 약자(CAL·TEX·NY…)는 캡션·본문에 정의가 없어 전체 이름으로. 자리는 렌더 확인 뒤 손으로:
+    # 10-18(84 점검3 [5]): Japan 라벨에 "(6.7%)" 가 붙어 길어지자 오른쪽 끝이 India 점 위로 가 India 점에 더 가까웠다 → 8 pt 왼쪽으로.
     # Korea 는 점 아래면 격자 5 가 글자 윗부분을 지나 점 오른쪽으로. California 는 큰 원 왼쪽, Japan 은 원 위, France 는 원 위(가운데 맞춤이면 F 가 y 축선에 걸려 왼쪽 맞춤), Germany 는 오른쪽이면 축 밖이라 점 아래, 나머지 오른쪽.
-    off = {"US-CAL-CISO": (-11, -4, "right"), "JP": (0, 7, "center"), "FR": (-5, 11, "left"), "US-NY-NYIS": (7, -3, "left"),
+    off = {"US-CAL-CISO": (-11, -4, "right"), "JP": (-8, 7, "center"), "FR": (-5, 11, "left"), "US-NY-NYIS": (7, -3, "left"),
            "KR": (6, -2.5, "left"), "DE": (0, -10, "center")}
     for g, x, y in zip(regs, xs, ys):
         dx, dy, ha = off.get(g, (5, -2, "left"))
-        ax.annotate(REGION_NAME[g], (x, y), textcoords="offset points", xytext=(dx, dy), fontsize=F_ANN, ha=ha)
+        # 10-18(84 점검3 [5]): 넓이 식 9+180x 에 바닥값이 있어 일본 원(6.7%)이 몫 0 인 작은 원과 거의 같은 크기로 보였다 →
+        # 큰 원(몫 1% 이상: CAL 55.6·FR 37.7·JP 6.7, regions_main.json 의 hours_over_share 그대로)은 이름 뒤 괄호에 몫을 적는다.
+        share = ho.get(g, 0)
+        lab = REGION_NAME[g] + (f" ({100 * share:.1f}%)" if share >= 0.01 else "")
+        ax.annotate(lab, (x, y), textcoords="offset points", xytext=(dx, dy), fontsize=F_ANN, ha=ha)
     ax.set_xlim(0, max(xs) * 1.18); ax.set_ylim(-1.5, max(ys) * 1.17)   # 10-18: 위 여백 1.25 → 1.17 — 세로 눈금을 넓혀 CAL·JP 원 사이를 띄운다
     ax.set_xlabel("Mean daily range of intensity (gCO₂/kWh)", fontsize=F_LABEL)
     ax.set_ylabel("Share of temporal savings (%)", fontsize=F_LABEL)
@@ -206,7 +214,7 @@ def where_hours(ax, r):
     ax.bar(x[pf >= MIN_PCT] + 0.2, pf[pf >= MIN_PCT], facecolor="white", edgecolor=INK, lw=0.4, width=0.4, zorder=2, label="France")
     ax.set_xticks([0, 6, 12, 18]); ax.set_xlim(-0.7, 23.7)
     ax.set_xlabel("Local hour", fontsize=F_LABEL)
-    ax.set_ylabel("Share of hours over ceiling (%)", fontsize=F_LABEL)
+    ax.set_ylabel("Hours over ceiling (%)", fontsize=F_LABEL)   # 10-18(84 점검3 [6]): "Share of hours over ceiling (%)" 가 패널 높이보다 길어 축 위로 나갔다
     # 10-18(89 점검 [8]): 범례 6.6 → 7.1 — 두 장을 build_v2_docx.stack_ab 로 이어 붙이면 배율 0.847 이라 6.6 은 인쇄 5.6 pt
     # 흰 바탕(테두리 없음)은 y 격자 20 이 "California" 글자를 지나가지 않게 — 가리는 것은 격자뿐
     leg = ax.legend(fontsize=F_ANN, frameon=True, loc="upper right", handlelength=1.2, borderpad=0.2, fancybox=False)
@@ -246,9 +254,17 @@ def fig_priors():
     labels = {"cics": ("CICS", -6, -1, "right"),   # 10-18 렌더: 오른쪽이면 기준 피크 점선(13)을 가로질러 왼쪽으로
               "casper": ("CASPER", 0, -11, "center"),   # CASPER 는 α=1 곡선 위에 놓이는 점 — 라벨은 곡선 아래
               "suk_home": ("Suk. temporal (home)", 6, -1, "left"),
-              "suk_lb_v2knee": ("Suk. temporal (ours)", 0, -11, "center"),   # 10-18 렌더: 오른쪽이면 그림 끝에 닿아 점 아래로  # CAST(무릎점)가 정한 리전 위의 Sukprasert 시간 이동 — 표 7 과 같은 행(10-18)
+              # 10-18(84 점검3 [1]): 가운데 맞춤이면 라벨 왼쪽 끝이 Caspian 점(34, 67.5) 바로 오른쪽에 붙고 그 아래 Caspian 라벨이 있어
+              # (34, 67.5) 점이 "Suk. temporal (ours)" 로 읽혔다 → 자기 점 바로 아래, 점 8 pt 왼쪽에서 시작(왼쪽 맞춤)해
+              # Caspian 라벨(점 오른쪽) 끝과 띄우고, 같은 줄로 이어 읽히지 않게 Caspian 라벨보다 한 줄쯤 낮게 둔다.
+              # 점에서 16 pt 내려가므로 점 → 라벨 짧은 지시선(세로, 아래 LEADER)을 단다. 렌더: −11 이면 Caspian 라벨과 기준선이 거의 같아
+              # "Caspian Suk. temporal (ours)" 한 줄로 읽혔고, Caspian 라벨을 점 높이에 두면 CAST 곡선 끝점(39, 73.4)이 자기 점보다 가까웠다.
+              "suk_lb_v2knee": ("Suk. temporal (ours)", -8, -16, "left"),   # 10-18 렌더: 오른쪽이면 그림 끝에 닿아 점 아래로  # CAST(무릎점)가 정한 리전 위의 Sukprasert 시간 이동 — 표 7 과 같은 행(10-18)
               "suk_st": ("Suk. spatial+temporal", -14, -11, "center"),   # 10-18 렌더: 가운데면 그림 오른쪽 끝에 닿아 왼쪽으로 조금  # 오른쪽 끝 점 — 왼쪽으로 적으면 α=1 곡선을 가로지르므로 점 아래
-              "caspian_w1.0_frac": ("Caspian", 0, -11, "center")}   # 10-18 렌더: 오른쪽이면 Suk(ours) 라벨과 겹쳐 점 아래로
+              "caspian_w1.0_frac": ("Caspian", 5, -3, "left")}   # 10-18(84 점검3 [1]): 점 아래 → 점 오른쪽(같은 높이). 라벨이 자기 점에 붙어 읽힌다   # 10-18 렌더: 오른쪽이면 Suk(ours) 라벨과 겹쳐 점 아래로
+    # 10-18(84 점검3 [1]) 지시선 아래 끝(점 기준 offset pt). 렌더: 세로로 내리면 "k" 줄기 위에 떨어져 k 가 길어 보였다 →
+    # "Suk." 와 "temporal" 사이 빈칸 위(라벨 시작 −8 + "Suk." 폭 13 + 빈칸 반 1.2 = +6.2)로 비스듬히 내린다.
+    LEADER = {"suk_lb_v2knee": (6.2, -11.0)}
     for p in glob.glob(os.path.join(V2, "priors", "*.json")):
         j = json.load(open(p)); s = j["at_cap"]; n = j["name"]
         if n in ("baseline", "suk_lb"):   # 10-18: suk_lb 는 v1 로드밸런서 리전 위의 옛 행 — 표 7 의 (ours) 는 suk_lb_v2knee
@@ -262,9 +278,13 @@ def fig_priors():
         lab, dx, dy, ha = labels.get(n, (n, 6, -1, "left"))
         # 10-18: 흰 바탕(테두리 없음, pad 0.4) — y 격자(60·20)가 Caspian·Suk. temporal (home) 글자를 지나갔다. 가리는 것은 격자뿐:
         # 라벨 자리는 세로선 13·17 과 용량 무시 가로 점선(73.4·96.0)에 닿지 않는다(렌더 확인). zorder 5 는 ○(6) 아래.
-        ax.annotate(lab, (s["required_capacity"], s["savings_pct"]), textcoords="offset points", xytext=(dx, dy),
+        ann = ax.annotate(lab, (s["required_capacity"], s["savings_pct"]), textcoords="offset points", xytext=(dx, dy),
                     fontsize=F_ANN, ha=ha, va="center", linespacing=1.2, zorder=5,
                     bbox=dict(facecolor="white", edgecolor="none", pad=0.4))
+        if n in LEADER:   # 지시선: 라벨 윗변 바로 위에서 점 고리 바깥(반지름 약 2.9 pt)까지
+            ax.annotate("", (s["required_capacity"], s["savings_pct"]), textcoords="offset points", xytext=LEADER[n],
+                        arrowprops=dict(arrowstyle="-", lw=0.5, color=INK, shrinkA=0, shrinkB=3.2), zorder=5)
+            ann.set_in_layout(False)   # 라벨이 축 오른쪽 끝을 조금 넘는다 — tight_layout 이 축을 줄이지 않게(그림 폭 안인지는 렌더로 확인)
     for suf, mk, col in (("", "o", INK), ("_a1", "s", GRAY)):
         pts = []
         for name in [f"cap/{c}{suf}" for c in ("0.50x", "0.75x", "1.00x", "1.50x", "2.00x", "3.00x")] + [f"main/joint{suf}"]:

@@ -37,6 +37,8 @@ def main(argv=None):
     ap.add_argument("--milp", action="store_true")
     ap.add_argument("--relaxed", action="store_true", help="용량 행에 슬롯을 통째로 덮는 실행만 넣는다(참 하한)")
     ap.add_argument("--time-limit", type=float, default=1800)
+    ap.add_argument("--match-run", default=None, help="3회차 B[6]: 이 연간 실행에서 그 주에 제출된 작업의 실행 시간 가중 지연 Λ̄ 를 예산으로 두고"
+                    " 배출만 최소화(지연 합 ≤ Λ̄ 행 추가) — 같은 지연에서의 하한. 격차 = 그 실행의 그 주 작업 배출 − 하한")
     args = ap.parse_args(argv)
 
     data = carbon_2025.load_2025()
@@ -48,11 +50,21 @@ def main(argv=None):
     jobs = [j for j in data_loader.load_jobs_csv(args.jobs) if t0 <= j["submit_time"] < t1]
     base = sum(W.actual_mean(j["region"], j["submit_time"], j["duration"]) * j["duration"] for j in jobs) / 1000
     print(f"창 {t0}~{t1}h 작업 {len(jobs):,} 기준 {base:,.1f} kg", flush=True)
+    run_kg = lat_budget = None
+    if args.match_run:
+        import pandas as pd
+        rdf = pd.read_csv(os.path.join(_HERE, "data", "v2", args.match_run, "jobs.csv.gz"))
+        rdf = rdf[(rdf.submit_time >= t0) & (rdf.submit_time < t1)]
+        assert len(rdf) == len(jobs), (len(rdf), len(jobs))
+        run_kg = float(rdf.carbon_emitted.sum()) / 1000
+        lat_budget = float((rdf.latency_ms * rdf.duration).sum() / rdf.duration.sum())
+        args.alpha = 1.0
+        print(f"{args.match_run}: 그 주 작업 {run_kg:,.1f} kg, d가중 지연 {lat_budget:.2f} ms → 예산", flush=True)
 
     # 정규화 분모: 창 전체의 최대 실측 강도 (슬롯별이 아닌 전역 — 오프라인이므로)
     cmax = max(float(np.max(actual[r][t0:t1 + 48])) for r in REGIONS)
 
-    var_cost, var_carb, var_lat, cover = [], [], [], {}
+    var_cost, var_carb, var_lat, var_d, cover = [], [], [], [], {}
     row_eq = []
     tau_max = t1 + 48
     for jj, j in enumerate(jobs):
@@ -67,7 +79,7 @@ def main(argv=None):
                 v = len(var_cost)
                 var_cost.append(d * (args.alpha * ch / cmax + (1 - args.alpha) * lt))
                 var_carb.append(ch * d)
-                var_lat.append(lat[o][r])
+                var_lat.append(lat[o][r]); var_d.append(d)
                 row_eq.append(jj)
                 # 10-17: 엄밀한 하한이 되려면 용량을 '덜' 세야 한다 — 슬롯 단위 덮음(부분 겹침도 한 자리)은 롤링의
                 # 시작 순간 단위보다 보수적이라 롤링이 '하한'보다 낮게 나왔다(98.12 vs 98.05). --relaxed 면 실행 구간이
@@ -84,8 +96,13 @@ def main(argv=None):
         for v in cover[key]:
             rows.append(k); cols.append(v); vals.append(1.0)
         rows.append(k); cols.append(nx + k); vals.append(-1.0)
-    A_ub = coo_matrix((vals, (rows, cols)), shape=(nA, nx + nA)).tocsr()
-    b_ub = np.full(nA, float(args.cap))
+    b_list = [float(args.cap)] * nA
+    if lat_budget is not None:      # Σ x·d·(ℓ − Λ̄) ≤ 0
+        for v in range(nx):
+            rows.append(nA); cols.append(v); vals.append(var_d[v] * (var_lat[v] - lat_budget))
+        b_list.append(0.0)
+    A_ub = coo_matrix((vals, (rows, cols)), shape=(len(b_list), nx + nA)).tocsr()
+    b_ub = np.asarray(b_list)
     A_eq = coo_matrix((np.ones(nx), (row_eq, np.arange(nx))), shape=(len(jobs), nx + nA)).tocsr()
     b_eq = np.ones(len(jobs))
     # 벌점은 run_joint 와 같은 규칙(감사 뒤): M_B = max(10, 2·max d_j), M_A = 100·M_B — 옛 상수 joint.M_A 는 없어졌다(10-17)
@@ -101,10 +118,15 @@ def main(argv=None):
     lp_kg = float(np.dot(x, var_carb)) / 1000
     frac = int(np.sum((x > 1e-6) & (x < 1 - 1e-6)))
     lp_lat = float(np.dot(x, var_lat)) / len(jobs)   # 10-17: α<1 비교용 작업당 평균 지연(ms)
+    lp_dw = float(np.dot(x, np.asarray(var_lat) * np.asarray(var_d)) / np.dot(x, var_d))
     out = dict(start_h=t0, days=args.days, cap=args.cap, alpha=args.alpha, n_jobs=len(jobs), baseline_kg=base,
-               lp_kg=lp_kg, lp_savings_pct=100 * (1 - lp_kg / base), lp_overflow=float(o.sum()), lp_latency_ms=lp_lat, lp_objective=float(res.fun),
+               lp_kg=lp_kg, lp_savings_pct=100 * (1 - lp_kg / base), lp_overflow=float(o.sum()), lp_latency_ms=lp_lat, lp_dw_latency_ms=lp_dw, lp_objective=float(res.fun),
                lp_fractional_vars=frac, lp_wall_s=time.perf_counter() - t_start, n_vars=nx)
-    print(f"LP 하한: {lp_kg:,.1f} kg ({out['lp_savings_pct']:.2f}%)  초과 {o.sum():.2f}  분수변수 {frac}  {out['lp_wall_s']:.1f}s", flush=True)
+    print(f"LP 하한: {lp_kg:,.1f} kg ({out['lp_savings_pct']:.2f}%)  초과 {o.sum():.2f}  분수변수 {frac}  d가중 지연 {lp_dw:.2f} ms  {out['lp_wall_s']:.1f}s", flush=True)
+    if run_kg is not None:
+        out.update(match_run=args.match_run, run_kg=run_kg, lat_budget_dw_ms=lat_budget,
+                   gap_pp=100 * (run_kg - lp_kg) / base, gap_of_remaining_pct=100 * (run_kg - lp_kg) / run_kg)
+        print(f"격차: {run_kg - lp_kg:,.1f} kg = {out['gap_pp']:.2f}%p (그 실행의 남은 배출의 {out['gap_of_remaining_pct']:.1f}%)", flush=True)
     if args.milp and frac:
         t_m = time.perf_counter()
         resm = milp(c, constraints=[LinearConstraint(A_ub, -np.inf, b_ub), LinearConstraint(A_eq, b_eq, b_eq)],
@@ -117,7 +139,8 @@ def main(argv=None):
                        milp_wall_s=time.perf_counter() - t_m)
             print(f"MILP: {out['milp_kg']:,.1f} kg  초과 {om.sum():.2f}  status {resm.status}  {out['milp_wall_s']:.1f}s", flush=True)
     os.makedirs(OUT_DIR, exist_ok=True)
-    p = os.path.join(OUT_DIR, f"bound_{t0}_{args.days}d_cap{args.cap}_a{args.alpha}{'_relaxed' if args.relaxed else ''}.json")
+    tag = f"_lat_{args.match_run.replace('/', '_')}" if args.match_run else ""
+    p = os.path.join(OUT_DIR, f"bound_{t0}_{args.days}d_cap{args.cap}_a{args.alpha}{'_relaxed' if args.relaxed else ''}{tag}.json")
     json.dump(out, open(p, "w"), indent=1)
     print("저장:", p)
 

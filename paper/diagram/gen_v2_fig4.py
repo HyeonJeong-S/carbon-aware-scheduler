@@ -66,7 +66,9 @@ def main():
             bands.append({"reg": reg, "alphas": [c["alpha"]], "pos": {i}})
     P = np.array([r["pred_at_slot"][g] for g in regions])
     vmax = math.ceil(P.max() / 100) * 100
-    cmap = LinearSegmentedColormap.from_list("ink", ["#ffffff", "#8c8c8c"])
+    # 10-18(84 점검3 [2]): 흰색 → #8c8c8c 로는 눈금 600 도 중간 회색이라 한 행 안의 차이가 인쇄에서 안 보였다 →
+    # 흰색 → 진회색 #333333(0.2)으로 넓혔다. vmax 는 그대로(자료 최댓값 인도 555 를 100 단위로 올린 600 — 눈금 0·300·600).
+    cmap = LinearSegmentedColormap.from_list("ink", ["#ffffff", "#333333"])
     fig, ax = plt.subplots(figsize=(COL, 150 / 72.0), dpi=500)
     im = ax.imshow(P, cmap=cmap, aspect="auto", vmin=0, vmax=vmax, zorder=0,
                    extent=(-0.5, 23.5, len(regions) - 0.5, -0.5))
@@ -84,7 +86,12 @@ def main():
         if a0 <= knee <= a1:
             # 10-18(87 점검2 [9]): "(knee)" 만 붙이면 0.4·0.5 둘 다 무릎점처럼 읽혔다 — 무릎점 α 를 밝힌다
             parts[-1] += f" (knee at {knee:.1f})" if a0 != a1 else " (knee)"
-        label_parts(ax, max(b["pos"]) + 0.8, y, parts)
+        # 10-18(84 점검3 [2]): 색만으로는 한국 352 → 329(7%)처럼 작은 차이가 안 보여, 고른 칸의 예측값(gCO₂/kWh, pred_at_slot 그대로)을
+        # α 범위 뒤 "·" 다음에 적는다. 칸이 둘이면 왼쪽 칸부터 "58, 80". 렌더: 한국 i=0 라벨("0.0 · 352")이 i=6 ○ 에 닿지 않게
+        # 점과 라벨 사이를 0.8 → 0.72 칸으로(0.65 는 PDF 에서 ○ 와 글자 틈 약 1 pt 라 조금 늘림) 줄이고 "·" 양옆은 가는 빈칸(U+2009).
+        parts[-1] += "\u2009·\u2009" + ", ".join(f"{P[y][i]:.0f}" for i in sorted(b["pos"]))
+        # 무릎점 ●(s 34, 반지름 약 0.52 칸)은 0.65 면 라벨이 닿아 0.8 그대로
+        label_parts(ax, max(b["pos"]) + (0.8 if a0 <= knee <= a1 else 0.72), y, parts)
     ax.scatter([], [], marker="o", s=34, facecolor=INK, edgecolor=INK, lw=0.8, label="knee α")
     ax.scatter([], [], marker="o", s=20, facecolor="white", edgecolor=INK, lw=0.8, label="other α")
     ax.set_yticks(range(len(regions))); ax.set_yticklabels([SHORT[g] for g in regions], fontsize=TICK)

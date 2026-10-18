@@ -35,3 +35,4 @@ _지울것/
 
 # Azure 원자료(437 MB) — 저장소 밖, 생성기 README 의 URL 로 받는다
 load_balancer/data/generator/vmtable.csv.gz
+scheduler/data/v2/_buggy_1018/**/jobs.csv.gz

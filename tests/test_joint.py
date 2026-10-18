@@ -159,3 +159,12 @@ def test_window_scoring_counts_only_jobs_after_score_from():
     jobs = [_job(i, 5 + i, 1.0, 20) for i in range(10)]
     out, st = _run(jobs, score_from=10.0, cap=10 ** 6)
     assert st["n"] == 5 and st["n_all"] == 10
+
+
+def test_commit_modes_do_not_count_planned_jobs_as_running():
+    # 10-18 버그 회귀: 미래 시작을 확정하는 설계에서 아직 시작 안 한 계획이 '지금 도는' 작업으로 세여 순간 행이 가짜로 찼다.
+    jobs = [_job(0, 6.0, 2.0, 30.0), _job(1, 7.2, 0.5, 0.001)]   # j0: 홈(A) 최저 시각(h≡0)으로 미룸, j1: 7.2 h 에 미룰 수 없음
+    for mode in ("arrival_fixed", "start_check"):
+        out, st = _run(jobs, cap=1, alpha=1.0, home_region=True, mode=mode)
+        assert out["j0"]["scheduled_start"] >= 8.0          # j0 는 미래로 확정
+        assert st["zA_pos_slots"] == 0 and st["capacity_violations"] == 0, (mode, st["zA_pos_slots"])

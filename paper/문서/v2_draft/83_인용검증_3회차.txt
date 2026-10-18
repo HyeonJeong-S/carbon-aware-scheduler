@@ -1,0 +1,149 @@
+83_인용검증_3회차 (2026-10-18)
+원칙: 1차 출처(공식 문서, 저장소 원문, 논문 PDF)에서 직접 확인한 것만 적는다. 인용문은 원문 그대로다(영문).
+"확인 못 함"은 확인하지 못했다는 뜻이다.
+
+======================================================================
+1. 예보를 보고 요청마다 시작 시각을 고르고, 용량은 실행할 때 클러스터가 따로 지키는 시스템
+======================================================================
+
+1-A. Green Software Foundation, Carbon Aware SDK (WebAPI)
+  인용 정보: Green Software Foundation, "Carbon Aware SDK", v1.8.0 (2025-05-13 릴리스), MIT 라이선스.
+    https://github.com/Green-Software-Foundation/carbon-aware-sdk
+    릴리스: https://github.com/Green-Software-Foundation/carbon-aware-sdk/releases/tag/v1.8.0
+    문서: https://carbon-aware-sdk.greensoftware.foundation/docs/tutorial-basics/carbon-aware-webapi
+    (저장소 원본: casdk-docs/docs/tutorial-basics/carbon-aware-webapi.md. v1.8.0과 dev의 내용이 같다)
+  원문 (GET emissions/forecasts/current 절):
+    "The scoped data points are used to calculate average carbon intensities of the specified "windowSize" and the optimal carbon intensity window is identified."
+    "This endpoint is useful for determining if there is a more carbon-optimal time to use electicity predicted in the future."   [원문 오타 electicity 그대로]
+    매개변수: "`location`: This is a required parameter ..." / "`windowSize`: The estimated duration (in minutes) of the workload."
+    "The response is an array of forecasts (one per requested location) with their optimal carbon intensity windows."
+  필드 이름 주의: 문서 예시의 JSON은 "optimalDataPoint"(단수, 객체 하나)다. 그런데 v1.8.0 코드
+    src/CarbonAware.WebApi/src/Models/EmissionsForecastDTO.cs 에는
+      [JsonPropertyName("optimalDataPoints")]
+      public IEnumerable<EmissionsDataDTO>? OptimalDataPoints
+    로 되어 있다. 실제 응답 필드는 복수형 배열이고, 문서 예시가 옛 형식이다.
+  다른 작업과 용량을 보는가: 입력은 location, dataStartAt, dataEndAt, windowSize 넷뿐이다.
+    다른 작업이나 클러스터 용량을 받는 매개변수는 없다. 문서에도 그런 언급이 없다.
+    이 결론은 매개변수 목록에서 끌어낸 것이다. "용량을 보지 않는다"고 적은 문장은 문서에 없다.
+  결론: 요청 하나마다 탄소가 가장 낮은 시작 시각을 돌려준다. 다른 작업도 용량도 보지 않는다. 우리가 말하는 "개별 최적 선택"에 정확히 들어맞는 예다.
+
+1-B. Microsoft, 탄소 인지 Windows Update
+  URL: https://support.microsoft.com/en-us/windows/windows-update-is-now-carbon-aware-a53f39bc-5531-4bb1-9e78-db38d7a6df20
+    (페이지 제목: "Windows Update is now carbon aware | Microsoft Support". 판올림 날짜는 페이지에서 확인 못 함)
+  원문:
+    "Starting with Windows 11, version 22H2, Windows Update is now carbon aware, making it easier for your devices to reduce carbon emissions."
+    "When devices are plugged in, turned on, connected to the internet and regional carbon intensity data is available, Windows Update will schedule installations at specific times of the day."
+    "Installing updates at these specific times might result in lower-carbon emissions because a higher proportion of electricity is coming from lower-carbon sources on the electric grid."
+  데이터 공급자: 지금 공식 페이지에는 WattTime이나 electricityMap 이름이 없다. 대신 WattTime 자사 페이지(1-C)에 다음 문장이 있다.
+    "In 2022, Microsoft made Windows 11 Updates carbon-aware, making it easier for devices to reduce carbon emissions."
+    이 문장은 데이터를 WattTime이 대 주었다고 단정하지 않는다.
+  결론: 기기마다 설치 시각을 고른다. 시각을 고르는 알고리즘, 다른 기기와의 조율, 서버 쪽 용량 처리는 공개 문서에 없다. "기기 단위 시각 선택"의 예로만 인용할 수 있다.
+
+1-C. WattTime, Automated Emissions Reduction (AER)
+  URL: https://watttime.org/solutions/load-shifting/   (WattTime 자사 페이지. 날짜 표기는 확인 못 함)
+  원문:
+    "With a forecast of which times are which (called the marginal emissions rate), flexible devices like EVs and thermostats can be scheduled to pull electricity when they will cause less emissions and pollution."
+    "These subtle timing shifts can prevent a lot of harm without causing higher electricity bills or compromising comfort, a strategy we call automated emissions reduction or AER."
+    "AER-enabled charging waits until grid electricity is cleaner, preferentially choosing lower-emissions times (yellow area) while still recharging the battery by the end of the charge window (light blue area)."
+  결론: 기기마다 마감 안에서 가장 깨끗한 시각을 고르는 신호다. 공유 용량 개념은 없다(가정용 기기 대상). 정식 API 문서(docs.watttime.org)는 내용을 불러오지 못해 확인하지 못했다.
+
+1-D. Microsoft Azure, carbon-aware-keda-operator
+  인용 정보: Azure, "carbon-aware-keda-operator", GitHub, v0.2.0 (2023-04-12 릴리스), MIT, 보관 처리 안 됨.
+    https://github.com/Azure/carbon-aware-keda-operator
+  README 원문:
+    "Then the operator will update KEDA scaledObjects and scaledJob `maxReplicaCount` field, based on the current carbon intensity."
+    "The current logic for carbon aware scaling is based on carbon intensity metric only, _which is independent of the workload usage_."
+    "The operator will not compute a desired replicaCount for your scaledObjects or scaledJobs, as this is the responsibility of KEDA and HPA. The operator would define a "ceiling for allowed maxReplicas" based on carbon intensity of the current time."
+    "The "Kubernetes carbon intensity exporter" retrieves 24-hour carbon intensity forecast data every 12 hours."
+  결론: 작업마다 시작 시각을 고르지 않는다. 현재 탄소 강도를 보고 복제본 상한을 정하는 문턱 표 방식이다. 실제 복제본 수는 KEDA/HPA가 정한다.
+    탄소 판단(상한)과 실행 판단(KEDA)이 갈라져 있다는 점의 근거로는 쓸 수 있다. "요청별 최적 시각 선택"의 예로 들면 틀린다.
+
+1-E. Google CICS (Radovanović 외)
+  서지(Crossref 확인): A. Radovanović, R. Koningstein, I. Schneider, B. Chen, A. Duarte, B. Roy, D. Xiao, M. Haridasan, P. Hung, N. Care, S. Talukdar, E. Mullen, K. Smith, M. Cottman, W. Cirne,
+    "Carbon-Aware Computing for Datacenters," IEEE Transactions on Power Systems, vol. 38, no. 2, pp. 1270–1280, Mar. 2023. DOI 10.1109/TPWRS.2022.3173250
+    주의: 인쇄본은 2023년 3월 vol.38 no.2다. "2022"는 DOI와 조기 공개 연도다. 본문 인용 연도를 하나로 맞출 것.
+    arXiv판: https://arxiv.org/abs/2106.11750 (아래 인용은 arXiv v1 기준이다. 저널판 문구는 대조하지 못했다)
+  원문 (arXiv 초록):
+    "VCCs impose hourly limits on resources available to temporally flexible workloads while preserving overall daily capacity, enabling all such workloads to complete within a day."
+  원문 (본문):
+    "Borg uses the VCC values to compute the real-time CPU availability for incoming flexible jobs. ... Flexible jobs get queued until resources become available."
+    "If resources are not available to run a job's tasks, they are queued. The admission controller visits this queue periodically, trying to enable jobs that pass a series of checks, one of which is cluster-level resource availability."
+    "Google's Carbon-Intelligent Computing is scheduler-agnostic in that its optimization outcome only changes the scheduler's perception of available resources, with no impact on the scheduling policy itself: the scheduler can decide what to queue, if needed."
+  결론: CICS는 작업마다 시각을 고르지 않는다. 다음 날 클러스터 전체의 시간별 용량 곡선(VCC)을 미리 정하고, 실제로 어느 작업을 돌릴지는 Borg 승인 제어기가 실시간으로 정한다.
+    "탄소 판단과 용량 집행이 나뉜 구조"라는 점은 같다. 다만 판단 단위가 개별 작업이 아니라 클러스터 총량이고, 수요 예측까지 반영한다. 1-A~1-C와 같은 부류로 묶으면 안 된다.
+
+======================================================================
+2. 두 라미나 집합족의 합집합은 완전단모듈(TU)이다 — Hoffman–Kruskal과 다른 결과
+======================================================================
+  Schrijver (2003) 원문: 직접 보지 못했다. 책 PDF를 구하지 못했다.
+    Schrijver가 공개한 강의노트 "A Course in Combinatorial Optimization"(https://homepages.cwi.nl/~lex/files/dict.pdf, 221쪽)에서도 이 정리는 찾지 못했다.
+  2차 출처 둘이 정리 번호를 가리킨다.
+    (a) N. A. Borsik, A. Frank, P. Madarasi, T. Takács, "Prefix-bounded matrices," arXiv:2505.10739v2 (2025-08-17). https://arxiv.org/abs/2505.10739
+        "The following basic observation was formulated by Edmonds [12] as Theorem (39) in his paper, see also Theorem 41.11 in the book of Schrijver [34]. Lemma 3.1 (Edmonds). Let L′ be the union of two laminar families on a ground set S. Then the transpose of the incidence matrix of L′ is totally unimodular, in which the rows correspond to the members of the family and the columns correspond to the ground set."
+        같은 논문: "Theorem 4.2.8 in [19], which asserts that the transpose of the incidence matrix of the union of two laminar families is a network matrix. An earlier result of Tutte [38] had already shown t[hat every network matrix is TU]"   ([19]는 Frank, Connections in Combinatorial Optimization, 2011로 보이나 참고문헌 목록은 대조 안 함)
+    (b) M. X. Goemans, MIT 18.997 강의노트 13강 (2004-03-30). https://ocw.mit.edu/courses/18-997-topics-in-combinatorial-optimization-spring-2004/ (사본: https://ocw.iti.hr/courses/mathematics/18-997-topics-in-combinatorial-optimization-spring-2004/lecture-notes/co_lec13.pdf)
+        "Theorem 2 If F is the union of two laminar families of subsets of a set X, then the X ×F incidence matrix of F, is totally unimodular."
+        "Also note that the theorem fails if F is the union of three laminar families."
+  Edmonds 원 논문 서지(Crossref 확인, 재수록판): J. Edmonds, "Submodular Functions, Matroids, and Certain Polyhedra," in Combinatorial Optimization — Eureka, You Shrink!, LNCS 2570, pp. 11–26, Springer, 2003. DOI 10.1007/3-540-36478-1_2
+    원판(1970, Combinatorial Structures and Their Applications, Gordon and Breach, pp. 69–87)의 쪽수는 Crossref에 없다. 확인하지 못했다.
+    "Theorem (39)"라는 번호는 (a)가 그렇게 적었을 뿐이다. 원문에서 직접 보지는 못했다.
+  결론: 이 성질은 Edmonds(1970)의 결과이고 Schrijver(2003) Theorem 41.11에 실려 있다고 2차 출처 둘이 일치한다. 다만 41.11이라는 번호는 원서에서 확인하지 못했다.
+    Hoffman–Kruskal(1956)은 "TU ⇔ 정수 꼭짓점"이라는 동치를 준다. "라미나 둘의 합은 TU"는 별개의 결과다. 심사위원의 지적이 맞다.
+    본문에는 "라미나 둘의 합의 결합행렬은 TU이다 [Edmonds 1970; Schrijver 2003, Thm 41.11], 따라서 Hoffman–Kruskal에 의해 정수해"처럼 두 결과를 나누어 인용하면 된다. 41.11은 원서를 대출해 한 번 대조할 것.
+
+======================================================================
+3. Caspian의 목적 가중치
+======================================================================
+  서지(PDF 1쪽과 Crossref 확인): T. Bahreini (Wayne State Univ.), A. N. Tantawi, O. Tardieu (IBM T.J. Watson),
+    "Caspian: A Carbon-aware Workload Scheduler in Multi-Cluster Kubernetes Environments," 2024 32nd Int. Conf. on Modeling, Analysis and Simulation of Computer and Telecommunication Systems (MASCOTS), pp. 1–8, 2024. DOI 10.1109/MASCOTS64422.2024.10786568
+    저장소 사본: paper/참고/Caspian_A_Carbon-aware_Workload_Scheduler_in_Multi-Cluster_Kubernetes_Environments.pdf
+  목적 결합 (원문):
+    "we construct a single objective function by summing the individual objective functions, each multiplied by a coefficient, as Z(x) = ω̄1 · Z1(x) + ω̄2 · Z2(x) + ω̄3 · Z3(x), where ω̄k is the normalized value of ωk, the preference value for objective function Zk(x)."
+    정규화: "we consider the LP relaxation of each problem and obtain coefficient θk = 1/Z̄k, where Z̄k is the optimal objective value obtained by solving the LP relaxation of the problem with the single objective Zk."
+    (Z1 = 탄소 가중 이용률 최대화, Z2 = 지연 벌점, Z3 = 완료시각 벌점)
+  기본 비교 (원문):
+    "(1) sustainable mode in which Caspian considers a nonzero weight for sustainability objective, i.e., ω1 = 1, and (2) baseline mode in which the weight for sustainability objective is zero, ω1 = 0. For both modes, we consider the same preference for the other objective functions, namely ω2 = ω3 = 1."
+  가중치 훑기 (원문):
+    "We set ω2 = ω3 = 1, and vary the value of ω1 from zero to two, assigning various weights to the sustainability objective."
+    "For example, for ω1 = 0.25, carbon saving is 19.4% while for ω1 = 2, the value is 42.4%."
+    "For ω1 = 0.5, we get 33.21% carbon reduction, 98.28% meeting deadline, and 0.6 completion ratio. This experiment demonstrates the importance of setting the right values for the preference factors."
+    "We conclude that great care has to be taken when setting the values of the weights ωk."
+  초록의 대표 수치: "Caspian reduces CFP by about 33%, with about 98% of workloads completing at an average fraction of 0.6 of their deadline." — 이 수치는 기본 모드(ω1=1)가 아니라 ω1=0.5에서 나왔다.
+  결론: 기본은 ω1=ω2=ω3=1이고, 그 위에 단일목적 LP 최적값으로 정규화한다. 체계적으로 조율하지는 않았다. ω1만 0~2로 훑었고 ω2, ω3은 1에 고정했다. 초록의 33%는 ω1=0.5 값이다. 좋은 값을 고르는 규칙은 내놓지 않고 "신중히 정하라"고만 맺는다.
+
+======================================================================
+4. Electricity Maps: 소비 기준(흐름 추적)인가, CSV 열 구성
+======================================================================
+  방법론 페이지: https://www.electricitymaps.com/data/methodology   (www.electricitymaps.com/methodology 에서 넘어감)
+    "our data is attributional, location-based, and consumption-based."
+    "Consumption-based Calculation We provide grid signals (electricity mix, carbon intensity, ...) for the electricity available (or consumed) in a grid, rather than merely what was produced locally. This crucial distinction mandates accounting for electricity flows across grids, which is achieved through our flow-tracing algorithm."
+    "To calculate Carbon Intensity (CI), we match the flow-traced electricity mix with technology-specific emission factors."
+    "Life-Cycle Emission Factors: These provide a thorough "cradle-to-grave" accounting." / "Direct Emission Factors (Operational): These only count the emissions released directly from the operation of the power plant (like burning fuel)."
+  설명 글: https://www.electricitymaps.com/resources/publications/consumption-vs-production-why-grid-emissions-should-be-calculated-with-flow-traced-data (J. Lavalley, 2023)
+    "A production-based approach solely considers local electricity generation, whereas a consumption-based approach also factors in imports and exports, thereby concentrating on the electricity actually available on the grid, regardless of where it has been produced."
+  CSV 열: 데이터 포털(portal.electricitymaps.com, app.electricitymaps.com/docs)은 자동 접근을 403으로 막아 공식 열 설명 페이지를 읽지 못했다.
+    대신 포털에서 받은 원본 CSV를 그대로 올려 둔 제3자 저장소에서 머리행을 확인했다(HPE sustain-cluster. README가 출처를 portal.electricitymaps.com/datasets로 밝힘).
+    https://github.com/HewlettPackard/sustain-cluster/blob/3f6ea95cb835b89ba50b0ef76d66d14b8037643e/data/carbon_intensity/AU-NSW/2024/AU-NSW_2024_hourly.csv
+    머리행: Datetime (UTC),Country,Zone Name,Zone Id,Carbon Intensity gCO₂eq/kWh (direct),Carbon Intensity gCO₂eq/kWh (LCA),Low Carbon Percentage,Renewable Percentage,Data Source,Data Estimated,Data Estimation Method
+  결론: 기본 탄소 강도가 소비 기준(흐름 추적, 수입·수출 반영)이라는 점은 공식 방법론 페이지로 확인했다.
+    시간별 CSV에 direct 열과 LCA 열이 따로 있고 Data Estimated, Data Estimation Method 열도 있다는 점은 실제 파일 머리행으로 확인했다. 단 그 파일은 제3자 사본이다.
+    열 이름은 "life cycle"이 아니라 "(LCA)"다. 받은 시기에 따라 다를 수 있으니, 우리가 받은 원본 머리행을 그대로 옮겨 적을 것.
+    API의 기본 배출계수 종류(lifecycle인지 direct인지)는 API 문서가 403이라 확인하지 못했다.
+
+======================================================================
+5. Open-Meteo 변수 이름과 Historical Weather API의 원자료
+======================================================================
+  URL: https://open-meteo.com/en/docs/historical-weather-api   (엔드포인트: https://archive-api.open-meteo.com/v1/archive)
+  변수표 원문 (hourly):
+    temperature_2m | Instant | °C (°F) | "Air temperature at 2 meters above ground"
+    wind_speed_10m | Instant | km/h (mph, m/s, knots) | "Wind speed at 10 or 100 meters above ground. Wind speed on 10 meters is the standard level."
+    shortwave_radiation | Preceding hour mean | W/m² | "Shortwave solar radiation as average of the preceding hour. This is equal to the total global horizontal irradiation"
+  원자료 원문:
+    "Gap-free and consistent historical weather data using weather reanalysis from ERA5 (0.25°, from 1940) and ERA5-Land (0.1°, from 1950) and ECMWF IFS (9 km, from 2017)."
+    "Note: The default Best Match combines IFS HRES, ERA5 and ERA5-Land seamlessly."
+    "However, when studying climate change over decades, it is advisable to exclusively utilise ERA5 or ERA5-Land."
+  페이지가 권하는 인용: "Zippenfenig, P. (2023). Open-Meteo.com Weather API [Computer software]. Zenodo. https://doi.org/10.5281/ZENODO.7970649"
+    ERA5: Hersbach, H. et al. (2023). ERA5 hourly data on single levels from 1940 to present [Data set]. ECMWF. https://doi.org/10.24381/cds.adbb2d47
+  결론: 세 이름 모두 Open-Meteo의 공식 hourly 변수명이다. 단위 기본값은 km/h와 °C이고, 일사량은 "직전 1시간 평균"이다.
+    models를 지정하지 않으면 기본값은 "Best Match"로, IFS HRES·ERA5·ERA5-Land를 섞은 값이다. "ERA5 자료"라고 쓰려면 호출에 models=era5를 넣었는지 확인할 것. 넣지 않았다면 "ERA5/ERA5-Land/ECMWF IFS를 결합한 Open-Meteo 재분석 자료"로 적어야 한다.
+    저장소 .py 파일에서는 Open-Meteo 호출 코드를 찾지 못해 이 부분은 직접 확인하지 못했다.
