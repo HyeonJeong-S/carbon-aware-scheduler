@@ -781,6 +781,8 @@ def build(src, out, shift=None):
     for fp, path, width in pictures:                       # 그림은 문단이 문서에 붙은 뒤 넣는다(관계 id 때문)
         Paragraph(fp, doc._body).add_run().add_picture(path, width=Pt(width))
     n_math = mathify_doc(doc); n_hf = head_font(doc); print(f"  제목 한글 글꼴 {n_hf}곳 → {HEAD_KR_FONT}")
+    cp = doc.core_properties   # 7회차 C: 이중 맹검 — 문서 속성에 저자 이름을 남기지 않는다
+    cp.author = ""; cp.last_modified_by = ""; cp.comments = ""; cp.title = ""; cp.subject = ""; cp.keywords = ""
     doc.save(out)
     print(f"본문 기호 {n_math}곳을 수식 서체로")
     n_p = len(body.findall(qn("w:p"))); n_t = len(body.findall(qn("w:tbl")))
