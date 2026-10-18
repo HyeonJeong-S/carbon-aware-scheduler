@@ -8,7 +8,7 @@
   · 두 워크로드는 두 패널이 아니라 한 축에 ●(합성)/○(Azure) 로.
   · 그릴 때마다 렌더해서 400% 로 본다(그림_검수규약.txt). 코드만 보고 넘기지 않는다.
 
-    ./.venv/bin/python paper/diagram/gen_v2_figs.py alpha | capsweep | where | priors | herding | alphadist | all
+    ./.venv/bin/python paper/diagram/gen_v2_figs.py alpha | alpha_cast | frontier | capsweep | where | priors | herding | alphadist | all
 """
 import csv
 import glob
@@ -18,6 +18,7 @@ import sys
 
 import matplotlib
 matplotlib.use("Agg")
+import matplotlib.patheffects as pe
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import font_manager as fm
@@ -69,76 +70,79 @@ def save(fig, name, pad=0.5):
     print("wrote", out)
 
 
-# ── 그림: α 전선 — 고정 α 11점의 하부 껍질 + 무릎점, 합성 ● / Azure ○ ───────────────
+# ── 그림: α 전선 — 고정 α 11점 + 무릎점, CAST ● / 분리형 ○ (28쪽판 그림 8, v2_alpha) ───────────
+# 10-18(그림8_실행시간가중): 가로축을 작업당 평균 지연에서 실행 시간 가중 RTT 로 바꿨다. 원고의 짝 맞춤 규칙이 가중 자
+# (CAST 짝 0.575, 분리형 짝 0.4156)이므로 열한 점·무릎점·× 를 모두 같은 자(alpha_hull_*.json 의 "d가중", stats 의 dw_latency_ms)로.
+#  · 작업당 자의 짝(CAST 0.5687, 분리형 0.4375)은 이 그림에서 뺐다. 이전 판(작업당 자)의 손질 이력은 git 2b95dde 의 fig_alpha 참조.
+#  · 가중 자에서는 두 설계 모두 하부 껍질이 열한 점 전부라 "점을 이은 선" = 껍질(assert 로 확인).
+#  · 짝 실행은 analysis/alpha_pair_main_{joint,decoupled}_dw.json 의 pair 와 같은 실행인지 지연·배출 값으로 대조한다.
+#  · 두 × 모두 무릎점 바로 위(CAST 왼쪽 0.5·위 2.6 pt, 분리형 오른쪽 0.1·위 3.3 pt, 설계 크기)라 v2_alpha_cast 처럼 무릎점을 안이 흰
+#    큰 고리로, × 를 고리 안에 작게 그린다. 분리형 과녁의 가운데 ○ 는 × 와 겹쳐서 뺐다 — 두 고리는 라벨로 가른다.
+#    고리 s 200(반지름 7.1 pt)·× s 14 선 1.0: × 끝–고리 안쪽 틈 CAST 1.0 pt, 분리형 0.56 pt(s 230·× s 20 이면 분리형 0.54, s 150 이면 × 가 고리를 끊는다).
+#  · 남는 겹침 하나: 가중 자에서 분리형 α=0.6 ○(51.95 ms, 76.15 %)가 CAST 무릎점에서 8.2 pt 거리라, 표준 크기(s 150) 이상의 어떤 고리도
+#    그 ○ 에 닿는다(s 200 이면 2.5 pt 들어감). → 고리를 선 위·점 아래(zorder 2.5)에 두고 ○ 에 흰 테두리 0.6 pt 를 둘러
+#    "○ 가 고리 앞에 있다" 로 읽히게 했다(선이 점 아래로 지나는 것과 같은 층). 고리는 그 자리에서 짧게 끊길 뿐 데이터 표식은 하나도 안 가린다.
+ALPHA_RUNS = (  # (껍질 json, 무릎점 실행, 짝 분석 json, 짝 실행, CAST 여부)
+    ("alpha_hull_main_joint.json", "main/joint", "alpha_pair_main_joint_dw.json", "alpha/m0.5750", True),
+    ("alpha_hull_main_decoupled.json", "main/decoupled", "alpha_pair_main_decoupled_dw.json", "alpha/decoupled_dw0.4156", False),
+)
+R_KNEE, S_X, LW_X = 200, 14, 1.0     # 무릎점 고리(반지름 7.1 pt)와 짝 ×
+
+
 def fig_alpha():
     fig, ax = new_ax()
     drawn = 0
-    # 10-17: Azure 는 고정 α 전선이 없다(G파는 무릎점·α=1 만). 둘째 계열은 분리형 전선(○·회색) — 같은 α 에서 설계 효과를 보이는 자리.
-    for fn, main_name, filled in (("alpha_hull_main_joint.json", "main/joint", True),
-                                  ("alpha_hull_main_decoupled.json", "main/decoupled", False)):
+    for fn, main_name, pair_fn, pair_name, filled in ALPHA_RUNS:
         p = os.path.join(V2, "analysis", fn)
         st = stats(main_name)
         if not (os.path.exists(p) and st):
             continue
-        r = json.load(open(p))["작업당평균"]      # 본문 판정(같은 지연 짝)과 같은 축 — 작업당 평균 지연
+        r = json.load(open(p))["d가중"]
         base = st["baseline_kg"]
         pts = sorted(r["points"].values())
+        assert len(pts) == 11 and [list(v) for v in pts] == [list(h) for h in r["hull"]], fn   # 가중 자: 껍질 = 열한 점
         xs = [v[0] for v in pts]; ys = [100 * (1 - v[1] / base) for v in pts]
-        H = r["hull"]
-        # 10-18(89 점검 [17]): 분리형 ○ 가 CAST ● 를 덮어 α=0.1~0.3·0.6 근처에서 ● 가 안 보였다 → CAST 계열을 위(zorder +4)에,
-        # ● 를 ○ 보다 조금 작게(s 14 → 9) 그려 ○ 안에 ● 가 보이게 한다.
-        zo = 4 if filled else 0
-        ax.plot([h[0] for h in H], [100 * (1 - h[1] / base) for h in H], color=INK if filled else GRAY, lw=1.1, zorder=2)   # 선은 둘 다 점 아래(CAST 선이 분리형 ○ 를 꿰지 않게)
-        # 10-18(87 점검2 [2]): ○ 를 키우고(s 14 → 30, 테두리 0.8 → 0.7) ● 는 그대로 작게(s 6) — ○ 안지름(약 4.8 pt)이 ● 지름(2.4 pt)의
-        # 두 배라 두 점이 거의 같은 자리(α=0~0.3, 0.9, 1)에서도 고리와 점 사이 흰 틈이 남아 "○ 안의 ●" 로 둘 다 보인다.
-        ax.scatter(xs, ys, s=6 if filled else 30, facecolor=INK if filled else "white", edgecolor=INK, lw=0.5 if filled else 0.7, zorder=3 + zo)
-        kx, ky = r["knee"][0], 100 * (1 - r["knee"][1] / base)
-        if filled:
-            # 10-18(82 점검4 E [9](a)): 같은 지연 ×(47.71, 72.86)가 무릎점(47.85, 71.93)과 1.3 pt 거리라 과녁 안 검은 ● 위에 얹혀
-            # 흰 테두리를 둘러도 ⊗ 처럼 묻혔다 → CAST 무릎점 과녁만 안을 흰색으로 비우고(가운데 ● 없음) 고리를 1.6 → 1.0 으로 가늘게.
-            # 과녁 크기(s 150)와 자리는 그대로 — 고리 안에는 × 하나만 남는다. 분리형 과녁(○ + 고리)은 그대로.
-            ax.scatter([kx], [ky], s=150, facecolor="white", edgecolor=INK, lw=1.0, zorder=5 + zo)
+        assert abs(r["knee"][0] - st["dw_latency_ms"]) < 1e-6, main_name
+        kx, ky = st["dw_latency_ms"], st["savings_pct"]
+        zo = 4 if filled else 0      # CAST 계열을 위에(● 가 ○ 안에서 보이게) — 이전 판 89 점검 [17]
+        ax.plot(xs, ys, color=INK if filled else GRAY, lw=1.1, zorder=2)   # 선은 둘 다 점 아래
+        # ● s 6 은 ○ s 30 안에 흰 틈을 남기는 크기(87 점검2 [2]) — 두 계열이 거의 같은 자리(α=0~0.3, 0.9, 1)에서도 둘 다 보인다.
+        halo = None if filled else [pe.withStroke(linewidth=0.7 + 2 * 0.6, foreground="white")]   # ○ 바깥 흰 테두리 0.6 pt
+        ax.scatter(xs, ys, s=6 if filled else 30, facecolor=INK if filled else "white", edgecolor=INK, lw=0.5 if filled else 0.7, zorder=3 + zo,
+                   path_effects=halo)
+        ax.scatter([kx], [ky], s=R_KNEE, facecolor="white", edgecolor=INK, lw=1.0, zorder=2.5)   # 선 위, 점 아래
+        pair = stats(pair_name)
+        pp = os.path.join(V2, "analysis", pair_fn)
+        if pair and os.path.exists(pp):
+            pj = json.load(open(pp))["d가중"]["pair"]
+            assert abs(pj[0] - pair["dw_latency_ms"]) < 1e-6 and abs(100 * (1 - pj[1] / base) - pair["savings_pct"]) < 1e-6, pair_name
+            px, py = pair["dw_latency_ms"], pair["savings_pct"]
+            ax.scatter([px], [py], marker="x", s=S_X, color=INK, lw=LW_X, zorder=20)
+            print(f"alpha: {'CAST' if filled else 'Decoupled'} knee ({kx:.2f} ms, {ky:.2f} %), "
+                  f"pair α={pair['alpha_mean']:.4f} ({px:.2f} ms, {py:.2f} %)")
         else:
-            knee_marker(ax, kx, ky, filled=filled, zo=zo)
-        # 라벨은 양 끝 α 와 무릎점만. 결합(●)은 위·왼쪽, 분리형(○)은 아래·오른쪽에 적어 서로 피한다(렌더 확인 10-17).
-        dy = 6 if filled else -12
+            print(f"alpha: {'CAST' if filled else 'Decoupled'} knee ({kx:.2f} ms, {ky:.2f} %), 짝 없음")
         if filled:
             ax.annotate("α=0", (xs[0], ys[0]), textcoords="offset points", xytext=(7, 1), fontsize=F_ANN, ha="left")
-        # 10-18: 두 계열의 α=1 점은 같은 자리(120 ms, 95.7/95.3 %)라 라벨 하나만 점 아래에 — 위 라벨은 격자 100 에 얹히고 축 위로 나갔다
-        # 10-18(82 점검4 E [9]): 오른쪽 맞춤(−4 pt)이면 라벨이 α=0.9 점(112.5 ms) 바로 아래라 그 점이 자기 점(120 ms)보다 가까웠다 →
-        # 왼쪽 맞춤으로 α=1 점 바로 아래(−1.5 pt 에서 시작)에 둔다. 오른쪽 끝은 축 안(xlim 130).
-        if not filled:
-            ax.annotate("α=1", (xs[-1], ys[-1]), textcoords="offset points", xytext=(-1.5, dy), fontsize=F_ANN, ha="left")
-        # 10-18(87 점검2 [2]): "knee" 두 라벨이 어느 설계 것인지 적었다 — "CAST knee" / "Decoupled knee"
-        if filled:
-            # 10-18(84 점검3 [8]): 라벨이 과녁에서 약 10 ms 왼쪽·8 %p 위로 떨어져 있었다 → 과녁 고리 바로 왼쪽(고리 반지름 6.1 pt + 틈)에 붙였다
-            ax.annotate("CAST knee", (kx, ky), textcoords="offset points", xytext=(-8, 3), fontsize=F_ANN, ha="right", va="center")
+            ax.annotate("CAST knee", (kx, ky), textcoords="offset points", xytext=(-10, 3), fontsize=F_ANN, ha="right", va="center")   # 고리 반지름 7.6 pt + 틈
         else:
-            ax.annotate("Decoupled knee", (kx, ky), textcoords="offset points", xytext=(10, -5), fontsize=F_ANN, ha="left")
-        # 같은 지연 짝(×): 무릎점과 같은 작업당 평균 지연을 내는 고정 α 실행. 본문 판정(분리형 무릎점이 같은 지연의 고정 α 보다
-        # 6.62 %p 뒤짐)을 그림에서 보이게 — 회색 보조선은 α=0.4~0.5 를 직선으로 이어 그 자리의 실제 값보다 낮다.
-        # 흰 테두리(path effect)로 CAST 무릎점의 검은 ● 위에서도 × 가 보인다.
-        pair = stats("alpha/m0.5687" if filled else "alpha/decoupled_m0.4375")
-        if pair:
-            import matplotlib.patheffects as pe
-            # 10-18(84 점검3 [8]): CAST × 가 과녁 안에 묻혀 거의 안 보였다 → 선 0.9 → 1.3, 크기 20 → 30, 흰 테두리 1.8 → 2.6.
-            # zorder 12 는 과녁(●4+4, 고리 5+4)보다 위 — 범례 표식도 같은 굵기로.
-            ax.scatter([pair["avg_latency_ms"]], [pair["savings_pct"]], marker="x", s=30, color=INK, lw=1.3, zorder=12,
-                       path_effects=[pe.withStroke(linewidth=2.6, foreground="white")])
+            # 두 계열의 α=1 점은 거의 같은 자리라 라벨 하나만, α=1 점 바로 아래 왼쪽 맞춤(이전 판 82 점검4 E [9])
+            ax.annotate("α=1", (xs[-1], ys[-1]), textcoords="offset points", xytext=(-1.5, -12), fontsize=F_ANN, ha="left")
+            ax.annotate("Decoupled knee", (kx, ky), textcoords="offset points", xytext=(11, -5), fontsize=F_ANN, ha="left")
         ax.plot([], [], color=INK if filled else GRAY, lw=1.1, marker="o", ms=2.45 if filled else 5.5, mew=0.5 if filled else 0.7, mfc=INK if filled else "white", mec=INK,
                 label="CAST" if filled else "Decoupled")   # 표 5·본문과 같은 이름
         drawn += 1
     if not drawn:
         print("alpha: 자료 없음"); return
-    ax.set_xlabel("Mean latency (ms)", fontsize=F_LABEL)
+    ax.set_xlabel("Duration-weighted mean RTT (ms)", fontsize=F_LABEL)
     ax.set_ylabel("Carbon savings (%)", fontsize=F_LABEL)
     ax.set_xlim(-6, 130); ax.set_ylim(-4, 100)
-    ax.scatter([], [], marker="x", s=30, color=INK, lw=1.3, label="Fixed α, same latency")   # 87 점검2 [2]: 같은 지연 짝
-    # 10-18(82 점검4 E [4]): 범례를 7.1 pt 로 키우니 y 격자 20 이 "CAST" 글자 아랫부분을 지나갔다(전 판도 글자 가운데를 지났다) →
-    # 그림 11 처럼 흰 바탕(테두리 없음)으로 격자만 가린다. 범례 자리(오른쪽 아래)에는 점·선이 없다(렌더 확인).
+    ax.scatter([], [], marker="x", s=S_X, color=INK, lw=LW_X, label="Fixed α, same RTT")
+    # 범례는 흰 바탕(테두리 없음)으로 y 격자만 가린다(82 점검4 E [4]). 오른쪽 아래에는 점·선이 없다.
     leg = ax.legend(fontsize=F_LEG, frameon=True, loc="lower right", handlelength=2.0, borderpad=0.2, fancybox=False)
     leg.get_frame().set_facecolor("white"); leg.get_frame().set_edgecolor("none"); leg.get_frame().set_alpha(1.0)
     save(fig, "alpha")
+    return fig, ax
 
 
 # ── 그림: α 전선, CAST 만(줄인 판 그림 8, v2_alpha_cast) ─────────────────────────────
@@ -185,6 +189,99 @@ def fig_alpha_cast():
     leg.get_frame().set_facecolor("white"); leg.get_frame().set_edgecolor("none"); leg.get_frame().set_alpha(1.0)
     save(fig, "alpha_cast")
     fig.savefig(os.path.join(HERE, "v2_alpha_cast.svg"))
+
+
+# ── 그림: 고정 α 전선 두 개 — CAST ● 실선 / 다시 풀지 않는 설계 ○ 파선, 합성·예약 없음(ρ=0) (v2_frontier) ──────────
+# 10-19(그림_전선비교): frontier/{cast,af}_rho0_a{0.0..1.0} 22 실행. 두 곡선이 10 ms 아래에서 거의 겹치고 30 ms 위에서 1~2 pp 갈라진다.
+#  · 차이를 보이는 방법으로 확대 삽입(30~125 ms) 대신 아래 패널(세로 틈, pp)을 골랐다. 단폭 215 pt 안에 삽입 창을 넣으면 창이 가로
+#    약 90 pt 라 눈금 글자가 7.7 pt 로 다 안 들어가고, 1~2 pp 를 읽으려면 결국 창 세로축이 다시 수십 pp 를 덮어야 해 차이가 여전히
+#    작다. 틈 패널은 0~2 pp 를 70 pt 높이로 펼쳐 "10 ms 아래 0 근처, 30 ms 위 1~2 pp" 를 바로 읽히고, 측정 짝의 차이·CI 를 같은
+#    자로 올릴 수 있다.
+#  · 틈 = CAST 점 y − (분리하지 않는 곡선을 CAST 점의 x 에서 선형 보간한 y). 두 곡선의 x 는 모두 α 에 단조 증가(assert).
+#  · 같은 왕복 지연 짝(rho0/m0.5375 대 arrival/fixed_rho0_dw0.5444)은 위 패널에서 1.4 pt 차이라 × 두 개가 한 덩어리가 된다 →
+#    위 패널에는 회색 점선 안내선만, 아래 패널에 측정 차이(Δ = d_kg / 기준 배출)와 95 % CI 막대를 × 로 찍는다.
+#    값은 analysis/pair_rho0_cast0.5375_vs_af_dw.json 의 "d가중" 에서 읽고, knee/pair 가 두 stats 와 같은 실행인지 대조한다.
+FRONTIER_PAIR = ("rho0/m0.5375", "arrival/fixed_rho0_dw0.5444", "pair_rho0_cast0.5375_vs_af_dw.json")
+
+
+def frontier_data():
+    alphas = [round(0.1 * i, 1) for i in range(11)]
+    runs = {}
+    for d in ("cast", "af"):
+        ss = [stats(f"frontier/{d}_rho0_a{a:.1f}") for a in alphas]
+        if not all(ss):
+            return None
+        assert all(s["rho"] == 0 and abs(float(s["alpha_setting"]) - a) < 1e-9 for s, a in zip(ss, alphas)), d
+        runs[d] = (np.array([s["dw_latency_ms"] for s in ss]), np.array([s["savings_pct"] for s in ss]), ss)
+    base = runs["cast"][2][0]["baseline_kg"]
+    assert all(s["baseline_kg"] == base for d in runs for s in runs[d][2])
+    for d in runs:
+        assert np.all(np.diff(runs[d][0]) > 0), d          # 보간 전제: x 가 α 에 단조 증가
+    cx, cy, _ = runs["cast"]; ax_, ay, _ = runs["af"]
+    gap = cy - np.interp(cx, ax_, ay)
+    c_name, a_name, pj_name = FRONTIER_PAIR
+    c, a = stats(c_name), stats(a_name)
+    pp = os.path.join(V2, "analysis", pj_name)
+    pair = None
+    if c and a and os.path.exists(pp):
+        pj = json.load(open(pp))["d가중"]
+        assert c["baseline_kg"] == base == a["baseline_kg"]
+        assert abs(pj["knee"][0] - c["dw_latency_ms"]) < 1e-6 and abs(pj["knee"][1] - c["total_carbon_kg"]) < 1e-6, c_name
+        assert abs(pj["pair"][0] - a["dw_latency_ms"]) < 1e-6 and abs(pj["pair"][1] - a["total_carbon_kg"]) < 1e-6, a_name
+        pair = dict(c=c, a=a, d=100 * pj["d_kg"] / base, ci=[100 * v / base for v in pj["ci_d_kg"]], d_lat=pj["d_lat"], ci_lat=pj["ci_d_lat"])
+    return alphas, runs, gap, pair
+
+
+def fig_frontier():
+    r = frontier_data()
+    if r is None:
+        print("frontier: 자료 없음"); return
+    alphas, runs, gap, pair = r
+    cx, cy, _ = runs["cast"]; ax_, ay, _ = runs["af"]
+    fig, (t, b) = plt.subplots(2, 1, figsize=(W_IN, 262 / 72.0), dpi=500, sharex=True, gridspec_kw=dict(height_ratios=[2.15, 1.0]))
+    for q in (t, b):
+        for sp in ("top", "right"): q.spines[sp].set_visible(False)
+        for sp in ("left", "bottom"): q.spines[sp].set_linewidth(0.7)
+        q.grid(axis="y", color="#dddddd", lw=0.4, zorder=0); q.tick_params(labelsize=F_TICK)
+    # 위: 두 전선. CAST ● 를 위층에(● s 6 이 ○ s 30 안에 보이게 — fig_alpha 와 같은 크기 규약)
+    t.plot(ax_, ay, color=GRAY, lw=1.0, ls=(0, (3.2, 1.6)), zorder=2)
+    t.scatter(ax_, ay, s=30, facecolor="white", edgecolor=INK, lw=0.7, zorder=3)
+    t.plot(cx, cy, color=INK, lw=1.1, zorder=4)
+    t.scatter(cx, cy, s=6, facecolor=INK, edgecolor=INK, lw=0.5, zorder=7)
+    t.annotate("α=0", (cx[0], cy[0]), textcoords="offset points", xytext=(7, 1), fontsize=F_ANN, ha="left")
+    t.annotate("α=1", (cx[-1], cy[-1]), textcoords="offset points", xytext=(-1.5, -12), fontsize=F_ANN, ha="left")
+    t.plot([], [], color=INK, lw=1.1, marker="o", ms=2.45, mew=0.5, mfc=INK, mec=INK, label="CAST, fixed α")
+    t.plot([], [], color=GRAY, lw=1.0, ls=(0, (3.2, 1.6)), marker="o", ms=5.5, mew=0.7, mfc="white", mec=INK, label="No re-solve (Zanotto-style)")
+    t.set_ylabel("Carbon savings (%)", fontsize=F_LABEL)
+    t.set_ylim(-4, 100); t.set_xlim(-6, 130)
+    # 아래: 세로 틈
+    b.axhline(0, color=GRAY, lw=0.6, zorder=1)
+    b.plot(cx, gap, color=INK, lw=1.1, zorder=4)
+    b.scatter(cx, gap, s=6, facecolor=INK, edgecolor=INK, lw=0.5, zorder=7)
+    b.set_ylabel("Gap (pp)", fontsize=F_LABEL)
+    b.set_xlabel("Duration-weighted mean RTT (ms)", fontsize=F_LABEL)
+    b.set_ylim(-0.9, 2.7); b.set_yticks([0, 1, 2])
+    if pair:
+        px = pair["c"]["dw_latency_ms"]
+        for q in (t, b):
+            q.axvline(px, color=GRAY, lw=0.5, ls=(0, (1, 1.6)), zorder=1)
+        b.errorbar([px], [pair["d"]], yerr=[[pair["d"] - pair["ci"][0]], [pair["ci"][1] - pair["d"]]], fmt="none",
+                   ecolor=INK, elinewidth=0.7, capsize=2.0, capthick=0.7, zorder=8)
+        b.scatter([px], [pair["d"]], marker="x", s=14, color=INK, lw=1.0, zorder=9)
+        b.annotate("Same-RTT pair", (px, pair["d"]), textcoords="offset points", xytext=(5, -7.5), fontsize=F_ANN, ha="left", va="center")
+        # 범례에는 × 를 넣지 않는다 — 위 패널에 × 가 없다(범례에 있는데 그림에 없는 항목 금지, 검수규약). × 는 아래 패널 라벨로.
+        print(f"frontier: pair CAST α={pair['c']['alpha_mean']:.4f} ({px:.2f} ms, {pair['c']['savings_pct']:.2f} %) vs "
+              f"no re-solve α={pair['a']['alpha_mean']:.4f} ({pair['a']['dw_latency_ms']:.2f} ms, {pair['a']['savings_pct']:.2f} %), "
+              f"Δ {pair['d']:.2f} pp [{pair['ci'][0]:.2f}, {pair['ci'][1]:.2f}]")
+    leg = t.legend(fontsize=F_LEG, frameon=True, loc="lower right", handlelength=2.4, borderpad=0.2, fancybox=False)
+    leg.get_frame().set_facecolor("white"); leg.get_frame().set_edgecolor("none"); leg.get_frame().set_alpha(1.0)
+    for a_, x, y, xa, ya, g in zip(alphas, cx, cy, ax_, ay, gap):
+        print(f"frontier: α={a_:.1f} CAST ({x:.2f} ms, {y:.2f} %)  no re-solve ({xa:.2f} ms, {ya:.2f} %)  gap {g:+.2f} pp")
+    fig.align_ylabels([t, b])
+    fig.tight_layout(pad=0.5, h_pad=0.6)
+    out = os.path.join(HERE, "v2_frontier.png")
+    fig.savefig(out); fig.savefig(out.replace(".png", ".pdf")); fig.savefig(out.replace(".png", ".svg")); plt.close(fig)
+    print("wrote", out)
 
 
 # ── 그림: 용량비 스윕 — Azure 한 패널(단폭). 합성 워크로드는 선행 정책 평면(fig_priors)이 맡는다 ──
@@ -449,7 +546,7 @@ def fig_alphadist():
 
 if __name__ == "__main__":
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
-    fns = dict(alpha=fig_alpha, alpha_cast=fig_alpha_cast, capsweep=fig_capsweep, where=fig_where, priors=fig_priors, herding=fig_herding, alphadist=fig_alphadist)
+    fns = dict(alpha=fig_alpha, alpha_cast=fig_alpha_cast, frontier=fig_frontier, capsweep=fig_capsweep, where=fig_where, priors=fig_priors, herding=fig_herding, alphadist=fig_alphadist)
     for k, f in fns.items():
         if which in (k, "all"):
             f()

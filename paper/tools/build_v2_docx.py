@@ -775,7 +775,8 @@ def cite_check(blocks):
         ws = re.findall(r"[A-Z][A-Za-z]{3,}", allp[max(0, m.start() - 30):m.start()])
         if ws and not re.search(r"\[\d", allp[max(0, m.start() - 30):m.start()].split(ws[-1])[-1]):   # 가장 가까운 이름 하나, 그 사이에 다른 인용이 없을 때만
             wl = ws[-1].lower()
-            if any(wl in t for t in texts.values()) and wl not in texts[n]: miss.add(f"{ws[-1]}[{n}]")
+            wb = re.compile(r"(?<![a-z])" + re.escape(wl) + r"(?![a-z])")   # 낱말 단위 — "CAST" 가 "forecast" 에 걸리던 오탐(28쪽 [23])
+            if any(wb.search(t) for t in texts.values()) and not wb.search(texts[n]): miss.add(f"{ws[-1]}[{n}]")
     if miss: bad.append("이름과 문헌이 어긋남(의심): " + ", ".join(sorted(miss)))
     print("  인용 점검:", "; ".join(bad) if bad else f"본문 {len(order)}편 = 목록 {len(refs)}편, 첫 등장 순, 이름 대조 통과")
     return not bad

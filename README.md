@@ -120,7 +120,7 @@ scheduler/
 paper/
 ├─ (CAST_JOK_v2.docx · .pdf) 조립할 때만 잠깐 생기는 작업 자리 (git 밖)
 ├─ 정리.txt                  작업 기록 · 폴더안내.txt 자세한 안내
-├─ v2/   CAST_JOK_v2_10쪽.pdf·docx (최신) · CAST_JOK_v2_28쪽.pdf · 원고/(txt 원고·식) · 보관/(회차판·모의 심사·설계)
+├─ v2/   CAST_JOK_v2_전체판(본선) · 스토리 3쪽 · 피드백 대응표 · 원고/(txt 원고·식) · 보관/(회차판·10쪽 판·모의 심사·설계)
 ├─ v1/   CAST_JOK_v1.docx·pdf · 피드백 · 문서/ · 보관/
 ├─ tools/     build_v2_docx.py(txt → docx 조립) · build_omml_v2.py(식) · overlap_check.py · word_to_pdf.applescript · v1 도구
 ├─ diagram/   그림과 생성 스크립트 gen_*.py
