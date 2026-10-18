@@ -141,6 +141,52 @@ def fig_alpha():
     save(fig, "alpha")
 
 
+# ── 그림: α 전선, CAST 만(줄인 판 그림 8, v2_alpha_cast) ─────────────────────────────
+# 10-18(73_그림8_CAST만): 줄인 판(74_줄인판_설계안 143행 "그림 8 은 CAST 만")용 변형. v2_alpha 는 그대로 두고 따로 만든다.
+#  · 분리형 곡선·과녁·× 와 범례 항목을 뺐다.
+#  · 줄인 판의 "같은 왕복 지연 짝" 은 실행 시간 가중 지연으로 맞춘 고정 α(74 설계안 28행, 원고 표 6 짝 0.575)라
+#    가로축·열한 점·무릎점을 모두 같은 자(alpha_hull_main_joint.json 의 "d가중", stats 의 dw_latency_ms)로 그린다 —
+#    × 만 가중 자로 찍고 나머지를 작업당 자로 두면 한 그림에 두 자가 섞인다.
+#  · 선은 열한 점을 α 순서대로 잇는다(원고 "열한 점을 이은 선은 보조선"). 가중 자에서는 하부 껍질(hull)도 열한 점 전부라 같은 선.
+#  · 분리형 ○ 가 없으니 ● 를 본래 크기(s 14)로 되돌렸다(s 6 은 ○ 안에 넣으려고 줄인 것).
+def fig_alpha_cast():
+    p = os.path.join(V2, "analysis", "alpha_hull_main_joint.json")
+    st = stats("main/joint")
+    pair = stats("alpha/m0.5750")      # 가중 지연 짝(analysis/alpha_pair_main_joint_dw.json 의 pair 와 같은 실행)
+    if not (os.path.exists(p) and st and pair):
+        print("alpha_cast: 자료 없음"); return
+    r = json.load(open(p))["d가중"]
+    base = st["baseline_kg"]
+    pts = sorted(r["points"].values())
+    xs = [v[0] for v in pts]; ys = [100 * (1 - v[1] / base) for v in pts]
+    assert len(xs) == 11
+    kx, ky = r["knee"][0], 100 * (1 - r["knee"][1] / base)
+    px, py = pair["dw_latency_ms"], pair["savings_pct"]
+    print(f"alpha_cast: knee ({kx:.2f} ms, {ky:.2f} %), pair α={pair['alpha_mean']:.4f} ({px:.2f} ms, {py:.2f} %)")
+
+    fig, ax = new_ax()
+    ax.plot(xs, ys, color=INK, lw=1.1, zorder=2)
+    ax.scatter(xs, ys, s=12, facecolor=INK, edgecolor=INK, lw=0.5, zorder=7)
+    # 무릎점 과녁과 ×: 가중 자에서 × 는 무릎점에서 왼쪽 0.5 pt·위 2.6 pt(설계 크기) — v2_alpha 의 고리(s 150, 안지름 5.6 pt)와
+    # × (s 30 + 흰 테두리)로는 × 윗끝이 고리를 끊었다(1200 dpi 확인). → 고리를 키우고(s 150 → 230, 반지름 7.6 pt, 선 1.0 그대로)
+    # × 를 줄이고(s 30 → 20, 선 1.3 → 1.1) 흰 테두리를 뺐다(고리 안이 흰 바탕이라 필요 없다). × 끝–고리 안쪽 틈 약 0.9 pt.
+    # 고리 바깥–α=0.6 ● 틈은 ● 를 s 14 → 12 로 줄여 약 1.4 pt.
+    ax.scatter([kx], [ky], s=230, facecolor="white", edgecolor=INK, lw=1.0, zorder=9)
+    ax.scatter([px], [py], marker="x", s=20, color=INK, lw=1.1, zorder=12)
+    ax.annotate("α=0", (xs[0], ys[0]), textcoords="offset points", xytext=(7, 1), fontsize=F_ANN, ha="left")
+    ax.annotate("α=1", (xs[-1], ys[-1]), textcoords="offset points", xytext=(-1.5, -12), fontsize=F_ANN, ha="left")
+    ax.annotate("CAST knee", (kx, ky), textcoords="offset points", xytext=(-10, 3), fontsize=F_ANN, ha="right", va="center")   # 고리 반지름 7.6 pt + 틈
+    ax.plot([], [], color=INK, lw=1.1, marker="o", ms=3.46, mew=0.5, mfc=INK, mec=INK, label="CAST, fixed α")
+    ax.scatter([], [], marker="x", s=20, color=INK, lw=1.1, label="Fixed α, same latency")
+    ax.set_xlabel("Duration-weighted mean latency (ms)", fontsize=F_LABEL)
+    ax.set_ylabel("Carbon savings (%)", fontsize=F_LABEL)
+    ax.set_xlim(-6, 130); ax.set_ylim(-4, 100)
+    leg = ax.legend(fontsize=F_LEG, frameon=True, loc="lower right", handlelength=2.0, borderpad=0.2, fancybox=False)
+    leg.get_frame().set_facecolor("white"); leg.get_frame().set_edgecolor("none"); leg.get_frame().set_alpha(1.0)
+    save(fig, "alpha_cast")
+    fig.savefig(os.path.join(HERE, "v2_alpha_cast.svg"))
+
+
 # ── 그림: 용량비 스윕 — Azure 한 패널(단폭). 합성 워크로드는 선행 정책 평면(fig_priors)이 맡는다 ──
 def fig_capsweep():
     """상한 스윕 — Azure 한 패널, 단폭 215 pt. 절감(무릎점 ● 실선, α=1 ■) 대 상한 배수, 용량 무시 수준은 점선 기준선.
@@ -403,7 +449,7 @@ def fig_alphadist():
 
 if __name__ == "__main__":
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
-    fns = dict(alpha=fig_alpha, capsweep=fig_capsweep, where=fig_where, priors=fig_priors, herding=fig_herding, alphadist=fig_alphadist)
+    fns = dict(alpha=fig_alpha, alpha_cast=fig_alpha_cast, capsweep=fig_capsweep, where=fig_where, priors=fig_priors, herding=fig_herding, alphadist=fig_alphadist)
     for k, f in fns.items():
         if which in (k, "all"):
             f()

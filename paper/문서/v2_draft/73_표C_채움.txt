@@ -1,0 +1,160 @@
+표 C 채움 — 결론이 유지되는 범위 (2026-10-18, 74_줄인판_설계안 4.7·표 C 의 20행)
+
+■ 열 정의 (바꾸지 않음)
+  · Knee (%)        : 그 조건의 CAST 무릎점 실행(alpha_setting=knee). 100 × (1 − total_carbon_kg / baseline_kg).
+  · α=1 (%)         : 그 조건의 CAST α=1 실행(예약 ρ 는 그 조건의 대표값 그대로).
+  · Cost of cap (pp): [10-18 조정자 지시로 원고 정의로 바꿈] 무릎점끼리의 차.
+                      (CAST 무릎점 kg − 같은 조건의 용량 무시 무릎점 kg) ÷ 기준 kg × 100 = 용량 무시 무릎점 절감 − CAST 무릎점 절감, 마지막에 한 번만 반올림.
+                      ρ 는 각 조건의 CAST 무릎점 실행 그대로(대개 준비 구간 규칙의 2~3). 양수 = 용량을 지켜서 더 배출한 양.
+                      재채점 행은 main/joint 와 main/ignore 를 같은 재채점 계열로 다시 세고, 그 계열의 기준 kg 으로 나눈다.
+                      (처음 판의 정의 "CAST α=1·ρ=0 − 용량 무시 α=1" 값은 덧붙임 끝에 참고로 남겼다.)
+  · Violations      : 무릎점 / α=1 실행의 capacity_violations.
+  · 모든 %·pp 는 stats.json 의 kg 에서 계산했다(반올림한 % 끼리 빼지 않음). 원고 savings_pct 와 kg 계산값은 모든 칸에서 같다.
+  · 상한 배수는 기준 피크 13 의 배수다: 0.50x=7, 0.75x=10, 1.00x=13, 1.25x=17(대표), 1.50x=20, 2.00x=26, 3.00x=39 (stats.json 의 cap 로 확인).
+  · 용량 무시(ignore)는 cap=∞·ρ=0 으로 돌고 명목 상한으로만 채점한다(run_v2.py 161행). 그래서 kg 이 상한·리전별 상한에 무관하다
+    (hetero/clean_large_ignore·clean_small_ignore 의 kg = main/ignore 의 kg 7,616.09 로 확인). 상한 행·리전별 상한 행의 용량 무시는 main/ignore(무릎점)를 그대로 쓴다.
+
+════════ 1. 표 C ════════
+Condition                        | Knee (%)      | α=1 (%)       | Cost of cap (pp) | Violations (knee / α=1)
+Main (LSTM, cap 17)              | 71.93         | 95.65         | 1.47             | 0 / 0
+SN-24h forecast                  | 64.44         | 95.59         | —                | 0 / 0
+Oracle forecast                  | 67.20         | 95.87         | 2.05             | 0 / 0
+5 workload draws (mean ± s.d.)   | 71.51 ± 0.43  | 95.40 ± 0.28  | 1.83 ± 0.53      | 0 / 0 (다섯 벌 모두)
+Cap 7 (0.5×)                     | 56.79         | 76.30         | 16.61            | 0 / 0
+Cap 13 (1×)                      | 70.16         | 94.18         | 3.24             | 0 / 0
+Cap 26 (2×)                      | 73.21         | 95.90         | 0.19             | 0 / 0
+Per-region caps (3 layouts)      | 63.75–73.05   | —             | 0.35–9.64        | 0 / —
+Arrivals ×2 (cap 23)             | 69.45         | 92.58         | 3.85             | 0 / 0
+Unequal arrival rates (cap 18)   | 74.53         | 95.42         | 0.71             | 0 / 0
+Deferrable share 20–60%          | 70.01–72.54   | —             | 1.10–3.09        | 0 / —
+Arrival peak at noon (cap 23)    | 70.26         | —             | 0.31             | 0 / —
+Horizon 6–12 h                   | 71.04–71.63   | —             | —                | 0 / —
+No carbon lookahead              | 69.50         | 95.48         | —                | 0 / 0
+CA/TX/DE forecasts → SN-24h      | 71.55         | 95.66         | —                | 0 / 0
+RTT ≤ 100 ms                     | 32.98         | 46.83         | —                | 0 / 0
+Transfer 1 GB (destination)      | 71.16         | 95.20         | 1.46             | 0 / 0
+Life-cycle approx.               | 67.07         | 90.28         | 1.33             | 0 / 0
+Marginal: France one-sided       | 38.99         | 18.11         | 1.03             | 0 / 0
+Marginal: symmetric fossil       | 36.15         | 61.51         | 0.04             | 0 / 0
+
+  덧붙임
+  · 5 draws 의 ± 는 표본 표준편차(n−1), 원고 4.7 과 같은 방식. 모집단 표준편차로 하면 0.39 / 0.25.
+  · Per-region caps: 자기 기준 피크 1.25배 70.04, 깨끗한 셋 크게 73.05, 작게 63.75.
+  · Deferrable: φ 20·30·40·50·60% = 72.30·72.54·71.93·71.45·70.01 (40% 는 Main 과 같은 실행).
+  · Horizon: 6 h 71.63, 12 h 71.04 (24 h 는 Main 71.93).
+  · Transfer 는 목적지 강도로 센 판(원고 4.3). 출발지 강도로 세면 무릎점 66.01, α=1 87.65, Cost of cap 1.40.
+  · 재채점 행(전송·전과정·한계 둘)은 배정을 바꾸지 않으므로 위반은 Main 과 같다(0 / 0).
+  · Cost of cap 열은 무릎점끼리의 차다(ρ 는 각 조건의 CAST 실행 그대로). 캡션에 "Cost of cap = capacity-ignored knee savings − CAST knee savings" 를 밝힐 것.
+    두 무릎점은 α 를 따로 고르므로(무릎점 규칙) 같은 α 의 차가 아니다. 상한 39(3×)에서는 −0.03 으로 부호가 바뀐다(원고 4.7).
+  · Cost of cap 원값(반올림 전, pp):
+      Main 1.468248 · Oracle 2.049912 · Cap 7 16.607252 · Cap 13 3.237467 · Cap 26 0.188690
+      5 draws: 벌마다 1.468248 / 2.128951 / 2.197267 / 1.070251 / 2.290326 → 평균 1.831009, 표본 s.d. 0.534844
+      Per-region: own 1.25× 3.355008 · clean large 0.345128 · clean small 9.643255
+      Arrivals ×2 3.853764 · Unequal 0.709263 · φ20 1.563888 · φ30 1.100447 · φ40 1.468248(Main) · φ50 1.811365 · φ60 3.094622 · Noon 0.306312
+      전송(목적지) 1.460937 · 전송(출발지) 1.402084 · 전과정 1.331673 · 프랑스 한쪽 1.025622 · 대칭 화석 0.035826
+  · 대칭 화석 0.04 는 용량 무시와 CAST 무릎점이 화석 몫 회계에서 거의 같다는 뜻이다(36.18 대 36.15). 왜 그런지는 따로 재지 않았다.
+  · 참고 — 처음 판 정의(CAST α=1·ρ=0 − 용량 무시 α=1, rho0/joint_a1 대 main/ignore_a1): Main 0.34(원고 413행 "합성의 0.34%포인트" 재현),
+    전송(목적지) 0.50, 전송(출발지) 0.33, 전과정 0.35, 프랑스 한쪽 0.50, 대칭 화석 0.93. ρ=3 의 main/joint_a1 로 하면 Main 0.31(원고 4.3).
+
+════════ 2. 칸별 출처 (모두 scheduler/data/v2/ 아래 stats.json) ════════
+Main            Knee main/joint (8,036.385 / 28,625.462 kg) · α=1 main/joint_a1 (1,244.421 kg)
+                Cost main/joint (8,036.385 kg) − main/ignore (7,616.092 kg) = 420.293 kg ÷ 28,625.462 = 1.4682 → 1.47
+SN-24h          main/joint_sn24 · main/joint_a1_sn24 · Cost: 용량 무시 SN-24h 무릎점 실행 없음
+Oracle          main/joint_oracle · main/joint_a1_oracle · Cost: main/joint_oracle 9,387.765 − main/ignore_oracle 8,800.968 kg
+5 draws         Knee main/joint, seed/1_joint, seed/2_joint, seed/3_joint, seed/4_joint = 71.93, 71.39, 70.92, 71.95, 71.37
+                α=1  main/joint_a1, seed/{1,2,3,4}_joint_a1 = 95.65, 95.38, 94.96, 95.64, 95.37
+                (시드별 기준 kg 은 각 실행의 baseline_kg: 28,625.46 / 28,489.11 / 28,642.22 / 28,696.90 / 28,592.08, 상한 17/15/14/17/15, ρ 3/3/2/2/2)
+                Cost: 벌마다 seed/{k}_joint − seed/{k}_ignore (main 은 main/joint − main/ignore) 를 그 벌의 기준 kg 으로 나눈 뒤 평균 ± 표본 s.d.
+Cap 7           cap/0.50x · cap/0.50x_a1 (cap=7) · Cost: cap/0.50x 12,369.995 − main/ignore 7,616.092 kg → 16.61 (원고 4.7 과 같음)
+Cap 13          cap/1.00x · cap/1.00x_a1 (cap=13) · Cost: cap/1.00x 8,542.832 − main/ignore → 3.24 (원고와 같음)
+Cap 26          cap/2.00x · cap/2.00x_a1 (cap=26) · Cost: cap/2.00x 7,670.106 − main/ignore → 0.19 (원고와 같음)
+                → 원고의 16.61·3.24·0.19 는 바로 이 방식(각 상한의 CAST 무릎점 대 main/ignore)으로 나온다. 확인함.
+Per-region      hetero/own_1.25x · hetero/clean_large · hetero/clean_small (α=1 실행 없음)
+                Cost: 각 배치 − main/ignore (hetero/clean_large_ignore·clean_small_ignore 의 kg 이 main/ignore 와 같음, 7,616.092)
+Arrivals ×2     rate/100_joint · rate/100_joint_a1 (jobs_rate100.csv, cap 23) · Cost: rate/100_joint 17,448.059 − rate/100_ignore 15,247.007 kg ÷ 57,114.333
+Unequal rates   skew/joint · skew/joint_a1 (jobs_skew.csv, cap 18) · Cost: skew/joint 6,825.985 − skew/ignore 6,635.890 kg ÷ 26,801.773
+Deferrable      phi/20_joint, phi/30_joint, main/joint(40%), phi/50_joint, phi/60_joint (α=1 실행 없음)
+                Cost: phi/{p}_joint − phi/{p}_ignore (40% 는 main/joint − main/ignore), 각 φ 의 기준 kg
+Peak at noon    arrive/defer_noon (jobs_defer_noon.csv, cap 23; α=1 실행 없음) · Cost: arrive/defer_noon 8,044.653 − arrive/defer_noon_ignore 7,961.786 kg ÷ 27,053.094
+Horizon         horizon/6 · horizon/12 (α=1 실행 없음) · Cost: 용량 무시 지평 6·12 실행 없음
+No lookahead    lag1/joint · lag1/joint_a1 (--carbon-now lag1) · Cost: 용량 무시 lag1 실행 없음
+CA/TX/DE→SN24   forecast/weather3_sn24 · forecast/weather3_sn24_a1 (forecast = lstm|US-CAL-CISO=sn24,US-TEX-ERCO=sn24,DE=sn24) · Cost: 용량 무시 실행 없음
+RTT ≤ 100 ms    lnet/100 · lnet/100_a1 · Cost: 용량 무시 lnet 실행 없음
+재채점 네 행     배정은 main/joint · main/joint_a1 (Knee·α=1), main/joint · main/ignore (Cost of cap) 의 jobs.csv.gz 를 그대로 두고 다시 채점.
+                (참고로 rho0/joint_a1 · main/ignore_a1 도 다시 채점했다 — 처음 판 정의용.)
+                식은 저장소 스크립트 그대로(출력 파일이 없어 이번에 다시 돌림, 실행 넷에 약 7초):
+                · 전송 1 GB(목적지): scheduler/transfer_sensitivity.py --etx 0.06 — 옮긴 작업마다 0.06 kWh × 목적지 강도
+                  (출발지: transfer_breakeven.py 의 식 — 0.06 kWh × 출발 리전의 실행 구간 실측 강도)
+                · 전과정: scheduler/lca_rescore.py — 기준 kg 도 다시 셈 29,755.82 kg
+                · 프랑스 한쪽: scheduler/marginal_rescore.py — 프랑스로 옮긴 작업만 독일 평균, 기준 kg 은 그대로 28,625.46
+                · 대칭 화석: scheduler/fossil_rescore.py (FLOOR 0.05) — 기준 kg 도 다시 셈 53,636.05 kg
+                재채점 kg (기준 / main/joint / main/ignore / main/joint_a1 / rho0/joint_a1 / main/ignore_a1):
+                  전송 목적지  28,625.46 / 8,255.67 / 7,837.47 / 1,374.67 / 1,396.92 / 1,252.50
+                  전송 출발지  28,625.46 / 9,730.37 / 9,329.02 / 3,535.19 / 3,542.69 / 3,449.28
+                  전과정       29,755.82 / 9,798.09 / 9,401.84 / 2,892.13 / 2,900.97 / 2,796.36
+                  프랑스 한쪽  28,625.46 / 17,464.70 / 17,171.11 / 23,442.14 / 23,428.60 / 23,285.39
+                  대칭 화석    53,636.05 / 34,248.70 / 34,229.48 / 20,646.34 / 20,657.50 / 20,156.23
+                main/ignore 재채점 절감: 전송 목적지 72.62 · 출발지 67.41 · 전과정 68.40 · 프랑스 한쪽 40.01 · 대칭 화석 36.18 (평균 계수 73.39)
+                (같은 재채점으로 alpha/m41_0.5375 = 프랑스 한쪽 37.53, 대칭 화석 34.84; main/time_only = 프랑스 한쪽 18.78, 대칭 화석 0.42 — 원고와 같음)
+
+════════ 3. 빈 칸과 그 칸을 채울 실행 ════════
+  명령 앞머리는 모두  ./.venv/bin/python -m scheduler.run_v2  (저장소 루트에서). 이름은 겹치지 않게 새로 지었다.
+  예상 시간은 비슷한 실행의 wall_s(단독 1판)에서 어림했다. 용량 무시 무릎점은 같은 조건의 CAST 무릎점의 0.6~0.85배 걸렸다
+  (main 1,604/2,066 s, oracle 1,943/2,763, rate100 3,263/5,138, skew 1,661/2,317, φ 0.62~0.78, noon 1,624/1,961).
+  같은 조건의 α=1 실행과 무릎점 실행의 시간 비는 0.2~1.8배로 들쭉날쭉해(cap 26 0.20, main 0.42, cap 7 1.03, rate100 1.79) 범위로 적었다.
+  (처음 판에 있던 CAST α=1·ρ=0 실행과 용량 무시 α=1 실행 목록은 정의가 바뀌어 지웠다.)
+
+  ■ Cost of cap 이 "—" 인 행 (용량 무시 무릎점 실행이 없음; 짝 CAST 무릎점 실행은 이미 있음)
+  [SN-24h]
+    --name main/ignore_sn24 --engine ignore --alpha knee --forecast sn24                     약 35~45분 (main/joint_sn24 3,066 s × 0.7~0.85)
+  [Horizon 6~12 h] (h = 6, 12; 표에는 두 값의 범위로)
+    --name horizon/6_ignore --engine ignore --alpha knee --horizon 6                         약 10~13분 (horizon/6 918 s × 0.6~0.85)
+    --name horizon/12_ignore --engine ignore --alpha knee --horizon 12                       약 25~35분 (horizon/12 2,393 s × 0.6~0.85)
+  [No carbon lookahead]
+    --name lag1/ignore --engine ignore --alpha knee --carbon-now lag1                        약 35~45분 (lag1/joint 3,202 s × 0.6~0.85)
+  [CA/TX/DE → SN-24h]
+    --name forecast/weather3_sn24_ignore --engine ignore --alpha knee --forecast 'lstm|US-CAL-CISO=sn24,US-TEX-ERCO=sn24,DE=sn24'
+                                                                                             약 25~32분 (forecast/weather3_sn24 2,271 s × 0.6~0.85)
+  [RTT ≤ 100 ms]
+    --name lnet/100_ignore --engine ignore --alpha knee --l-net-max 100                      약 20~26분 (lnet/100 1,847 s × 0.6~0.85)
+  → 여섯 판, 이어 돌리면 약 2.5~3.3시간, runq.sh 로 6개 동시면 가장 긴 판(약 45분) 근처.
+
+  ■ α=1 이 "—" 인 행 (CAST α=1, ρ 는 기본 warmup 규칙 — 무릎점 실행과 같은 ρ)
+  [Per-region caps] (세 배치 각각; 표에는 범위로)
+    --name hetero/own_1.25x_a1 --engine joint --alpha 1.0 --cap 1.25 --cap-mode x-own-peak
+    --name hetero/clean_large_a1 --engine joint --alpha 1.0 --cap-json scheduler/data/v2/scenarios.json:synthetic.cap_clean_large
+    --name hetero/clean_small_a1 --engine joint --alpha 1.0 --cap-json scheduler/data/v2/scenarios.json:synthetic.cap_clean_small
+                                                                                             각 약 15~90분 (상한 17 α=1 866 s ~ 상한 7 α=1 5,182 s 사이; 프랑스 9 인 clean_small 이 가장 길 것)
+  [Deferrable 20~60%] (p = 20, 30, 50, 60; 40% 는 Main)
+    --name phi/{p}_joint_a1 --engine joint --alpha 1.0 --jobs load_balancer/data/variants/jobs_phi{p}.csv
+                                                                                             무릎점 1,058·1,595·2,484·3,146 s 기준 각 약 4~30·5~50·8~75·10~95분
+  [Peak at noon]
+    --name arrive/defer_noon_a1 --engine joint --alpha 1.0 --jobs load_balancer/data/variants/jobs_defer_noon.csv   약 7~60분 (무릎점 1,961 s)
+  [Horizon 6~12 h]
+    --name horizon/6_a1 --engine joint --alpha 1.0 --horizon 6                               약 3~30분 (무릎점 918 s)
+    --name horizon/12_a1 --engine joint --alpha 1.0 --horizon 12                             약 8~70분 (무릎점 2,393 s)
+  → 열 판, 이어 돌리면 어림 3~10시간.
+
+  합계: 열여섯 판. 이어 돌리면 어림 6~13시간, runq.sh 로 8개씩 동시면 대략 1.5~2.5시간(동시 실행 때 판마다 느려짐은 고려하지 않음).
+  돌리지 않았다(지시: 긴 시뮬레이션은 띄우지 않음).
+
+════════ 4. 원고·설계 문서와 맞지 않는 것 ════════
+  [불일치 1 — 정의, 해결됨] 처음 판은 Cost of cap 을 "CAST α=1·ρ=0 − 용량 무시 α=1" 로 셌는데(Main 0.34, 원고 413행 "합성의 0.34%포인트" 와 같음),
+    원고 4.3·4.7 의 "용량을 지키는 비용" 과 74c2 표 C 초안은 무릎점끼리의 차다. 조정자 지시로 무릎점끼리의 차로 바꿨다.
+    다시 계산한 값은 원고와 모두 같다: Main 1.47 · Oracle 2.05(74c2) · Cap 7 16.61 · Cap 13 3.24 · Cap 26 0.19 · Arrivals ×2 3.85 · Unequal 0.71 ·
+    Deferrable 1.10~3.09 · Noon 0.31.
+    원고에 없던 값: Per-region 0.35~9.64(own 3.36, large 0.35, small 9.64), 재채점 네 행(1.46 · 1.33 · 1.03 · 0.04), 출발지 전송 1.40.
+    5 draws: 74c2 의 1.83 은 평균끼리의 차였다. 벌마다 짝지은 차로 바꿔도 평균은 1.83(같은 값), 표본 s.d. 0.53 → "1.83 ± 0.53".
+  [불일치 2] 지시문의 "marginal symmetric fossil proxy (knee 34.84)" — 34.84 는 무릎점이 아니라 CAST 고정 α=0.5375(alpha/m41_0.5375)의 값이다(같은 지연 비교의 짝, 원고 197행 "CAST 고정 α 34.84% 대 도착 고정형 33.78%").
+    무릎점(main/joint)은 36.15 로, 원고 197행 "절감이 36.15%(무릎점)로" 와 같다. 표에는 36.15 를 넣었다.
+  [불일치 3] 74c2 표 C 초안의 "No weather input 71.56 | 95.64" 는 틀렸다. stats.json 은 71.55 / 95.66 (forecast/weather3_sn24 71.5528, _a1 95.6598).
+    71.93 − 0.37 과 95.65 − 0.01 처럼 반올림한 값끼리 뺀 것으로 보인다. 원고 4.2 의 "0.37%포인트, 0.01%포인트" 는 kg 에서 맞다(0.3729, 0.0071). 지시문의 71.55/95.66 은 맞다.
+  [불일치 4] 74c2 표 C 초안의 "Cap 26 α=1 —" — 실행이 있다: cap/2.00x_a1 = 95.90, 위반 0. 원고 4.7 은 α=1 을 상한 7·10·13·20·39 만 적고 "여섯 판 모두 위반 0" 이라 하는데,
+    α=1 실행은 상한 7·10·13·17·20·26·39 의 일곱 판이 있고 모두 위반 0 이다(틀린 말은 아니나 26 이 빠짐).
+  [참고 — 지시문의 상한 배수] "cap 13 = 0.75x, cap 26 = 1.50x" 는 아니다. 배수는 기준 피크 13 기준이라 cap 13 = cap/1.00x, cap 26 = cap/2.00x, 0.75x = 10, 1.50x = 20 이다. 원고와는 맞다.
+  [참고 — 74_설계안 4.7 "대칭 대리에서는 남는다(34.84 대 33.78)"] 이 짝은 고정 α 끼리라 표 C 의 무릎점 열(36.15)과 섞지 말 것.
+
+  원고(99_원고_점검완료판)·74_설계안의 숫자 가운데 stats.json·재채점과 대조해 맞은 것:
+    71.93/95.65 · 64.44/95.59 · 67.20/95.87 · 71.51±0.43/95.40±0.28 · 56.79/76.30 · 70.16/94.18 · 73.21 · 70.04/73.05/63.75 · 69.45/92.58 · 74.53/95.42 ·
+    72.30/72.54/71.45/70.01 · 70.26 · 71.63/71.04 · 69.50, α=1 −0.17pp(95.48) · 0.37/0.01pp(71.55/95.66) · 32.98/46.83 · 71.16/95.20 · 66.01/87.65 ·
+    67.07/90.28 · 38.99/18.11 · 37.53(고정 α) · 36.15 · 34.84(고정 α) · 0.42(시간만 대칭 화석) · 0.34 · 0.31(ρ=3) · 1.47 · 2.05 · 16.61 · 3.24 · 0.19 · 3.85 · 0.71 · 1.10~3.09 · 0.31(noon) · 1.83 · 위반 전부 0.

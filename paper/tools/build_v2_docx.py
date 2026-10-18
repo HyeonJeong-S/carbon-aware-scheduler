@@ -21,6 +21,7 @@ W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 M_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"
 WIDTH = {"단폭": 195.6, "전폭": 402.0}
 
+EQ_LABEL = {}      # 원 EQ 키 → 찍는 식 번호(줄인 판의 "#식 표시 번호" 줄). 비면 키 그대로
 # ── 원고 파싱 ──────────────────────────────────────────────────────────────
 def parse(path):
     lines = open(path, encoding="utf-8").read().split("\n")
@@ -28,6 +29,8 @@ def parse(path):
     while i < len(lines) and not lines[i].startswith("# "):
         m = re.match(r"^(제목|Title|초록|주제어|Abstract|Keywords):\s*(.*)$", lines[i])
         if m: head[m.group(1)] = m.group(2).strip()
+        if lines[i].startswith("#식 표시 번호"):          # 줄인 판: "[식 n]" 은 원 EQ 키, 찍는 번호는 "n→(m)" 대로
+            EQ_LABEL.update(re.findall(r"(\d+[a-z]?)→\((\d+[a-z]?)\)", lines[i]))
         i += 1
     para = []
     def flush():
@@ -37,6 +40,7 @@ def parse(path):
         ln = lines[i].rstrip()
         if not ln.strip():
             flush(); i += 1; continue
+        if re.match(r"^#[^#\s]", ln): i += 1; continue      # "#잠정 결정: …" 같은 주석 줄("# 1." 절 제목과 달리 # 뒤에 공백이 없다)
         if ln.startswith("## "): flush(); blocks.append(("h2", ln[3:].strip())); i += 1; continue
         if ln.startswith("# "):
             flush(); t = ln[2:].strip()
@@ -314,7 +318,7 @@ def eq_elem(T, n):
     for r in reversed(p.findall(qn("w:r"))):
         t = r.find(qn("w:t"))
         if t is not None and t.text and "(" in t.text:
-            t.text = f"({n})"; rp = r.find(qn("w:rPr"))
+            t.text = f"({EQ_LABEL.get(str(n), n)})"; rp = r.find(qn("w:rPr"))
             if rp is not None:                                   # 식 번호는 바른 글꼴(89 [24]: JOK 실측 본문과 같은 바른 글꼴)
                 for e in rp.findall(qn("w:i")) + rp.findall(qn("w:iCs")): rp.remove(e)
             break
@@ -362,7 +366,7 @@ def eq_display(p, om, n):
         for a in ("ascii", "hAnsi", "cs"): f.set(qn("w:" + a), "Times New Roman")
         etree.SubElement(r, qn("m:t")).text = t
     r = etree.SubElement(e, qn("m:r")); etree.SubElement(r, qn("m:t")).text = "#"
-    txt_run(f"({n})")
+    txt_run(f"({EQ_LABEL.get(str(n), n)})")
     return p
 
 ALG_SZ = 14        # 7pt — 표 글자(TBL_SZ)와 같다. 7.5pt 에서는 10·11행이 단폭을 넘어 "← x^α*", "α*" 만 다음 줄로 갈렸다(87 [16])
@@ -469,6 +473,8 @@ FLOAT_GAP = 220       # 띄운 그림·표와 아래 본문 사이 11pt(v1 그�
 #   알고리즘 0 은 4회차판·13:25 원고 둘 다에서 8쪽 오른쪽 단을 채웠다(−2 는 4회차판 8쪽 R 123pt, −3 은 13:25 원고 170pt).
 #   표 3·4 값은 원고 판마다 결과가 크게 갈린다(같은 값이 4회차판에서는 12쪽 R 191pt·18쪽 R 211pt) — 원고가 멈춘 뒤 다시 맞출 것.
 FLOAT_SHIFT = {("tbl", 3): 0, ("tbl", 4): 1, ("tbl", 6): -1, ("fig", 9): -1, ("alg", 1): 0, ("fig", 5): -1, ("fig", 8): 4}   # fig5 +1(10-18): 표 4 와 같은 자리에 겹쳤다  # fig8 +4(10-18 5회차판): 표 6(전폭)과 겹침
+# 줄인 판(10-18): 표 4 −1(7쪽 R단 371pt 빔), 그림 1 +2(2쪽 R단 144pt 빔), 그림 2 −1(4쪽 R단 빔), 표 5 +1(그림 3 캡션 위에 얹힘 — overlap_check.py 로 잡음)
+FLOAT_SHIFT_CUT = {("tbl", 4): -1, ("fig", 1): 2, ("fig", 2): -1, ("tbl", 5): 1}
 
 def apply_shift(blocks, shift):
     """("fig"|"tbl", 번호) → n. 그림·표가 아닌 블록(단락·절 제목·식) n개를 건너 앞(−)·뒤(+)로 옮긴다."""
@@ -721,7 +727,8 @@ def mathify_doc(doc):
 # ── 조립 ──────────────────────────────────────────────────────────────────
 def build(src, out, shift=None):
     head, blocks = parse(src)
-    sh = dict(FLOAT_SHIFT); sh.update(shift or {})
+    base = os.path.basename(src)                        # FLOAT_SHIFT 는 전체판의 번호로 맞춘 값 — 줄인 판은 FLOAT_SHIFT_CUT, 그 밖은 --shift 만
+    sh = dict(FLOAT_SHIFT if base == "99_원고.txt" else FLOAT_SHIFT_CUT if base.startswith("99_원고_줄인판") else {}); sh.update(shift or {})
     if FLOAT_ALL and sh:
         blocks = apply_shift(blocks, sh); print("  자리 옮김:", ", ".join(f"{dict(fig='그림', tbl='표', alg='알고리즘')[k]} {n} {d:+d}" for (k, n), d in sh.items() if d))
     doc = docx.Document(V1); T = templates(doc); body = doc.element.body

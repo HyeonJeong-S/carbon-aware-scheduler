@@ -1,0 +1,211 @@
+표 1 원문 확인 — ⟦?⟧ 다섯 칸과 Hall·CarbonFlex·COAST 행 점검 (2026-10-18)
+
+대상: 99_원고_줄인판.txt 의 표 1 (35~50행), 참고문헌 [6]~[9], [12], [14], [15].
+범례(원고 그대로): ○ 있음 / △ 벌점·부분 분석·집계 부하 / × 없음 / — 해당 없음.
+열 뜻: Re-solve = 이미 정했거나 줄 서 있는 작업을 매 단계 다시 정하는가.
+
+■ 원문을 어디서 읽었나
+  · CarbonFlex [14]: 저장소 paper/참고/CarbonFlex.pdf (arXiv:2505.18357v1, 23 May 2025).
+  · 나머지는 저장소에 없어 내려받아 읽음(스크래치 폴더, 저장소에 넣지 않음).
+    [6] Wiesner      arXiv:2110.13234 (Middleware'21 판과 같은 본문, 쪽은 PDF 쪽)
+    [7] CarbonScaler arXiv:2302.08681 (POMACS 7(3) Art.57 판. 쪽은 "57:n")
+    [8] GAIA         lass.cs.umass.edu/papers/pdf/asplos24-greenforlessgreen.pdf (ASPLOS'24 판)
+    [9] GREEN        usenix.org/system/files/nsdi25-xu-kaiqiang.pdf (NSDI'25 공개판. 쪽은 PDF 쪽, 표지 1쪽 포함)
+    [12] Hall        arXiv:2410.21510v3 (27 Oct 2025)
+    [15] COAST       arXiv:2609.05443v1 (29 Jul 2026)
+  · 저장소 안의 앞선 인용 검증 문서(83_인용검증_3회차, 정리.txt)에는 이 다섯 칸에 대한 원문 대조 기록이 없었다.
+    74_줄인판_설계안 73행이 "? 칸(Hall 용량, CarbonFlex·COAST 마감 등)은 원문 확인"으로 남겨 둔 것이 이번 일이다.
+
+
+════════ 1. 제안 — ⟦?⟧ 다섯 칸 ════════
+
+  칸                              | 제안 | 한 줄 이유
+  Temporal-only [6–9] · 마감       | △    | 넷이 갈린다: [6]·[7] 하드 마감, [8] 큐 단위 최대 대기(시작 기한), [9] 마감 없음
+  Hall [12] · 용량                 | △    | 클러스터별 상한(VCC)이 있으나 집계 부하에 거는 확률(CVaR) 제약. 하드 적용은 7절 구현에서만
+  CarbonFlex [14] · 마감           | △    | 큐마다 최대 지연이 있으나 지키지 못하는 경우를 원문이 인정(오라클은 마감을 늘리고, 실행기는 위반률을 보고 물러섬)
+  CarbonFlex [14] · 재풀이         | ○    | 매 Δt(5분)·도착·종료 때 대기·실행 중인 작업 전부의 배정을 다시 정함
+  COAST [15] · 마감                | ○    | 시작 후보 집합 S_i 안에 마감과 최대 지연이 하드로 들어감(권고 단계 기준)
+
+
+  1-1. Temporal-only [6–9] · Hard deadline → △ (넷이 갈림)
+
+    [6] Wiesner — ○ (작업이 정해진 시각 전에 끝나야 함)
+      "If jobs finish during non-working hours, they can be shifted as long as they finish before the
+       next working day at 9 am." (§5.2 Scenario II, p.9)
+      "Gray dashed lines represent the deadlines of when jobs are supposed to be finished at the two
+       different time constraints." (Fig. 12 캡션, p.10)
+
+    [7] CarbonScaler — ○ (작업별 완료 시각 T 를 반드시 지키는 일정)
+      "Our algorithm must compute a schedule where the aggregate server capacity allocated to the job
+       over [t,T] can perform this work before the completion time T, minimizing carbon emissions."
+      (§3.4, p.57:8)
+      "By default, we assume that the desired job completion time is T = t + l ... Although T must be
+       at least t + l for all jobs" (§3.2, p.57:6–57:7)
+
+    [8] GAIA — ○에 가까우나 성격이 다름: 끝낼 시각이 아니라 "늦어도 이때는 시작" 이고, 작업별이 아니라 큐마다 한 값
+      "the cluster administrator specifies a maximum waiting time, W_short and W_long, that a job in
+       each queue is willing to wait — the scheduler guarantees the job will begin executing no later
+       than W. Note that W_short and W_long are system-wide parameters, and jobs do not need to specify
+       any slack or deadlines." (§4.2, p.5)
+
+    [9] GREEN — × (마감 보장 없음을 스스로 밝힘)
+      "GREEN optimizes cluster-wide metrics without providing direct SLO or deadline guarantees for
+       individual jobs." (§3 Workflow, p.5)
+      "GREEN prioritizes global cluster efficiency rather than providing strict Service Level
+       Objectives (SLOs) or deadline guarantees for individual jobs." (p.9)
+
+    → 무리 하나의 칸으로는 △ 가 정직하다. 다만 범례의 △(벌점·부분·집계)와 뜻이 달라 "섞임" 이라는 각주가 꼭 필요하다.
+      ※ 같은 행의 다른 두 칸도 섞여 있다(아래 3-1). GREEN 하나가 용량 ○·마감 ×·재풀이 ○ 로 나머지 셋과 거의 반대라,
+        쪽 여유가 있으면 GREEN 을 따로 한 줄로 빼는 편이 각주보다 깨끗하다:
+          Temporal-only [6–8] | ○ | × | × | ○ | ×        (GAIA 마감 ○ 는 "시작 기한" 각주)
+          GREEN [9]           | ○ | × | ○ | × | ○
+        이렇게 나누면 "섞임" 각주가 필요 없고, CarbonScaler 의 부분 재계산만 작은 각주로 남는다(3-1).
+
+    각주 문안(한 줄로 둘 때)
+      국: 시간 축만 쓰는 네 연구[6–9]는 성질이 갈려 △로 적었다. 마감은 [6]·[7]이 작업별 하드 마감, [8]이 큐마다 정한
+          최대 대기(시작 기한), [9]는 보장하지 않는다. 용량은 [9]만 클러스터 용량 안에서 배정하고, 다시 정하기는 [9]가
+          30분마다 모든 작업의 순위를 새로 매기며 [7]은 계획에서 벗어난 작업 하나의 남은 일정만 다시 짠다.
+      영: The four temporal-only works [6–9] differ, hence △. Deadlines: per-job hard deadlines in [6, 7], a per-queue
+          maximum wait (start-by bound) in [8], none in [9]. Only [9] schedules within cluster capacity; [9] re-ranks
+          all jobs every 30 min, and [7] re-plans only the remainder of a deviating job.
+
+
+  1-2. Hall [12] · Region cap → △
+
+    클러스터(=데이터센터 안의 단위)마다 시각별 상한 v_{t,d}(VCC)를 두고, 그것을 실제 기계 용량 아래로 묶는다.
+    다만 (i) 걸리는 대상이 개별 작업이 아니라 집계 부하이고, (ii) 이론부의 상한은 CVaR 확률 제약이라 넘칠 수 있으며
+    본문도 넘친 경우를 보고한다. 하드 상한으로 쓰는 것은 7절 "현실 구현" 뿐이고, 그때 넘치는 작업은 줄을 서서
+    마감이 밀린다(= Caspian 과 같은 맞바꿈의 반대쪽이 아니라, 상한은 지키고 마감을 양보).
+      "Inherently, each v_{t,d} is limited by the true capacity v̄_{t,d}, which takes into account the (cluster)
+       machine capacity and the predicted inflexible load yielding the following constraint 0 ≤ v_{t,d} ≤ v̄_{t,d}"
+       (§III-A, 식 (5), p.4)
+      "Since the compute loads s_{k,c} are random variables, we enforce this constraint in a probabilistic sense
+       ... (CVaR) constraint" (§III-A, 식 (7), p.4)
+      "For some of the validation scenarios, the optimal robust strategy results in load profiles that slightly
+       exceed the VCC limits" (§VI-C, p.9)
+      "it may result in (cluster) level machine capacity being violated and some jobs not being executed due to
+       insufficient capacity." (§VI, p.10)
+      "The VCCs ... can be used in two ways: (i) As information for the cluster-level operating system ... (ii) As a
+       hard capacity constraint for the placement algorithm. ... We choose approach (i) in Section VI-B through
+       Section VI-E ... For Section VII we use approach (ii)" (§VI-A 3), p.8)
+      "When the load pushed to a specific cluster exceeds its planned capacity, jobs are placed in a cluster-level
+       queue and executed as resources become available" (§VII, p.11)
+    → △. 같은 행의 마감 △(집계 부하)와 이유가 같아 일관된다. ○ 로 올리려면 "7절 구현에서만 하드" 각주가 필요하고,
+      그러면 주된 기여(확률 보장)와 어긋나므로 △ 를 권한다.
+
+
+  1-3. CarbonFlex [14] · Hard deadline → △
+
+    큐마다 최대 지연 d_i 가 있고 "큐의 지연 안에 끝내며" 를 목표로 둔다. 그러나 하드 보장이 아니다.
+      "the cluster is assumed to support multiple submission queues ... each queue has a pre-configured maximum
+       delay d_i ... the maximum duration ("slack") the job can wait or be paused during its execution." (§3, p.4)
+      "Finally, it verifies that all jobs have completed; otherwise, it marks the schedule as infeasible for the
+       specified cluster capacity and job delays. In this case, we repeat the algorithm while extending the
+       deadline for jobs that were not finished." (§4.2 오라클, p.6)
+      "it checks the average delay violations v experienced by recently completed jobs ... If the violation exceeds
+       a certain percentage ε, ... the provisioning function falls back to carbon-agnostic execution and provisions
+       the maximum cluster capacity M." (§4.3, p.7)
+      "for the small allowed delays, CarbonFlex and CarbonScaler violate the allowed delay by 3.4 and 1.6 hours ...
+       some of the jobs in the oracle also exceed the deadline (i.e., a non-feasible schedule), which we fix by
+       extending the delay for these specific jobs." (§6.3 Effect of Delay, p.11)
+    → 마감은 정렬 기준(남은 지연)과 위반률 감시로 다루고, 실험에서 실제로 넘긴다. "부분" 의 △.
+      (벌점 항은 아니므로 굳이 구분하려면 각주 "목표·감시, 위반 보고됨".)
+
+
+  1-4. CarbonFlex [14] · Re-solve → ○
+
+    매 슬롯 클러스터 크기를 다시 정하고, 매 Δt 또는 작업이 오갈 때마다 지금 있는 작업 전부(대기 + 실행 중)의
+    서버 수를 처음부터 다시 정한다. 실행 중인 작업도 줄이거나 멈출 수 있다.
+      "at each time slot t, given the set of queued up and currently executing jobs N_t, ... our goal is to make
+       two decisions: (i) provisioning decision ... and (ii) scheduling decision: how many servers should be
+       allocated to queued and running jobs" (§3, p.4)
+      "the scheduling algorithm in Algorithm 3 then decides which jobs to schedule and how much to allocate to
+       each scheduled job at run (e.g., every Δt or whenever a job arrives or finishes). To do so, the algorithm
+       iterates over the current jobs" (§4.3, p.8)
+      "When the capacity or number of queued jobs changes or every Δt, e.g., 5 minutes, CarbonFlex computes each
+       job's resource assignment and scale using Algorithm 3" (§5, p.8)
+    → ○. 단 "다시 푸는" 것은 최적화가 아니라 오라클을 흉내 낸 탐욕 규칙이다(표의 열 뜻에는 맞음).
+
+
+  1-5. COAST [15] · Hard deadline → ○ (각주 권장)
+
+    시작 후보 집합 자체가 마감과 최대 지연을 하드로 지킨다.
+      "The feasible start-time set of job i is S_i = {t ∈ T_k | t ≥ a_i, t − a_i ≤ m_i, t + ℓ_i − 1 ≤ D_i}." (§III-B, 식 (5), p.3)
+    단서 둘:
+      "With this construction the finish-by deadline coincides with the delay bound, so the deadline term in (5)
+       does not bind independently in our experiments." (§III-A, p.3)
+      "Accepted recommendations are assumed to be realized at their target slots: we do not model queue delay ...
+       so the reported gains represent an upper bound for an external advisor." (§V, p.6)
+    → 권고하는 시작 시각은 언제나 마감 안이므로 ○. 다만 COAST 는 권고 계층이라 실제 실행까지 보장하지 않는다.
+      각주를 단다면: "COAST 의 마감은 권고 시각에 거는 하드 범위이며, 실행 보장은 다루지 않는다."
+
+
+════════ 2. 이미 채운 칸 점검 — Hall · CarbonFlex · COAST ════════
+
+  행 / 칸                  | 지금 | 판정        | 근거
+  Hall · Time              | ○    | 맞음        | "a temporal flexibility h_c ∈ Z≥0, namely, the maximum delay (in hours) the compute jobs can tolerate" (§III, p.3)
+  Hall · Space             | ○    | 맞음        | "a spatial range, encoded via D_c ⊆ D consisting of all clusters at which jobs of class c are allocable" (§III, p.3)
+  Hall · Hard deadline     | △    | 맞음        | 식 (4b)는 계획에서 지연 창 밖 배정을 0 으로 막지만 대상이 집계 부하. 실제로는 "We assume that remaining jobs will
+                           |      |             | fit within the VCC limits of the next day" (§VI, p.8), 7절은 넘친 작업을 줄 세움(p.11).
+  Hall · Re-solve          | ○    | ★ 틀림 → × | 아래 2-1
+  CarbonFlex · Time/Space  | ○/×  | 맞음        | 단일 동질 클러스터("Our work assumes a homogeneous cloud clusters", §3, p.4)
+  CarbonFlex · Region cap  | ○    | 맞음        | "subject to the maximum allowed cluster capacity" (§3, p.4). 오라클도 "respecting the maximum capacity" (§4.2, p.6).
+                           |      |             | 리전이 하나뿐이라 "그 클러스터의 최대 크기 M" 이 상한이다.
+  COAST · Time/Space       | ○/×  | 맞음        | 단일 HPC 시설의 시작 시각만 정함
+  COAST · Region cap       | △    | 맞음        | "COAST uses a soft congestion penalty rather than a hard capacity constraint." (§III-A, p.3)
+                           |      |             | 범례의 "벌점" △. 원문은 더 약하게도 말한다: "the congestion penalty is soft and does not model system
+                           |      |             | capacity" (§V, p.6) — × 로 읽힐 여지도 있으나, 몰림을 벌점으로 막는 장치는 있으므로 △ 유지가 맞다.
+  COAST · Re-solve         | ×    | 맞음        | 앞 배치의 확정 권고는 고정 배경 부하: "At the beginning of round k, previous accepted recommendations contribute a
+                           |      |             | background load B^k_τ" (§III-B, p.3); "the rolling procedure applies Algorithm 1 to each batch in turn on the
+                           |      |             | accumulating committed load" (§III-D, p.4)
+
+  2-1. Hall · Re-solve ○ → × 로 고칠 것 (확신 높음)
+    하루 전 계획은 하루에 한 번 풀고, 실시간 단계는 작업이 올 때 한 번 (클러스터, 시각)을 정해 그 시각까지 보관한다.
+    매시간 다시 푸는 것은 "하면 좋을 것" 과 "향후 과제" 로만 나온다.
+      "Real-time job placement: Places every incoming job with the goal of tracking the optimal scheduling strategy Y*." (§V, p.7)
+      "In practice, a job placed at a cluster d for execution at time t is stored in a cloud until the optimal time of
+       execution, i.e, until k = t." (§V, p.8)
+      "In case of unexpected real-time changes, such as machine failure, the VCC limits will be recomputed the next day" (§V, p.7)
+      "recomputing the DRO problem (17) every hour, including the system state, and applying it in a receding-horizon
+       manner is expected to yield performance gains in practice." (§VI-A 6), p.8)
+      "Future work will investigate a receding-horizon implementation of the DRO policy with real job-level data." (§VIII, p.12)
+    → ×. (만약 "제안은 했다" 를 살리고 싶으면 △ + 각주 "매시간 재계산은 향후 과제로만 제시" 이지만, 범례의 △ 뜻
+      (벌점·부분·집계)과 맞지 않아 × 를 권한다.)
+    ※ 2장 본문 "Hall 등은 집계 부하를 하루 전 계획과 실시간 배치로 옮긴다[12]" 는 원문과 맞다. 표만 고치면 된다.
+    ※ 이걸 고치면 "매시간 다시 푸는" ○ 는 CarbonFlex·Caspian·CAST(+ GREEN, 아래 3-1)에 남는다. 1장·2장에서
+      "다시 푸는 것은 Caspian 과 CAST 뿐" 류의 문장이 있으면 CarbonFlex 를 함께 봐야 한다(줄인판 2장에는 그런 단정 없음).
+
+
+════════ 3. 덤으로 본 것 (요청 범위 밖, 판단은 사용자) ════════
+
+  3-1. Temporal-only 행의 이미 채운 두 칸도 사실은 섞여 있다
+    Region cap △ — [6] ×, [7] ×, [8] ×, [9] ○.
+      [6] "In our experiments, we did not consider any resource constraints, such as the available computational
+          capacity at a given time." (§5.3 Limitations, p.10)
+      [7] 작업마다 최대 서버 수 M 만 있고 클러스터 용량 없음. GREEN 이 이렇게 요약: "CarbonScaler [8] requires a
+          user-specified job deadline and can scale jobs using unlimited, on-demand cloud resources to meet the
+          deadline." (GREEN §2, p.4)  서버 확보 거절은 민감도 실험으로만 다룸(§5.7, p.57:20).
+      [8] 예약 서버가 없으면 온디맨드를 새로 띄움: "Otherwise, the scheduler acquires an on-demand server at t_start"
+          (§4.2.3, p.5) — 용량은 비용 문제이지 상한이 아님.
+      [9] "GREEN, a resource scheduler for ML jobs that operates strictly within available resource capacity." (§2, p.4);
+          "until the cluster reaches its maximum capacity" (§6.1, p.8)
+      → △ 는 "섞임" 으로서만 맞다. 지금 범례 뜻(벌점·부분·집계)으로는 설명되지 않으니 1-1 의 각주가 이것도 덮어야 한다.
+    Re-solve × — [6] ×, [7] △, [8] ×, [9] ○. 지금 × 는 GREEN 에 대해 틀린다.
+      [7] "If the deviations exceed a threshold, it recomputes the schedule for the remainder of the job's execution
+          from the current time t′ to the completion time T." (§3.4 Periodic Schedule Recomputation, p.57:10) — 작업 하나만.
+      [9] "Active scheduling ... operates in rounds to assign job priorities and preempt lower-priority jobs. ...
+          the interval between active scheduling, known as the time quantum, is set to 30 minutes." (§6.3, p.9)
+      → 한 줄로 두면 △ + 각주(1-1 문안에 이미 포함). GREEN 을 따로 빼면 [6–8] 은 × 로 두고 [7] 만 작은 각주.
+
+  3-2. 무리 묶음 권고
+    GREEN 이 [6–8] 과 세 칸(용량·마감·재풀이)에서 반대라, 한 줄 △ 세 개 + 긴 각주보다 GREEN 한 줄을 따로 두는 편이
+    읽기 쉽고 심사에서 덜 찔린다. 표가 한 줄 늘어난다(단폭 표 11행 → 12행). 2장 첫 문장 "시간 축 연구는 한 데이터센터
+    안에서 작업을 저탄소 시각으로 미루고[6–9]" 는 넷 모두에 맞으므로 그대로 둬도 된다.
+
+  3-3. 참고문헌 [12] 서지
+    정리.txt 3113행은 Hall 을 "TPWRS 2025" 로 적었고 웹 검색 요약도 IEEE Trans. Power Systems 게재라고 하나, 권·호·쪽을
+    이번에 확인하지 못했다. arXiv v3 는 2025-10-27 판이다. 지금 원고는 "arXiv:2410.21510, 2024". 출판본이 확인되면
+    교체 대상. (이번 판정의 인용은 모두 v3 기준.)
+
+  3-4. 원문 쪽수 표기 주의
+    GREEN 쪽은 USENIX 공개 PDF 의 쪽(표지 1쪽 포함), CarbonScaler 는 POMACS 쪽(57:n), 나머지는 arXiv/저자판 PDF 쪽.
