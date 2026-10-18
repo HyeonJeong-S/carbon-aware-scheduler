@@ -1,1 +1,1 @@
-[startcheck/seed3_oracle] 채점 143,200건(시뮬 146,000)  기준 28,696.9 kg  결과 9,572.8 kg  절감 66.64%  위반 22693  초과 1231.4h  마감위반 0  지연 40.3/38.7ms  cap 17 ρ 2  벽시계 9.9분  → /Users/jongha/Desktop/GitHub/carbon-aware-scheduler/scheduler/data/v2/startcheck/seed3_oracle
+[startcheck/seed3_oracle] 채점 143,200건(시뮬 146,000)  기준 28,696.9 kg  결과 9,589.9 kg  절감 66.58%  위반 21685  초과 1174.2h  마감위반 0  지연 40.3/38.7ms  cap 17 ρ 2  벽시계 8.5분  → /Users/jongha/Desktop/GitHub/carbon-aware-scheduler/scheduler/data/v2/startcheck/seed3_oracle

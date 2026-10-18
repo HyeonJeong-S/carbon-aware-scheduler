@@ -1,14 +1,14 @@
 {
  "n": 143200,
  "n_all": 146000,
- "total_carbon_kg": 9562.007694941187,
+ "total_carbon_kg": 9607.062464329028,
  "slo_violations": 0,
  "forced_admissions": 0,
  "immediate": 84608,
- "capacity_violations": 16518,
+ "capacity_violations": 15883,
  "over_cap_forced": 0,
  "over_cap_immediate": 0,
- "over_cap_normal": 16518,
+ "over_cap_normal": 15883,
  "scored_cap": {
   "US-CAL-CISO": 14,
   "US-TEX-ERCO": 14,
@@ -20,91 +20,91 @@
   "JP": 14
  },
  "peak_by_region": {
-  "US-CAL-CISO": 57,
+  "US-CAL-CISO": 55,
   "US-TEX-ERCO": 20,
   "US-NY-NYIS": 16,
-  "FR": 38,
+  "FR": 32,
   "DE": 52,
   "KR": 21,
   "IN": 11,
-  "JP": 32
+  "JP": 31
  },
  "hours_over_by_region": {
-  "US-CAL-CISO": 763.1391111111083,
+  "US-CAL-CISO": 747.9986111111155,
   "US-TEX-ERCO": 0.9255833333334067,
   "US-NY-NYIS": 0.51347222222266,
-  "FR": 304.5978888888862,
-  "DE": 18.726277777778705,
-  "KR": 2.9917500000003656,
+  "FR": 283.6311666666722,
+  "DE": 18.650027777778632,
+  "KR": 2.807305555556013,
   "IN": 0.0,
-  "JP": 147.75063888889042
+  "JP": 149.50177777777674
  },
- "avg_delay_h": 1.9316398294925516,
- "p95_delay_h": 12.443076388888807,
- "avg_latency_ms": 41.97566340782123,
+ "avg_delay_h": 1.961583777932962,
+ "p95_delay_h": 12.486669444444441,
+ "avg_latency_ms": 42.02493715083799,
  "p95_latency_ms": 137.0,
- "dw_latency_ms": 40.589696162954375,
- "home_share": 0.4634008379888268,
+ "dw_latency_ms": 40.452508768057044,
+ "home_share": 0.4632262569832402,
  "by_k": {
   "1": {
    "n": 42900,
-   "carbon_kg": 8370.702898469202,
-   "avg_delay_h": 6.0386378354053365,
-   "p95_delay_h": 15.99354027777778,
-   "avg_latency_ms": 39.289906759906756,
+   "carbon_kg": 8405.130456954616,
+   "avg_delay_h": 6.122416816886819,
+   "p95_delay_h": 16.092661111110868,
+   "avg_latency_ms": 39.13400932400933,
    "forced": 0,
-   "over_cap": 14712
+   "over_cap": 14380
   },
   "2": {
    "n": 14187,
-   "carbon_kg": 1030.5225353694448,
-   "avg_delay_h": 1.2362376393098558,
-   "p95_delay_h": 5.603922222222444,
-   "avg_latency_ms": 48.06273348840488,
+   "carbon_kg": 1041.3713959983695,
+   "avg_delay_h": 1.2852358379737343,
+   "p95_delay_h": 5.605808333333379,
+   "avg_latency_ms": 47.77415944174244,
    "forced": 0,
-   "over_cap": 1736
+   "over_cap": 1481
   },
   "3": {
    "n": 14289,
-   "carbon_kg": 115.52187064296679,
-   "avg_delay_h": 0.0010249784216300438,
+   "carbon_kg": 115.53977147144921,
+   "avg_delay_h": 0.0009374305020957497,
    "p95_delay_h": 0.0,
-   "avg_latency_ms": 42.85604311008468,
+   "avg_latency_ms": 42.880327524669326,
    "forced": 0,
-   "over_cap": 58
+   "over_cap": 19
   },
   "4": {
    "n": 28815,
-   "carbon_kg": 36.790390889425076,
-   "avg_delay_h": 3.8560163495044995e-06,
+   "carbon_kg": 36.59538000131269,
+   "avg_delay_h": 2.768619738946227e-06,
    "p95_delay_h": 0.0,
-   "avg_latency_ms": 41.83869512406733,
+   "avg_latency_ms": 42.136526114870726,
    "forced": 0,
-   "over_cap": 11
+   "over_cap": 3
   },
   "5": {
    "n": 43009,
-   "carbon_kg": 8.46999957022216,
-   "avg_delay_h": 6.458596487213003e-10,
+   "carbon_kg": 8.425459903302631,
+   "avg_delay_h": 0.0,
    "p95_delay_h": 0.0,
-   "avg_latency_ms": 42.445999674486735,
+   "avg_latency_ms": 42.653142365551396,
    "forced": 0,
-   "over_cap": 1
+   "over_cap": 0
   }
  },
- "alpha_mean": 0.5189711359404097,
+ "alpha_mean": 0.5191224394785847,
  "unplaced": 0,
- "solve_ms_mean": 78.0566734660535,
- "solve_ms_p95": 133.41465659868845,
- "solve_ms_max": 289.79904200241435,
+ "solve_ms_mean": 56.971282120870974,
+ "solve_ms_p95": 89.02907949995993,
+ "solve_ms_max": 239.65558299823897,
  "n_slots": 8760,
  "n_lp": 96360,
- "n_mip": 3,
+ "n_mip": 4,
  "max_vars": 2480,
- "zA_pos_slots": 1797,
- "zB_pos_slots": 268,
- "zA_sum": 176700.0,
- "zB_sum": 1036.0,
+ "zA_pos_slots": 1765,
+ "zB_pos_slots": 909,
+ "zA_sum": 167244.0,
+ "zB_sum": 6895.0,
  "knee_degenerate": {
   "em": 0,
   "lat": 0,
@@ -119,6 +119,7 @@
  "engine": "start_check",
  "alpha_setting": "knee",
  "forecast": "lstm",
+ "carbon_now": "actual",
  "cap": 14,
  "cap_mode": "x-peak",
  "cap_json": null,
@@ -144,15 +145,15 @@
   "IN": 10,
   "JP": 11
  },
- "savings_pct": 66.61569292934976,
- "wall_s": 721.612869042001,
+ "savings_pct": 66.45839100027509,
+ "wall_s": 528.5940755829943,
  "herding": {
   "n": 146000,
-  "n_delayed": 38709,
-  "dip_occ_mean": 5.75872905027933,
+  "n_delayed": 38795,
+  "dip_occ_mean": 5.709846368715084,
   "dip_occ_p90": 16.0,
-  "dip_full_share": 0.14560055865921787,
-  "bottom3_start_share": 0.4178321678321678,
-  "hours_at_or_over_cap": 2505
+  "dip_full_share": 0.14629888268156424,
+  "bottom3_start_share": 0.4084771291916603,
+  "hours_at_or_over_cap": 2528
  }
 }
