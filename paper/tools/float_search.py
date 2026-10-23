@@ -9,6 +9,7 @@ PY = os.path.join(ROOT, ".venv/bin/python"); B = os.path.join(ROOT, "paper/tools
 DOCX = os.path.join(ROOT, "paper/CAST_JOK_v2.docx"); PDF = os.path.join(ROOT, "paper/CAST_JOK_v2.pdf")
 sys.path.insert(0, os.path.join(ROOT, "paper/tools"))
 from overlap_check import overlaps
+from under_image_check import hidden   # 10-23: 그림이 표·캡션을 덮은 것(글자끼리 겹침이 아님)도 겹침으로 센다
 import pymupdf
 
 def score(src, sh):
@@ -18,7 +19,7 @@ def score(src, sh):
     if r.returncode: raise RuntimeError(r.stderr)
     rep = subprocess.run([PY, B, "--in", src, "--report", PDF], cwd=ROOT, capture_output=True, text=True).stdout
     pages = int(re.search(r"(\d+)쪽\n", rep).group(1)); gaps = sum(int(g) for g in re.findall(r"(\d+)pt 빔", rep)) + 300 * rep.count("절 제목만")   # 단 중간 빈 곳·홀로 남은 절 제목도(2회차 E2·E3)
-    d = pymupdf.open(PDF); ov = sum(1 for p in d if len(overlaps(p)) > 12)
+    d = pymupdf.open(PDF); ov = sum(1 for p in d if len(overlaps(p)) > 12 or len(hidden(p)) > 12)
     return pages * 1000 + gaps + ov * 5000, pages, gaps, ov, s
 
 def main():

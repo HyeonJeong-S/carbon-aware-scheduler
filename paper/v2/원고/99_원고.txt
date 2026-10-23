@@ -117,7 +117,7 @@ Fig. 1 Overall pipeline of CAST. Thick lines carry jobs, thin lines carbon and l
 Fig. 2 Per-region LSTM architecture. One model per region.
 
 [그림 3 | v2_fig3_forecast_curve | 단폭]
-그림 3 캘리포니아의 탄소집약도 예측 예. 한 구간이며 왼쪽은 입력 168시간 중 마지막 48시간이다. 이 구간의 LSTM 평균 절대 오차는 12.2 gCO₂/kWh이고, 점선으로 겹친 24시간 전 값(SN-24h, 어제 같은 시각의 값) 예측은 14.0이다.
+그림 3 캘리포니아의 탄소집약도 예측 예. 한 구간이며 왼쪽은 입력 168시간 중 마지막 48시간이다. 이 구간의 평균 절대 오차는 LSTM 12.2 gCO₂/kWh, 점선인 24시간 전 값(SN-24h, 어제 같은 시각의 값) 14.0이다.
 Fig. 3 Example carbon intensity forecast for California. One window; the left part shows the last 48 of the 168 input hours; the mean absolute error over this window is 12.2 gCO₂/kWh, against 14.0 for the dotted SN-24h forecast (the value at the same hour on the previous day).
 
 하루 앞 탄소집약도 예측은 선행 연구가 따로 다룬 문제이고[28] 본 연구의 기여가 아니다. 예측기가 뒤의 두 모듈에 넘기는 것은 값 하나하나보다 곡선의 모양, 곧 리전과 시각에 따라 탄소가 어디서 얼마나 깊이 내려가는지다. 로드밸런서와 스케줄러는 그 모양을 보고 자리를 고르기 때문이다. 예측 오차가 스케줄링 결과에 어떻게 이어지는지, 그리고 24시간 전 값을 그대로 쓰는 단순한 예측기와 비교한 결과는 4.2절에 있다.
@@ -180,11 +180,11 @@ CAST가 제안하는 것은 매 슬롯 다시 푸는 배정 구조이고, 가중
 리전과 시각을 한 문제로 둔 것이 배정을 어떻게 바꾸는지는 한 슬롯을 열어 보면 분명하다. 그림 4의 슬롯에서 한국에서 제출된 작업 하나를 보면, α를 0에서 1까지 옮길 때 배정이 다섯 구간으로 갈린다(표 2). α가 0이면 한국에서 지금 시작하고(352 gCO₂/kWh), 0.1~0.3이면 한국에 남되 6~7시간 뒤로 미뤄 329~330으로 낮춘다. 0.4~0.5에서는 왕복 지연 30 ms를 들여 일본으로 옮기고 7시간 뒤에 시작해 204로, 0.6~0.9에서는 캘리포니아로 옮겨 2~3시간 뒤에 58~80으로, 1.0에서는 프랑스에서 즉시 시작해 12로 간다. 리전만 바뀌는 것이 아니라 리전마다 고르는 시작 시각도 다르며, α 하나가 로드밸런서와 스케줄러의 선택을 함께 움직인다. 무릎점은 이 슬롯에서 0.5를 골라, 이 작업은 왕복 지연 30 ms를 들여 예측 탄소집약도를 한국에서 지금 시작할 때보다 42% 낮춘다.
 
 [그림 4 | v2_fig4_slot | 단폭]
-그림 4 한 슬롯에서 α에 따른 배정. 2025년 5월 26일 19시 48분(UTC)에 한국에서 제출된 k=1 작업 하나(실행 17분, 마감까지 14.5시간)이며, 칸은 리전 × 향후 24 슬롯이고 진할수록 예측 탄소집약도가 높다. ●는 무릎점(α=0.5)이 고른 칸, ○는 다른 α가 고른 칸이며 옆 숫자는 그 칸을 고른 α의 범위이고, · 뒤 숫자는 그 칸의 예측 탄소집약도(gCO₂/kWh)다.
+그림 4 한 슬롯에서 α에 따른 배정. 2025년 5월 26일 19시 48분(UTC)에 한국에서 제출된 k=1 작업 하나(실행 17분, 마감까지 14.5시간)이며, 칸은 리전 × 향후 24 슬롯이고 진할수록 예측 탄소집약도가 높다. ●는 무릎점(α=0.5), ○는 다른 α가 고른 칸이며, 옆 숫자는 고른 α의 범위 · 그 칸의 예측 탄소집약도(gCO₂/kWh)다.
 Fig. 4 Assignment by α at one slot. One k=1 job submitted in Korea at 19:48 UTC on 26 May 2025 (17 min run, 14.5 h to deadline); cells are region × next 24 slots, darker for higher forecast carbon intensity. The filled dot is the cell chosen at the knee (α=0.5), hollow dots those chosen at other α, labelled with the range of α that chose them, followed after · by the cell's forecast intensity (gCO₂/kWh).
 
 [표 2]
-표 2 가중치 α에 따른 배정 변화. 그림 4와 같은 슬롯과 작업(홈 리전 한국)이며, 시작은 지금부터 몇 슬롯 뒤인지, 탄소는 예측 탄소집약도(gCO₂/kWh), 지연은 ms다.
+표 2 α에 따른 배정 변화. 그림 4와 같은 작업(홈 리전 한국)이며, 시작은 지금부터 몇 슬롯 뒤인지, 탄소는 예측 탄소집약도(gCO₂/kWh), 지연은 ms다.
 Table 2 Assignment change by weight α. Same slot and job as Fig. 4 (origin: Korea); start is in slots from now, carbon is forecast intensity in gCO₂/kWh, latency in ms.
 α | Region | Start | Carbon | Latency
 0.0 | Korea | 0 | 352 | 0
@@ -408,7 +408,7 @@ Fig. 8 California concurrent executions under capacity ignored and CAST. One wee
 설계끼리는 같은 α에서 비교해야 하며, α=0.4 이상의 같은 α에서는 CAST가 분리형보다 근소하게 더 줄인다. 상한이 가장 큰 기준 피크의 1.25배인 이 조건에서 CAST와 분리형의 고정 α 곡선은 거의 겹친다. 그러나 같은 α끼리 비교하면 CAST가 α=0.4부터 1까지 일곱 점에서 0.20~1.54%포인트 덜 배출하고 신뢰구간이 0을 포함하지 않는다(표 9). 차이는 α=0.6에서 가장 크고 α=0.8 이상에서는 0.2~0.32%포인트로 작아진다. 다만 지연을 맞춘 짝은 아니어서, α=0.6에서는 CAST가 실행 시간 가중 지연을 1.71 ms 더 쓴다. 분리형 곡선을 CAST 점의 실행 시간 가중 지연에서 선형 보간해 이 지연 차를 보정하면 차는 α=0.4~1에서 0.32~0.74%포인트이고, α=0.6의 봉우리(1.54%포인트)는 절반 넘게 지연 차에서 온다. α≤0.3에서는 작업당 지연이 3 ms 아래이고 부호가 섞인다(0.3에서 분리형이 1.11%포인트 앞선다). 이 짝 차가 워크로드 시드에 따라 얼마나 흔들리는지는 재지 않았다. 또 이 차는 합성 워크로드의 결과이며, 시간 이동이 거의 절감을 내지 못하는 Azure 워크로드에서는 성립하지 않는다(4.7절).
 
 [표 9]
-표 9 같은 고정 α에서 CAST와 분리형의 비교. 칸은 절감률(%)이고 예약은 3이며, 두 실행의 실행 시간 가중 지연 차는 최대 1.71 ms(α=0.6)라 같은 지연의 짝은 아니다. 차는 분리형 배출에서 CAST 배출을 뺀 값(양수 = CAST가 덜 배출, kg)이며 괄호는 7일 단위 블록 부트스트랩의 95% 신뢰구간, pp는 기준 배출 대비 %포인트다.
+표 9 같은 고정 α에서 CAST와 분리형의 비교. 칸은 절감률(%)이고 예약은 3이며, 두 실행의 실행 시간 가중 지연 차는 최대 1.71 ms(α=0.6)라 같은 지연의 짝은 아니다. 차는 분리형 배출 − CAST 배출(kg, 양수면 CAST가 덜 배출)이며 괄호는 7일 블록 부트스트랩 95% 신뢰구간, pp는 기준 배출 대비 %포인트다.
 Table 9 CAST versus the decoupled design at the same fixed α. Cells are savings (%) with reservation 3; the two runs differ in duration-weighted latency by up to 1.71 ms (α=0.6), so they are not latency-matched pairs. Diff. is decoupled minus CAST emissions in kg (positive = CAST emits less) with 95% 7-day block-bootstrap intervals; pp is the gap in percentage points of baseline emissions.
 α | CAST | Decoupled | Diff. (95% CI) | pp
 0.4 | 38.64 | 37.80 | 238 (66 to 434) | 0.83
@@ -509,7 +509,7 @@ PUE 1.1–1.6, adverse / favorable (ρ=0) | 68.66 / 74.54 | — | —
 Realistic info (ρ=0) | 68.88 | — | —
 
 [표 12 | 전폭]
-표 12 회계별 같은 지연 짝(예약 없이, 고정 α의 짝). Δ는 상대 설계 배출 − CAST 배출(각 워크로드 기준 배출 대비 %포인트, 양수면 CAST가 덜 배출)이고 괄호는 7일 블록 부트스트랩 95% 신뢰구간이다. 배정은 평균 배출계수로 정한 그대로 두고 기준 배출까지 다시 셌으며, %포인트의 분모는 회계마다 다시 센 기준 배출이고 계산식은 4.1절에 있다. 불리한 가정을 겹친 행은 프랑스만 한계 근사, 출발지 전송 1 GB, PUE 불리를 함께 두되 PUE는 실행 전력에만 곱했다. CAST는 두 워크로드 모두 α=0.5375로(Azure 49.56%), Azure 무릎점(51.35%)과 다르다.
+표 12 회계별 같은 지연 짝(예약 없이, 고정 α의 짝). Δ는 상대 설계 배출 − CAST 배출(기준 배출 대비 %포인트, 양수면 CAST가 덜 배출)이고 괄호는 7일 블록 부트스트랩 95% 신뢰구간이다. 배정은 평균 배출계수로 정한 그대로 두고 기준 배출까지 다시 셌으며, %포인트의 분모는 회계마다 다시 센 기준 배출이고 계산식은 4.1절에 있다. 불리한 가정을 겹친 행은 프랑스만 한계 근사, 출발지 전송 1 GB, PUE 불리를 함께 두되 PUE는 실행 전력에만 곱했다. CAST는 두 워크로드 모두 α=0.5375(Azure 49.56%)로 Azure 무릎점(51.35%)과 다르다.
 Table 12 Same-latency pairs under each accounting (no reservation, fixed-α pairs). Δ is the other design’s emissions minus CAST’s (percentage points of each workload’s baseline; positive = CAST emits less), with 95% seven-day block-bootstrap intervals. Assignments are those made with average factors; emissions and baselines are rescored, and each row’s pp use its own rescored baseline (formulas in Section 4.1). The adverse combination stacks France-only marginal, origin transfer 1 GB and adverse PUE, with PUE applied to execution power only. CAST uses α = 0.5375 on both workloads (Azure 49.56%), not the Azure knee (51.35%).
 Accounting | Synthetic, arrival-fixed | Synthetic, evacuation | Azure, arrival-fixed | Azure, evacuation
 Average | +0.96 (0.51–1.46) | +0.91 (0.67–1.15) | +2.53 (1.68–3.42) | +1.99 (0.86–3.01)
@@ -578,7 +578,7 @@ Zanotto [9] (arrival-fixed) | Per-request ILP at arrival against existing assign
 비교의 자는 둘이다. 하나는 상한 17에서의 위반 건수이고, 다른 하나는 그 정책의 배정이 위반 없이 돌려면 필요한 리전 상한, 곧 필요 용량이다. 상한 17은 본 연구가 고른 값이므로, 선행 정책이 그 상한을 넘겼다는 사실만으로는 정책의 좋고 나쁨을 가릴 수 없다. 필요 용량은 본 연구가 정한 상한과 무관하게 각 정책이 스스로 요구한 값이며, 1초짜리 순간 피크의 영향을 가리기 위해 시간 가중 99.9 백분위수를 함께 적는다. 결과는 표 14에, 절감과 필요 용량을 두 축에 놓은 것은 그림 12에 있다. 그림 12에는 4.7절에서 상한을 바꾼 CAST의 곡선과 합성 워크로드의 용량 무시 수준(가로 점선)도 함께 그렸다.
 
 [표 14 | 전폭]
-표 14 선행 정책을 같은 회계로 재현한 결과(RTT는 실행 시간 가중 평균 왕복 지연). CICS, CASPER, Sukprasert는 본 연구의 상한 없이 돌렸고 Caspian은 자기 단위의 상한 17을 두므로, 위반은 참고값이고 비교는 필요 용량으로 한다. 위반은 상한 17을 넘긴 배정 건수, 마감은 마감 위반 건수이고, 필요 용량은 리전별 최대 동시 실행의 최댓값(괄호는 시간 가중 99.9 백분위수), 설비 총량(Total)은 리전별 최댓값의 합이며 기준 배정의 피크는 13이다. Suk.는 Sukprasert 등[6]의 정책으로, (home)은 홈 리전 위에서, (ours)는 CAST(무릎점)가 정한 리전 위에서 시각만 옮긴 것이다. CICS는 하루 전 자원 곡선, CASPER는 탄소 인지 프로비저닝(CAP) 정책, Caspian은 슬롯 안 자원량을 실행 시간으로 둔 판이다. CASPER 대비 CAST(α=1, 상한 17, 예약 3)의 차는 회계별로 평균 0.36, 정확 겹침 0.35, 전송 목적지 0.26, 출발지 0.45, 전과정 0.32, 한계 근사 프랑스만 2.02, 대칭 2.52%포인트다(예약 없이 돌린 CAST로는 평균 0.33%포인트).
+표 14 선행 정책을 같은 회계로 재현한 결과(RTT는 실행 시간 가중 평균 왕복 지연). CICS, CASPER, Sukprasert는 상한 없이 돌렸고 Caspian은 자기 단위의 상한 17을 두므로, 위반은 참고값이고 비교는 필요 용량으로 한다. 위반은 상한 17을 넘긴 배정 건수, 마감은 마감 위반 건수이고, 필요 용량은 리전별 최대 동시 실행의 최댓값(괄호는 시간 가중 99.9 백분위수), 설비 총량(Total)은 리전별 최댓값의 합이며 가장 큰 기준 피크는 13이다. Suk.는 Sukprasert 등[6]의 정책으로 (home)은 홈 리전, (ours)는 CAST(무릎점)가 정한 리전 위에서 시각만 옮긴 것이다. CICS는 하루 전 자원 곡선, CASPER는 탄소 인지 프로비저닝(CAP) 정책, Caspian은 슬롯 안 자원량을 실행 시간으로 둔 판이다. CASPER 대비 CAST(α=1, 상한 17, 예약 3)의 차는 회계별로 평균 0.36, 정확 겹침 0.35, 전송 목적지 0.26, 출발지 0.45, 전과정 0.32, 한계 근사 프랑스만 2.02, 대칭 2.52%포인트다(예약 없는 CAST로는 평균 0.33%포인트).
 Table 14 Prior policies reproduced under the same accounting (RTT is the duration-weighted mean round-trip latency). CICS, CASPER and Sukprasert run without our cap and Caspian with its own-unit cap of 17, so Viol. is for reference; the comparison uses required capacity. Viol. counts assignments past the ceiling of 17 and Deadl. deadline misses; Req. cap. is the largest per-region peak concurrency (time-weighted 99.9th percentile in parentheses) and Total the sum of per-region peaks; the baseline peak is 13. Suk. is the policy of Sukprasert et al. [6]: (home) shifts time on the home region and (ours) on the regions chosen by CAST at the knee. CICS uses the day-ahead capacity curve, CASPER its CAP policy, and Caspian the variant whose per-slot resource equals the run time. CAST (α=1, cap 17, reservation 3) leads CASPER by 0.36 (average), 0.35 (exact overlap), 0.26 (transfer, destination), 0.45 (transfer, origin), 0.32 (life-cycle), 2.02 (marginal, France only) and 2.52 pp (marginal, symmetric); without reservation the average gap is 0.33 pp.
 Policy | Savings (%) | Viol. | Req. cap. | Total | Deadl. | RTT (ms)
 Baseline | 0 | 0 | 13 (8) | 89 | 0 | 0
