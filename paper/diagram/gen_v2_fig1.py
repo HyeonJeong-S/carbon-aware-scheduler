@@ -41,6 +41,10 @@ from palette import INK, AUX_GRAY, EXCEPT_GRAY, BG_WASH  # noqa: E402
 
 FS, FB, FT, FN = 9, 10, 8, 6.5    # 기본 / 제목 / 부제 / 최소
 NAME = "v2_fig1_pipeline"
+V3 = "--v3" in sys.argv          # 11-01 v3: 본문 식 (6)이 이번 슬롯의 순간과 미래 슬롯을 κ 하나로 쓴다 → 라벨 n_r(κ), 파일 v3_fig1_pipeline
+if V3:
+    NAME = "v3_fig1_pipeline"
+SLOT = "κ" if V3 else "σ"
 FONT = "'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif"
 MATH = "'Times New Roman','STIX Two Text','STIXGeneral',serif"   # 기울임 수식 글자
 CHROME = {
@@ -290,7 +294,7 @@ def fig_architecture_v2():
           # 10-18(82 점검4 E [6](a)): τ 는 본문에서 시작 시각 τ_j 전용 — 원고가 슬롯 번호에 σ 를 쓰므로 n_r(τ) → n_r(σ)
           # 렌더(600 dpi): σ 가 τ 보다 넓어 7.5 pt·가운데 307.6 이면 "n" 이 회색 테두리(바깥 끝 300.6)에 닿았다(틈 −0.1 pt) →
           # 7.3 pt 로 줄이고 가운데를 두 테두리 사이(300.6~315.6)의 한가운데 308.1 로
-          rtxt(308.1, 94, 7.3, f'{it("n")}{sb("r", "(", size=6.3)}{it("σ")})', "nr(σ)", anchor="middle")]
+          rtxt(308.1, 94, 7.3, f'{it("n")}{sb("r", "(", size=6.3)}{it(SLOT)})', f"nr({SLOT})", anchor="middle")]
 
     # 되먹임 ② 굵은 자기 고리: i ≥ 1 작업은 확정하지 않고 다음 슬롯 LP 로 (상자 아래)
     L += [path(f"M{JX + JW - 18},112 L{JX + JW - 18},126 L{JX + 20},126 L{JX + 20},113.5", sw=1.8),

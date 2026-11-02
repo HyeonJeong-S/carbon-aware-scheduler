@@ -1,0 +1,7 @@
+v3 그림과 원본(생성 스크립트는 paper/diagram/)
+fig1_pipeline.png  ← v3_fig1_pipeline.png (gen_v2_fig1.py --v3, 라벨 n_r(κ))
+fig2_lstm.png      ← v1_docx_fig2.png
+fig3_slot.png      ← v2_fig4_slot.png (gen_v2_fig4.py)
+fig4_routing.png   ← v2_fig5_routing.png (gen_v2_figs.py)
+fig5_priors.png    ← v2_priors.png (gen_v2_figs.py)
+fig6_day.png       ← v2_fig7_day.png (gen_v2_fig7.py)

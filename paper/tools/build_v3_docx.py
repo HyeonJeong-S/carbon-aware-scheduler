@@ -12,6 +12,7 @@ import build_v2_docx as b
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 b.DRAFT = os.path.join(ROOT, "paper", "v3", "원고")     # 식은 v3/원고/omml/eq{n}.xml 에서 읽는다
+b.DIAG = os.path.join(ROOT, "paper", "v3", "그림")      # v3 그림은 v3/그림/ 에 따로 둔다(원본 생성 스크립트는 paper/diagram)
 b.EQ_CENTER = {3: 1956}                                  # v2 식 (6) = v3 식 (3): 단 가운데 탭
 b.EQ_BR_INDENT = {7: 1100}                               # v2 식 (12) = v3 식 (7): 둘째 줄 들여쓰기
 b.ALG_KR = {1: "CAST의 슬롯별 배정"}
