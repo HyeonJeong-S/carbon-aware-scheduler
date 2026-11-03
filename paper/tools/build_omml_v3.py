@@ -19,7 +19,7 @@ EQ = {
  5: r"\tilde{C}_{j}(r,i)=\frac{\hat{C}_{r}^{(t)}(t+i,\,d_{j})}{\max_{r',t'}\hat{C}_{r'}^{(t)}(t')}",   # 탄소 비용(v2 식 8 앞부분)
  # v2 (11a)(11b)를 하나로: κ 는 이번 슬롯의 시작 순간(U_t)과 미래 슬롯을 함께 가리킨다
  6: r"\sum_{(j,i)\ni\kappa}x_{jri}+n_{r}(\kappa)\le\mathrm{cap}_{r}+z^{A}_{r\kappa} @@ \qquad\qquad\forall r,\ \kappa\in U_{t}\cup[t+1,t+H]",
- 7: EQ_V2[12],                                  # 예약
+ 7: r"\sum_{(j,i)\ni\sigma,\ j\in Q^{\mathrm{def}}}x_{jri}+n_{r}(\sigma) @@ \qquad\le\mathrm{cap}_{r}-\rho_{r}+z^{B}_{r\sigma}",   # 예약(11-03: 정의역은 본문으로 빼서 두 줄)
  8: EQ_V2[7],                                   # 후보 비용
  9: EQ_V2[9],                                   # 슬롯 목적식
  10: EQ_V2[10],                                 # 한 자리

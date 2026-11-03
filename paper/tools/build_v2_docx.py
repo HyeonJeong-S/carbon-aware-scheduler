@@ -41,6 +41,7 @@ def parse(path):
         if not ln.strip():
             flush(); i += 1; continue
         if re.match(r"^#[^#\s]", ln): i += 1; continue      # "#잠정 결정: …" 같은 주석 줄("# 1." 절 제목과 달리 # 뒤에 공백이 없다)
+        if ln.startswith("### "): flush(); blocks.append(("h3", ln[4:].strip())); i += 1; continue   # 11-03 v3: 소소제목(4.2.1)
         if ln.startswith("## "): flush(); blocks.append(("h2", ln[3:].strip())); i += 1; continue
         if ln.startswith("# "):
             flush(); t = ln[2:].strip()
@@ -821,6 +822,7 @@ def build(src, out, shift=None):
     for k, (kind, val) in enumerate(blocks):
         if kind == "h1": add(keep_next_only(para_from(T["h1"], val)))
         elif kind == "h2": add(keep_next_only(para_from(T["h2"], val)))
+        elif kind == "h3": add(keep_next_only(para_from(T["h2"], val)))   # 소소제목은 절 제목과 같은 꼴
         elif kind == "p": add(keep_next_only(no_overflow(para_from(T["body"], break_after_slash(val))), keep=False))
         elif kind == "eq": add(eq_elem(T, val))
         elif kind == "alg":                                # 상자 위·아래 4pt 띄움(빈 단락, 높이 4pt) — 본문이 괘선에 붙지 않게

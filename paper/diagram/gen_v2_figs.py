@@ -232,7 +232,8 @@ def frontier_data():
     return alphas, runs, gap, pair
 
 
-def fig_frontier():
+def fig_frontier(v3=False):
+    # 11-03 v3: 범례 이름을 v3 표와 같게("Arrival-time") → v3_fig6_frontier
     r = frontier_data()
     if r is None:
         print("frontier: 자료 없음"); return
@@ -250,8 +251,11 @@ def fig_frontier():
     t.scatter(cx, cy, s=6, facecolor=INK, edgecolor=INK, lw=0.5, zorder=7)
     t.annotate("α=0", (cx[0], cy[0]), textcoords="offset points", xytext=(7, 1), fontsize=F_ANN, ha="left")
     t.annotate("α=1", (cx[-1], cy[-1]), textcoords="offset points", xytext=(-1.5, -12), fontsize=F_ANN, ha="left")
+    if v3:   # 11-03 v3(사용자 메모): 아래 칸의 점이 어느 α 인지 보이게 위 칸 가운데 점에 α 를 적는다
+        for k in (4, 5, 6, 7):
+            t.annotate(f"α={alphas[k]:.1f}", (cx[k], cy[k]), textcoords="offset points", xytext=(5, -3), fontsize=F_ANN, ha="left", va="top")
     t.plot([], [], color=INK, lw=1.1, marker="o", ms=2.45, mew=0.5, mfc=INK, mec=INK, label="CAST, fixed α")
-    t.plot([], [], color=GRAY, lw=1.0, ls=(0, (3.2, 1.6)), marker="o", ms=5.5, mew=0.7, mfc="white", mec=INK, label="Arrival-fixed")   # 10-19: 표 3 의 영문 이름과 같게(3회차 C M5)
+    t.plot([], [], color=GRAY, lw=1.0, ls=(0, (3.2, 1.6)), marker="o", ms=5.5, mew=0.7, mfc="white", mec=INK, label="Arrival-time" if v3 else "Arrival-fixed")   # 10-19: 표 3 의 영문 이름과 같게(3회차 C M5)
     t.set_ylabel("Carbon savings (%)", fontsize=F_LABEL)
     t.set_ylim(-4, 100); t.set_xlim(-6, 130)
     # 아래: 세로 틈
@@ -279,7 +283,7 @@ def fig_frontier():
         print(f"frontier: α={a_:.1f} CAST ({x:.2f} ms, {y:.2f} %)  no re-solve ({xa:.2f} ms, {ya:.2f} %)  gap {g:+.2f} pp")
     fig.align_ylabels([t, b])
     fig.tight_layout(pad=0.5, h_pad=0.6)
-    out = os.path.join(HERE, "v2_frontier.png")
+    out = os.path.join(HERE, "v3_fig6_frontier.png" if v3 else "v2_frontier.png")
     fig.savefig(out); fig.savefig(out.replace(".png", ".pdf")); fig.savefig(out.replace(".png", ".svg")); plt.close(fig)
     print("wrote", out)
 
@@ -409,7 +413,8 @@ def fig_where():
 
 
 # ── 그림: 선행 정책 평면 — 절감 vs 필요 용량. ○ 선행, ● CAST 곡선(용량비 스윕의 자기 피크) ──
-def fig_priors():
+def fig_priors(v3=False):
+    # 11-03 v3: 리전과 시각을 함께 옮기는 선행 정책(Sukprasert 공간+시간, Caspian)만 그린다 → v3_fig5_priors
     fig, ax = new_ax()
     # (라벨, dx, dy, ha) — 점마다 지정. 오른쪽 끝(Sukprasert 둘)은 왼쪽으로 적어 축 밖으로 안 나가게.
     # 그림 안 글자는 짧은 이름만 — 뜻은 캡션에서 푼다 (S-T: Sukprasert temporal, S-ST: spatial+temporal, h: 홈 고정)
@@ -438,6 +443,8 @@ def fig_priors():
         # 표 7 에 없는 ○ 와 "caspian_w0.5_frac" 라벨이 Caspian 점에 겹쳐 찍혔다 → 표 7 의 Caspian(w1.0_frac)만 그린다
         if n.startswith("caspian") and n != "caspian_w1.0_frac":
             continue
+        if v3 and n not in ("suk_st", "caspian_w1.0_frac"):
+            continue
         # 10-18(89 점검 [20]): CASPER ○ 가 α=1 선에 꿰였다 → 흰 채움 ○ 를 곡선·점선(zorder ≤4) 위로 올려 선을 가린다
         # 10-18(87 점검2 [15]): ○ 뒤에 흰 원(테두리 없음, s 60)을 깔아 선이 ○ 앞에서 끊기게 — CASPER ○(α=1 곡선 위)·
         # Suk. temporal (ours) ○(무릎점 가로 점선 73.39 위)·Suk. spatial+temporal ○(α=1 가로 점선 위)가 선에 꿰인 것처럼 보였다.
@@ -445,6 +452,8 @@ def fig_priors():
         ax.scatter([s["required_capacity"]], [s["savings_pct"]], s=60, facecolor="white", edgecolor="none", zorder=4.5)
         ax.scatter([s["required_capacity"]], [s["savings_pct"]], s=24, facecolor="white", edgecolor=INK, lw=0.9, zorder=6)
         lab, dx, dy, ha = labels.get(n, (n, 6, -1, "left"))
+        if v3 and n == "suk_st":
+            lab = "Sukprasert"
         # 10-18: 흰 바탕(테두리 없음, pad 0.4) — y 격자(60·20)가 Caspian·Suk. temporal (home) 글자를 지나갔다. 가리는 것은 격자뿐:
         # 라벨 자리는 세로선 13·17 과 용량 무시 가로 점선(73.4·96.0)에 닿지 않는다(렌더 확인). zorder 5 는 ○(6) 아래.
         ann = ax.annotate(lab, (s["required_capacity"], s["savings_pct"]), textcoords="offset points", xytext=(dx, dy),
@@ -477,7 +486,8 @@ def fig_priors():
             # ↑ 검은 ■ 는 테두리 0.4(전 1.0, 겉 크기 3.8 → 3.2 pt): 1.0 이면 상한 26 의 ■ 와 CASPER ○ 고리 틈이 0.14 pt 라
             #   검정끼리 붙어 보였다(500 dpi 화소 1개). 그림 10 의 ■ 도 같은 크기로 맞췄다.
     # 10-18(89 점검 [4]): 그림 10 의 합성 패널을 지우고 그 용량 무시 수준(무릎점·α=1)을 이 그림에 가로 점선으로 옮겼다
-    for ig_name, col, lab in (("main/ignore", INK, "Capacity ignored, knee"), ("main/ignore_a1", GRAY, "Capacity ignored, α=1")):
+    ig_labels = ("No ceiling, knee", "No ceiling, α=1") if v3 else ("Capacity ignored, knee", "Capacity ignored, α=1")
+    for ig_name, col, lab in (("main/ignore", INK, ig_labels[0]), ("main/ignore_a1", GRAY, ig_labels[1])):
         ig = stats(ig_name)
         if ig:
             ax.axhline(ig["savings_pct"], color=col, lw=0.6, ls=(0, (1, 1.6)), zorder=1, label=lab)
@@ -496,6 +506,12 @@ def fig_priors():
     leg = ax.legend(loc="center right", bbox_to_anchor=(1.0, 0.385), fontsize=F_LEG, frameon=True, handlelength=2.0, labelspacing=0.3,
                     borderpad=0.2, fancybox=False)
     leg.get_frame().set_facecolor("white"); leg.get_frame().set_edgecolor("none"); leg.get_frame().set_alpha(1.0)
+    if v3:
+        fig.tight_layout(pad=0.5)
+        out = os.path.join(HERE, "v3_fig5_priors.png")
+        fig.savefig(out); fig.savefig(out.replace(".png", ".pdf")); plt.close(fig)
+        print("wrote", out)
+        return
     save(fig, "priors")
 
 
@@ -549,7 +565,7 @@ def fig_alphadist():
 
 if __name__ == "__main__":
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
-    fns = dict(alpha=fig_alpha, alpha_cast=fig_alpha_cast, frontier=fig_frontier, capsweep=fig_capsweep, where=fig_where, priors=fig_priors, herding=fig_herding, alphadist=fig_alphadist)
+    fns = dict(alpha=fig_alpha, alpha_cast=fig_alpha_cast, frontier=fig_frontier, frontier_v3=lambda: fig_frontier(v3=True), capsweep=fig_capsweep, where=fig_where, priors=fig_priors, priors_v3=lambda: fig_priors(v3=True), herding=fig_herding, alphadist=fig_alphadist)
     for k, f in fns.items():
         if which in (k, "all"):
             f()
