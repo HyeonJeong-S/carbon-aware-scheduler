@@ -41,6 +41,11 @@ def main():
         t = "".join(x.text or "" for x in e.iter(qn("w:t"))).strip()
         if re.match(r"^\d+\. ", t): break
         if e.tag == qn("w:p"): body.remove(e)
+    for t in d.tables:                                   # 첫 칸만 있는 줄은 묶음 머리(Synthetic, Ceiling 등) — 기울임으로 구분
+        for row in t.rows[1:]:
+            cs = row.cells
+            if len(cs) > 1 and cs[0].text.strip() and not any(c.text.strip() for c in cs[1:]):
+                for r in cs[0].paragraphs[0].runs: r.italic = True
     d.save(a.out)
     print("saved", a.out)
 
