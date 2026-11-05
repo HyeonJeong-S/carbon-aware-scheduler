@@ -154,8 +154,53 @@ def fig_priors2():
     save(fig, "v3_fig6_priors2")
 
 
+def fig_capacity():
+    """3.5절 용량 관리 개념도 — 한 리전의 동시 실행 수를 이번 슬롯의 시작 순간(U_t)과 미래 슬롯(σ)에서 센다. 값은 설명용."""
+    cap, rho = 10, 2
+    xs = [0, 0.7, 1.4, 2.7, 3.7, 4.7, 6.2]
+    labels = ["$t$", "", "", "$t{+}1$", "$t{+}2$", "$t{+}3$", "$t{+}H$"]
+    running = [7, 6, 6, 4, 3, 2, 0]
+    planned = [3, 5, 4, 4, 6, 5, 3]
+    fig, ax = plt.subplots(figsize=(W_IN, 150 / 72.0), dpi=500)
+    style(ax)
+    ax.grid(False)
+    for k, (x, n, p) in enumerate(zip(xs, running, planned)):
+        w = 0.45 if k < 3 else 0.7
+        ax.bar(x, n, w, color=GRAY, edgecolor=INK, lw=0.6, zorder=3, label="Running $n_r(\\kappa)$" if k == 0 else None)
+        ax.bar(x, min(p, cap - n), w, bottom=n, color="white", edgecolor=INK, lw=0.6, zorder=3,
+               label="Planned $\\sum x_{jri}$" if k == 0 else None)
+        if n + p > cap:
+            ax.bar(x, n + p - cap, w, bottom=cap, color="white", edgecolor=INK, lw=0.6, hatch="////", zorder=3,
+                   label="Excess $z^A$, $z^B$")
+        if k >= 3 and n + p > cap - rho:
+            ax.bar(x, n + p - (cap - rho), w, bottom=cap - rho, color="white", edgecolor=INK, lw=0.6, hatch="////",
+                   zorder=3)
+    ax.text(5.45, 1.5, "…", ha="center", va="center", fontsize=F_LABEL)
+    ax.plot([-0.4, 6.7], [cap, cap], color=INK, lw=0.9, zorder=4)
+    ax.text(6.75, cap, "cap$_r$", fontsize=F_ANN, ha="left", va="center")
+    ax.plot([2.2, 6.7], [cap - rho, cap - rho], color=INK, lw=0.8, ls=(0, (3, 2)), zorder=4)
+    ax.text(6.75, cap - rho, "cap$_r-\\rho_r$", fontsize=F_ANN, ha="left", va="center")
+    for x0, x1, lab in ((-0.3, 1.7, "Start instants $U_t$"), (2.3, 6.6, "Future slots $\\sigma$")):
+        ax.annotate("", (x0, -2.6), (x1, -2.6), xycoords="data", annotation_clip=False,
+                    arrowprops=dict(arrowstyle="-", color=INK, lw=0.6))
+        ax.text((x0 + x1) / 2, -2.9, lab, ha="center", va="top", fontsize=F_ANN)
+    ax.axvline(2.05, color=AUX_GRAY, lw=0.6, ls=(0, (1, 1.6)), zorder=1)
+    ax.set_xticks(xs)
+    ax.set_xticklabels(labels, fontsize=F_TICK)
+    ax.set_xlim(-0.45, 7.9)
+    ax.set_ylim(0, 13.8)
+    ax.set_yticks([])
+    ax.set_ylabel("Jobs running in region $r$", fontsize=F_LABEL)
+    leg = ax.legend(fontsize=F_LEG, frameon=False, loc="upper center", ncol=3, handlelength=1.2, columnspacing=0.6,
+                    handletextpad=0.4, borderpad=0.1, bbox_to_anchor=(0.5, 1.06))
+    leg.get_frame().set_facecolor("white")
+    fig.tight_layout(pad=0.5)
+    fig.subplots_adjust(bottom=0.3)
+    save(fig, "v3_fig3_capacity")
+
+
 if __name__ == "__main__":
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
-    for k, fn in (("arrivals", fig_arrivals), ("priors2", fig_priors2)):
+    for k, fn in (("arrivals", fig_arrivals), ("priors2", fig_priors2), ("capacity", fig_capacity)):
         if which in (k, "all"):
             fn()
