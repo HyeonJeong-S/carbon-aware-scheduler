@@ -112,12 +112,15 @@ def fig_priors2():
     for nm, lab in (("main/ignore", "No ceiling, knee"), ("main/ignore_a1", "No ceiling, α=1")):
         st = stats(nm)
         a.axhline(st["savings_pct"], color=INK if nm.endswith("ignore") else GRAY, lw=0.6, ls=(0, (1, 1.6)), zorder=1, label=lab)
-    for s, lab, dx, dy, ha in ((suk, "Sukprasert", -6, -9, "right"), (cas, "Caspian", 6, -2, "left")):
+    # 11-07(C2): Sukprasert 글자가 점에서 왼쪽 아래로 멀리 떨어져 있었다 — 점 바로 밑으로.
+    for s, lab, dx, dy, ha in ((suk, "Sukprasert", 0, -9, "center"), (cas, "Caspian", 6, -2, "left")):
         a.scatter([s["required_capacity"]], [s["savings_pct"]], s=60, facecolor="white", edgecolor="none", zorder=4.5)
         a.scatter([s["required_capacity"]], [s["savings_pct"]], s=24, facecolor="white", edgecolor=INK, lw=0.9, zorder=6)
         a.annotate(lab, (s["required_capacity"], s["savings_pct"]), textcoords="offset points", xytext=(dx, dy),
                    fontsize=F_ANN, ha=ha, va="center")
     a.axvline(13, color=AUX_GRAY, lw=0.6, ls=(0, (3, 2)), zorder=1)
+    # 11-07(C2): 회색 파선이 무엇인지 그림 안에 없었다 — 기준 피크(13) 라벨.
+    a.text(12.4, 4, "Baseline\npeak 13", fontsize=F_LEG, ha="right", va="bottom", linespacing=1.1)
     a.axvline(17, color=INK, lw=0.6, ls=(0, (1, 1.6)), zorder=1)
     a.text(17.8, 103, "Ceiling 17", fontsize=F_LEG, ha="left", va="bottom")
     a.set_xscale("log")

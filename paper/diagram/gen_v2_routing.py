@@ -46,9 +46,17 @@ SHORT = {"US-CAL-CISO": "California", "US-TEX-ERCO": "Texas", "US-NY-NYIS": "New
          "FR": "France", "DE": "Germany", "KR": "Korea", "IN": "India", "JP": "Japan"}
 
 
-def main():
+# 11-07(v3 C10): v3 는 리전 순서를 표 2(CA, TX, NY, FR, DE, KR, JP, IN)에 맞춘다.
+# --v3 일 때만 행렬과 라벨을 이 순서로 바꿔 v3_fig6_routing 으로 저장하고, v2 출력은 그대로 둔다.
+V3_ORDER = ["US-CAL-CISO", "US-TEX-ERCO", "US-NY-NYIS", "FR", "DE", "KR", "JP", "IN"]
+
+
+def main(v3=False):
     M = np.array(json.load(open(SUM))["routing_matrix"], dtype=float)
-    n = len(REGIONS)
+    order = V3_ORDER if v3 else list(REGIONS)
+    idx = [REGIONS.index(r) for r in order]
+    M = M[np.ix_(idx, idx)]
+    n = len(order)
     tot = M.sum()
     recv = M.sum(axis=0)
 
@@ -113,7 +121,7 @@ def main():
         # 90도로 세우면 라벨의 가로 폭이 글자 높이(약 7.5pt)로 줄어 **제 열 폭
         # (0.68 데이터단위) 안에 완전히 들어간다** — 수직선이 곧 소속을 말한다.
         # 글자 크기는 그대로 둔다(이미 6.2pt 로 작다).
-        ax.text(xs[i], yt + 0.11, SHORT[REGIONS[i]], ha="left", fontsize=6.8,
+        ax.text(xs[i], yt + 0.11, SHORT[order[i]], ha="left", fontsize=6.8,
                 rotation=90, rotation_mode="anchor")
 
     ax.text(-0.85, yt + 0.02, "Origin", fontsize=6.8, ha="right", va="bottom")
@@ -127,10 +135,11 @@ def main():
     # 2026-09-25: 그림 아래 각주 두 줄(회색 세로선·아래 사각형의 뜻, 생략 기준)은 캡션으로 옮겼다.
     fig.tight_layout(pad=0.3)
     for e in (".png", ".pdf"):
-        fig.savefig(os.path.join(HERE, "v2_fig5_routing" + e))
-    print("wrote fig4_routing — 프랑스 %.1f%%, 캘리포니아 %.1f%%, 인도 %.1f%%"
-          % (recv[3] / tot * 100, recv[0] / tot * 100, recv[6] / tot * 100))
+        fig.savefig(os.path.join(HERE, ("v3_fig6_routing" if v3 else "v2_fig5_routing") + e))
+    pct = {r: recv[k] / tot * 100 for k, r in enumerate(order)}
+    print("wrote routing — 프랑스 %.1f%%, 캘리포니아 %.1f%%, 인도 %.1f%%"
+          % (pct["FR"], pct["US-CAL-CISO"], pct["IN"]))
 
 
 if __name__ == "__main__":
-    main()
+    main(v3="--v3" in sys.argv)
