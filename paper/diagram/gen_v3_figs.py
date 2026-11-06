@@ -199,8 +199,46 @@ def fig_capacity():
     save(fig, "v3_fig3_capacity")
 
 
+def fig_compare():
+    """선행 정책 비교 막대(표 10을 그림으로) — 절감, 필요 용량, 마감 위반을 세 칸에. 값은 priors json·main 실행에서 읽는다."""
+    suk, cas = prior("suk_st"), prior("caspian_w1.0_frac")
+    knee, a1 = stats("main/joint"), stats("main/joint_a1")
+    rows = [
+        ("Sukprasert", suk["savings_pct"], suk["required_capacity"], suk["slo_violations"], "white"),
+        ("Caspian", cas["savings_pct"], cas["required_capacity"], cas["slo_violations"], "white"),
+        ("CAST, α=1", a1["savings_pct"], max(a1["peak_by_region"].values()), a1["slo_violations"], GRAY),
+        ("CAST, knee", knee["savings_pct"], max(knee["peak_by_region"].values()), knee["slo_violations"], INK),
+    ]
+    names = [r[0] for r in rows]
+    ys = list(range(len(rows)))[::-1]
+    fig, axes = plt.subplots(3, 1, figsize=(W_IN, 250 / 72.0), dpi=500, sharey=True)
+    panels = (("(a) Carbon savings (%)", 1, (0, 108), "{:.1f}"),
+              ("(b) Required capacity (jobs)", 2, (0, 150), "{:d}"),
+              ("(c) Deadline misses (jobs)", 3, (0, 7000), "{:,}"))
+    for ax, (lab, k, lim, fmt) in zip(axes, panels):
+        style(ax)
+        ax.grid(axis="y", visible=False)
+        ax.grid(axis="x", color="#dddddd", lw=0.4, zorder=0)
+        for y, r in zip(ys, rows):
+            v = r[k]
+            ax.barh(y, v, height=0.62, color=r[4], edgecolor=INK, lw=0.6, zorder=3)
+            ax.text(v + lim[1] * 0.012, y, fmt.format(int(round(v)) if k > 1 else v), va="center", ha="left",
+                    fontsize=F_ANN, zorder=4)
+        if k == 2:
+            ax.axvline(17, color=INK, lw=0.6, ls=(0, (1, 1.6)), zorder=2)
+            ax.text(18.5, ys[0] + 0.45, "Ceiling 17", fontsize=F_LEG, ha="left", va="bottom")
+        ax.set_xlim(*lim)
+        ax.set_yticks(ys)
+        ax.set_yticklabels(names, fontsize=F_TICK)
+        ax.set_xlabel(lab, fontsize=F_LABEL)
+        ax.tick_params(axis="y", length=0)
+    axes[2].xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{int(v):,}"))
+    fig.tight_layout(pad=0.5, h_pad=0.6)
+    save(fig, "v3_fig7_compare")
+
+
 if __name__ == "__main__":
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
-    for k, fn in (("arrivals", fig_arrivals), ("priors2", fig_priors2), ("capacity", fig_capacity)):
+    for k, fn in (("arrivals", fig_arrivals), ("priors2", fig_priors2), ("capacity", fig_capacity), ("compare", fig_compare)):
         if which in (k, "all"):
             fn()
